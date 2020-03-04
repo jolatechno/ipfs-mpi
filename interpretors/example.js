@@ -1,14 +1,15 @@
 //define an interpretor
 
 module.exports = {
-	on_receive : (func) => {
-		//call func(content, requirement, Id)
+	on_receive : (handler) => {
+		//call handler(content, requirement, Id)
 	},
 	receive : (result, id) => {
 	
 	},
-	run : (content) = > {
+	run : (content, handler) = > {
 		//run content code
+		//then call handler(result)
 	},
 	
 	free : () => {
