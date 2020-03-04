@@ -15,7 +15,7 @@ module.exports = {
 	free : () => {
 		//true or false
 	},
-	depedencies_checker : (requirements) => {
+	dependencies_checker : (requirements) => {
 		//true or false
 		//check if requirements are fulfilled
 	}
