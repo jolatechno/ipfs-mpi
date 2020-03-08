@@ -5,3 +5,9 @@
 [![standard-readme compliant](https://img.shields.io/badge/standard--readme-OK-green.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 
 Distributed computing using ipfs as a back-bone
+
+# ToDo
+
+- [ ] implement interpretor installation
+- [ ] implement interpretor execution
+- [ ] implement argument-passing through ipfs-key
