@@ -8,13 +8,16 @@ Distributed computing using ipfs as a back-bone
 
 # ToDo
 
-
-- [ ] write a boiler-plate interpretor
-
+__main changes:__
 
 - [ ] implement interpretor installation
 - [ ] implement interpretor execution
 - [ ] implement argument-passing through ipfs-key
 
+__'cosmetic' changes:__
+
+- [ ] write a boiler-plate interpretor
+
+__long-term goals:__
 
 - [ ] implement a _filecoin-like_ cryptocurrency rewarding computation
