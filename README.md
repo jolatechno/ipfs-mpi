@@ -8,6 +8,7 @@ Distributed computing using ipfs as a back-bone
 
 # ToDo
 
+- [ ] write a boiler-plate interpretor
 - [ ] implement interpretor installation
 - [ ] implement interpretor execution
 - [ ] implement argument-passing through ipfs-key
