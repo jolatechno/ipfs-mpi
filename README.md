@@ -18,6 +18,10 @@ __'cosmetic' changes:__
 
 - [ ] write a boiler-plate interpretor
 
+__security:__
+
+- [ ] limit the risk of malicius use (like _DDOS_ for example)
+
 __long-term goals:__
 
 - [ ] implement a _filecoin-like_ cryptocurrency rewarding computation
