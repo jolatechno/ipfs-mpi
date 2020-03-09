@@ -10,17 +10,17 @@ Distributed computing using ipfs as a back-bone
 
 __main changes:__
 
-- [ ] implement interpretor installation
-- [ ] implement interpretor execution
+- [ ] implement interpreter installation
+- [ ] implement interpreter execution
 - [ ] implement argument-passing through ipfs-key
 
 __'cosmetic' changes:__
 
-- [ ] write a boiler-plate interpretor
+- [ ] write a boilerplate interpreter
 
 __security:__
 
-- [ ] limit the risk of malicius use (like _DDOS_ for example)
+- [ ] limit the risk of malicious use (like _DDOS_ for example)
 
 __long-term goals:__
 
