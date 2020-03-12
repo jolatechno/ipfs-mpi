@@ -15,6 +15,7 @@ __main changes:__
 - [x] implement argument-passing through context
 - [x] implement interpreter installation/uninstallation/execution
 - [x] call executer and installer on Get, Put and Rm
+- [ ] insure that interpretor request only interacts with ipfs-nodes using ipfs-compute
 - [ ] make the plugin buildable
 
 __'cosmetic' changes:__
