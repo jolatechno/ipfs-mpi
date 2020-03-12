@@ -12,7 +12,7 @@ __main changes:__
 
 - [ ] implement interpreter installation
 - [ ] implement interpreter execution
-- [ ] implement argument-passing through ipfs-key
+- [ ] implement argument-passing through context
 
 __'cosmetic' changes:__
 
