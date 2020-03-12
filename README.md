@@ -10,8 +10,9 @@ Distributed computing using ipfs as a back-bone
 
 __main changes:__
 
-- [ ] implement interpreter installation
-- [ ] implement interpreter execution
+- [x] implement interpreter installation
+- [x] implement interpreter execution
+- [ ] call executer and installer from a custom BlockApi
 - [ ] implement argument-passing through context
 
 __'cosmetic' changes:__
