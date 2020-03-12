@@ -10,11 +10,12 @@ Distributed computing using ipfs as a back-bone
 
 __main changes:__
 
-- [ ] import __vanillaBlock.go__'s function directly from [ipfs/core/coreapi/block](https://github.com/ipfs/go-ipfs/blob/master/core/coreapi/block.go)
+- [x] implement argument-passing through context
 - [x] implement interpreter installation/uninstallation
 - [x] implement interpreter execution
-- [ ] call executer and installer from a custom BlockApi
-- [ ] implement argument-passing through context
+- [x] call executer and installer from a custom BlockApi
+- [ ] export the custom BlockApi and import it into ipfs
+- [ ] import __vanillaBlock.go__'s function directly from [ipfs/core/coreapi/block](https://github.com/ipfs/go-ipfs/blob/master/core/coreapi/block.go)
 
 __'cosmetic' changes:__
 
