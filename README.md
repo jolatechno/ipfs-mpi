@@ -1,3 +1,5 @@
+# WARNING : Development in progress
+
 # ipfs-compute
 
 [![](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.io/)
