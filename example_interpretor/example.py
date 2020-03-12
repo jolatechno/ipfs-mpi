@@ -1,10 +1,10 @@
 import sys
 
 def install():
-//install package
+#install package
 
 def run(args):
-//print(result)
+#print(result)
 
 if __name__ == "__main__":
 if sys.argv[0] == "install":
