@@ -11,11 +11,9 @@ Distributed computing using ipfs as a back-bone
 __main changes:__
 
 - [x] implement argument-passing through context
-- [x] implement interpreter installation/uninstallation
-- [x] implement interpreter execution
-- [x] call executer and installer from a custom BlockApi
-- [ ] export the custom BlockApi and import it into ipfs
-- [ ] import __vanillaBlock.go__'s function directly from [ipfs/core/coreapi/block](https://github.com/ipfs/go-ipfs/blob/master/core/coreapi/block.go)
+- [x] implement interpreter installation/uninstallation/execution
+- [x] call executer and installer on Get, Put and Rm
+- [ ] make the plugin buildable
 
 __'cosmetic' changes:__
 
