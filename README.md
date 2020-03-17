@@ -19,11 +19,7 @@ __main changes:__
 
 __'cosmetic' changes:__
 
-- [x] write a boilerplate interpreter
-
-__security:__
-
-- [ ] limit the risk of malicious use (like _DDOS_ for example)
+- [ ] write an example
 
 __long-term goals:__
 
