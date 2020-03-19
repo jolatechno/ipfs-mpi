@@ -15,6 +15,7 @@ __main changes:__
 - [ ] create an interface with standard Message Passing Interface (or MPI)
 - [ ] implement message-passing through ipfs-key
 - [ ] make the plugin buildable
+- [ ] implement the ipfs-mpi-store
 
 __'cosmetic' changes:__
 
