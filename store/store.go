@@ -8,10 +8,26 @@ import (
 )
 
 
+//constans
+
+const (
+  Msg = "Msg"
+  Mh = "Mh"
+)
+
+
 //Handler
 
 
 type Handler func(mpi.Message) error //mpi-handler
+
+func Load(path string) (Handler, error){
+  f, err := nil, nil//load mpi from path
+  if err != nil {
+    return nil, err
+  }
+  return f, nil
+}
 
 
 //StoreEntry
@@ -24,11 +40,11 @@ type StoreEntry struct {
 }
 
 func (se *StoreEntry)Load() error{
-  f = func(mpi.Message) error{
-    //load mpi from (*S).path
-    //TODO
-    return nil
+  f, err := Load((*se).path)
+  if err != nil {
+    return err
   }
+
   (*se).prgm = &f
   return nil
 }
@@ -67,57 +83,46 @@ func NewStore() Store {}
   return make(Store)
 }
 
-func (s *Store)Add(name string, addr mh.Multihash) error{
+func (s *Store)Add(addr mh.Multihash) error{
   se, err := NewStoreEntry(addr)
   if err != nil {
     return err
   }
 
-  (*s)[name] = se
+  (*s)[se.path] = se
   return nil
 }
 
 func (s *Store)Del(name string){
-  delete(*p, name)
+  delete(*s, name)
 }
 
-func (p *Store)Has(name string) bool{
-  _, ok := (*p)[addr]
+func (s *Store)Has(name string) bool{
+  _, ok := (*s)[addr]
   return ok
 }
 
-func (p *Peerstore)WriteAll(str string) {
-  for addr, _ := range *p {
-    p.Write(addr, str)
+func (s *Store)WriteAll(str string) {
+  for addr, _ := range *s {
+    s.Write(addr, str)
   }
 }
 
-func (s *Store)WriteStringAll(str string) {
-  for name, _ := range *s {
-    s.WriteString(name, str)
+func (s *Store)Write(addr string, str string) {
+  for addr, _ := range *s {
+    s.Write(addr, str)
   }
 }
 
-func (s *Store)WriteString(name string, str string) error {
-  p, ok := (*s)[name]
-  if ok {
-    p.WriteAll(str)
-    return nil
-  }
-  return errors.New("no such peer")
+func (s *Store)WriteAllMh(addr mh.Multihash) {
+  s.WriteAll(name, Mh + addr.String())
 }
 
-func (s *Store)WriteAll(msg mpi.Message) {
-  for name, _ := range *s {
-    s.Write(name, msg)
-  }
-}
-
-func (s *Store)Write(name string, msg mpi.Message) error {
-  str, err := msg.ToString()
+func (s *Store)WriteMessage(name string, msg mpi.Message) error {
+  str, err := msg.String()
   if err != nil {
     return err
   }
 
-  return s.WriteString(name, str)
+  return s.WriteString(name, Msg + str)
 }
