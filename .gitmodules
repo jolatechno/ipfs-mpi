@@ -1,3 +1,6 @@
 [submodule "mpi-peerstore"]
 	path = mpi-peerstore
 	url = git@github.com:jolatechno/mpi-peerstore.git
+[submodule "plugin/mpi"]
+	path = plugin/mpi
+	url = git@github.com:jolatechno/mpi.git
