@@ -1,9 +1,3 @@
-[submodule "ipfs-mpi-store"]
-	path = ipfs-mpi-store
-	url = git@github.com:jolatechno/ipfs-mpi-store.git
-[submodule "ipfs-mpi-plugin"]
-	path = ipfs-mpi-plugin
-	url = git@github.com:jolatechno/ipfs-mpi-plugin.git
 [submodule "mpi-peerstore"]
 	path = mpi-peerstore
 	url = git@github.com:jolatechno/mpi-peerstore.git
