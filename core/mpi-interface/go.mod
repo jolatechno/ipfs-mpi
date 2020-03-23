@@ -1,4 +1,4 @@
-module github.com/jolatechno/ipfs-mpi/core/mpi
+module github.com/jolatechno/ipfs-mpi/core/mpi-interface
 
 require (
 	github.com/gogo/protobuf v1.3.1
