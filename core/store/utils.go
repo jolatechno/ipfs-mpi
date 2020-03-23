@@ -1,9 +1,12 @@
 package store
 
 import (
+  "strings"
+
   "github.com/libp2p/go-libp2p-discovery"
   "github.com/libp2p/go-libp2p-core/host"
   "github.com/libp2p/go-libp2p-core/network"
+  "github.com/libp2p/go-libp2p-core/peer"
 
   "github.com/jolatecno/mpi-peerstore"
   "github.com/jolatecno/ipfs-mpi/ipfs-interface"
@@ -42,15 +45,22 @@ func (e *Entry)LoadEntry(base protocol.ID) error{
       for {
         str, err := rw.ReadString('\n')
     		if err != nil {
-    			continue //errors here shloud just disconnect the reader
+    			continue
     		}
 
         msg, err := mpi.FromString(str)
         if err != nil {
-    			continue //errors here shloud just disconnect the reader
+    			continue
     		}
 
-        handler(msg)
+        reps, err := handler(msg)
+        if err != nil {
+    			continue
+    		}
+
+        for _, rep := range reps{
+          e.store.Write(rep.to, rep.String()) // pass on the responces
+        }
       }
     }
 

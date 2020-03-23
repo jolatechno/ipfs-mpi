@@ -5,8 +5,11 @@ import (
 )
 
 type Message struct {
-  //TODO
+  from string
+  to string
 }
+
+type Handler func(Message) ([]Message, error)
 
 func (m *Message)String() string {
   //convert a Message to string
@@ -18,7 +21,7 @@ func FromString(msg string) (Message, error){
   return Message{}, nil
 }
 
-func Load(addr string, version semver.Version) (func(Message) error, error) {
+func Load(addr string, version semver.Version) (Handler, error) {
   //Loading the file
   return nil, nil
 }
