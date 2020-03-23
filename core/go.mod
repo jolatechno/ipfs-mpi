@@ -1,4 +1,4 @@
-module core
+module github.com/jolatechno/ipfs-mpi/core
 
 require (
 	github.com/gogo/protobuf v1.3.1
