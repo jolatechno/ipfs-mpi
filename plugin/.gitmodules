@@ -1,6 +1,0 @@
-[submodule "mpi"]
-	path = mpi
-	url = https://github.com/jolatechno/mpi
-[submodule "src/ipfs-mpi-store"]
-	path = src/ipfs-mpi-store
-	url = git@github.com:jolatechno/ipfs-mpi-store.git

@@ -8,6 +8,20 @@
 
 > mpi plugin for go-ipfs
 
+## How to build ?
+
+```
+go build -o main
+```
+
+## Usage
+
+Use different terminal windows to run
+
+```
+./main -listen /ip4/127.0.0.1/tcp/6666
+```
+
 ## Architecture
 
 This plugin dynamically matches peer using __libp2b__'s _rendezvous_ to handle message passing.
