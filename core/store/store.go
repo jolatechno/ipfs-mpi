@@ -44,12 +44,18 @@ func (s *Store)Add(f file.File){
   s.store[f] = e
 }
 
-func (s *Store)Start(){
-  files := file.List()
+func (s *Store)Start() error{
+  files, err := file.List()
+  if err != nil {
+    return err
+  }
+
   for _, f := range files {
     s.Add(f)
     s.store[f].LoadEntry()
   }
+  
+  return nil
 }
 
 func (s *Store)Get(){
