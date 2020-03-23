@@ -1,7 +1,7 @@
 package main
 
 import (
-  "github.com/jolatechno/ipfs-mpi/core/ipfs-interface"
+  "./ipfs-interface"
 )
 
 func main(){
