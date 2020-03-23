@@ -1,4 +1,4 @@
-module ipfs-mpi/core/ipfs-interface
+module github.com/jolatechno/ipfs-mpi/core/ipfs-interface
 
 require(
   github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200323222852-ba2d9472b391
