@@ -30,10 +30,20 @@ type IpfsShell struct {
   store map[string][]version
 }
 
+func (s *IpfsShell)Add(f File) {
+  _, ok := s.store[f.name]
+
+  if !ok {
+    s.store[f.name] = []version
+  }
+
+  s.store[f.name] = append(s.store[f.name], f.version)
+}
+
 func NewShell(url string) (IpfsShell, error) {
   Shell := shell.NewShell(url)
 
-  store := make(map[string][]version)
+  store := make(map[string][]semver.version)
 
   files, err := ioutil.ReadDir(base_path)
   if err != nil {
@@ -47,7 +57,7 @@ func NewShell(url string) (IpfsShell, error) {
       continue
     }
 
-    store[f.Name()] = []version{}
+    s.store[f.name] = []version
 
     for _, v := range versions {
       version, err := semver.NewVersion(v.Name())
@@ -98,7 +108,13 @@ func (s *IpfsShell)Dowload(f File) error {
     return err
   }
 
-  return Shell.Get(f.name, base_path + f.name + "/" + f.version.String())
+  err := Shell.Get(f.name, base_path + f.name + "/" + f.version.String())
+  if err != nil {
+    return err
+  }
+
+  s.Add(f)
+  return nil
 }
 
 func (s *IpfsShell)Occupied() (int64, err) {
