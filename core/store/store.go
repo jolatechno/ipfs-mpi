@@ -36,7 +36,7 @@ func NewStore(ctx context.Context, host host.Host, BootstrapPeers []maddr.Multia
 
   store := make(map[file.File]Entry)
 
-  return Store{ store:store, host:&host, routingDiscovery:routingDiscovery}
+  return Store{ store:store, host:&host, routingDiscovery:routingDiscovery }
 }
 
 func (s *Store)Add(f file.File){
