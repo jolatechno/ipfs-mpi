@@ -8,7 +8,7 @@ import (
   "github.com/coreos/go-semver/semver"
   "github.com/jolatechno/ipfs-mpi/core/mpi-interface"
 
-  "github.com/ipfs/go-ipfs-api/shell"
+  shell "github.com/ipfs/go-ipfs-api"
 )
 
 const (
