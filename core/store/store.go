@@ -46,7 +46,7 @@ func (s *Store)Add(f file.File){
 
 func (s *Store)Start(){
   files := file.List()
-  for _, f := files {
+  for _, f := range files {
     s.Add(f)
     s.store[f].LoadEntry()
   }
