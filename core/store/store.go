@@ -54,7 +54,7 @@ func (s *Store)Start() error{
     s.Add(f)
     s.store[f].LoadEntry()
   }
-  
+
   return nil
 }
 
