@@ -55,5 +55,6 @@ func (s *Store)Start(){
 func (s *Store)Get(){
   f := file.Get()
   s.Add(f)
+  s.store[f].InitEntry()
   s.store[f].LoadEntry()
 }
