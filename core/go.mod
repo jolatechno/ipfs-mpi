@@ -1,4 +1,4 @@
-module ipfs-mpi
+module core
 
 require (
 	github.com/gogo/protobuf v1.3.1
