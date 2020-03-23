@@ -5,7 +5,7 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/ipfs/go-datastore v0.4.2
 	github.com/ipfs/go-log v0.0.1
-	github.com/jolatechno/ipfs-mpi/core/ipfs-interface v0.0.0-20200323223107-9b6d7ad2c22a
+	github.com/jolatechno/ipfs-mpi/core/ipfs-interface v0.0.0-20200323223939-6e810f394563
 	github.com/jolatechno/mpi-peerstore v0.0.0-20200323150448-3331cef53d50
 	github.com/libp2p/go-libp2p v0.5.2
 	github.com/libp2p/go-libp2p-autonat-svc v0.1.0
