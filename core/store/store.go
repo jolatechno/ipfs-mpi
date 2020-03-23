@@ -39,8 +39,14 @@ func NewStore(ctx context.Context, host host.Host, BootstrapPeers []maddr.Multia
   return Store{ store:store, host:&host, routingDiscovery:routingDiscovery}
 }
 
-func (s *Store)Add(name string, version semver.Version){
-  e := NewEntry(s.host, s.routingDiscovery, name, version)
-  f := file.File{ name:name, version:version }
+func (s *Store)Add(f file.File){
+  e := NewEntry(s.host, s.routingDiscovery, f)
   s.store[f] = e
+}
+
+func (s *Store)Start(){
+  files := file.List()
+  for _, f := files {
+    s.Add(f)
+  }
 }

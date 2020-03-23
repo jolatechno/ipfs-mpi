@@ -10,17 +10,27 @@ type File struct {
   version semver.Version
 }
 
-func List() []File{
+func List() []File {
   //list all downloaded file
   return nil
 }
 
-func Has(addr string, version semver.Version) bool {
+func Has(f File) bool {
   //check if file is downloaded
   return false
 }
 
-func Dowload(addr string, version semver.Version) error {
+func Dowload(f File) error {
   //Download the file
   return nil
+}
+
+func Free() int {
+  //read how much space is left
+  return -1
+}
+
+func Get() File {
+  // Get a random program from ipfs
+  return File{}
 }

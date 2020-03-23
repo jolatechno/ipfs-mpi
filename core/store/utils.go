@@ -16,22 +16,21 @@ import (
 
 type Entry struct {
   store peerstore.Peerstore
-  name strings
-  version semver.Version
+  file file.File
 }
 
-func NewEntry(host *host.Host, routingDiscovery *discovery.RoutingDiscovery, name string, version semver.Version) Entry{
+func NewEntry(host *host.Host, routingDiscovery *discovery.RoutingDiscovery, f file;File) Entry{
   rdv := version + "/" + version.String()
   p := peerstore.NewPeerstore(host, routingDiscovery, rdv)
-  return Entry{store:p, name:rdv, version:version }
+  return Entry{ store:p, file:f }
 }
 
 func (e *Entry)InitEntry() error{
-  return file.Dowload(e.name, e.version)
+  return file.Dowload(e.file)
 }
 
 func (e *Entry)LoadEntry(base protocol.ID) error{
-  handler, err := mpi.Load(e.name, e.version)
+  handler, err := mpi.Load(e.file)
 
   if err != nil {
     return err
