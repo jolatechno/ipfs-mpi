@@ -1,8 +1,6 @@
 package main
 
 import (
-  store "github.com/jolatecno/ipfs-mpi-store/src"
+  "github.com/jolatecno/mpi-peerstore"
+  "github.com/jolatecno/mpi-peerstore/utils"
 )
-
-
-//TODO
