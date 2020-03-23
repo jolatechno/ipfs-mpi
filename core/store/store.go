@@ -48,5 +48,12 @@ func (s *Store)Start(){
   files := file.List()
   for _, f := files {
     s.Add(f)
+    s.store[f].LoadEntry()
   }
+}
+
+func (s *Store)Get(){
+  f := file.Get()
+  s.Add(f)
+  s.store[f].LoadEntry()
 }

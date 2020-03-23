@@ -6,8 +6,12 @@ import (
 )
 
 type File struct {
-  addr string
+  name string
   version semver.Version
+}
+
+func (f *File)String(){
+  return f.name
 }
 
 func List() []File {

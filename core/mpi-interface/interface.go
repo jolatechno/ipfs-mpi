@@ -1,6 +1,8 @@
 package mpi
 
 import (
+  "github.com/jolatecno/ipfs-mpi/ipfs-interface"
+
   "github.com/coreos/go-semver/semver"
 )
 
@@ -21,7 +23,7 @@ func FromString(msg string) (Message, error){
   return Message{}, nil
 }
 
-func Load(addr string, version semver.Version) (Handler, error) {
+func Load(f file.File) (Handler, error) {
   //Loading the file
   return nil, nil
 }

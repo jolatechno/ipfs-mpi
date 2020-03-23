@@ -2,6 +2,8 @@ package store
 
 import (
   "strings"
+  "context"
+  "bufio"
 
   "github.com/libp2p/go-libp2p-discovery"
   "github.com/libp2p/go-libp2p-core/host"
@@ -29,12 +31,38 @@ func (e *Entry)InitEntry() error{
   return file.Dowload(e.file)
 }
 
-func (e *Entry)LoadEntry(base protocol.ID) error{
+func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error{
   handler, err := mpi.Load(e.file)
 
   if err != nil {
     return err
   }
+
+  discoveryHandler = func (p *peerstore.Peerstore, id peer.ID){
+		Protocol := protocol.ID(e.file.String() + "//" + base.String())
+		stream, err := (*e.store.host).NewStream(ctx, id, Protocol)
+
+		if err != nil {
+			return
+		}
+
+		rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
+
+    w := func(str string) error{
+    	_, err := rw.WriteString(fmt.Sprintf("%s\n", str))
+    	if err != nil {
+    		return err
+    	}
+    	err = rw.Flush()
+    	if err != nil {
+    		return err
+    	}
+
+    	return nil
+    }
+
+		e.store.Add(peer.IDB58Encode(id), &w)
+	}
 
   StreamHandler := func(stream network.Stream) {
 		// Create a buffer stream for non blocking read and write.
@@ -58,12 +86,22 @@ func (e *Entry)LoadEntry(base protocol.ID) error{
     		}
 
         for _, rep := range reps{
+          if e.store.Has(rep.to){
+            e.store.Write(rep.to, rep.String()) // pass on the responces
+            continue
+          }
+
+          discoveryHandler(e.store, rep.to)
           e.store.Write(rep.to, rep.String()) // pass on the responces
         }
       }
     }
+  }
 
-    p.SetStreamHandler(base, StreamHandler)
+  e.store.SetHostId()
+  e.store.SetStreamHandler(base, StreamHandler)
+  e.store.Listen(ctx, discoveryHandler)
+  e.store.Annonce(ctx)
 
-    return nil
+  return nil
 }
