@@ -11,7 +11,7 @@ import (
   "github.com/libp2p/go-libp2p-core/peer"
 
   "github.com/jolatechno/mpi-peerstore"
-  "github.com/jolatechno/ipfs-mpi/ipfs-interface"
+  "github.com/jolatechno/ipfs-mpi/core/ipfs-interface"
 
   "github.com/coreos/go-semver/semver"
 )
