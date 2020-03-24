@@ -26,7 +26,7 @@ func FromString(msg string) (*Message, error) {
   return &Message{ From:split[0], To:split[1], Data:[]byte(split[2]) }, nil
 }
 
-func Load(path string) *Handler {
+func Load(path string) Handler {
   return Handler(func(msg Message) ([]Message, error){
     msgs := []Message{}
 
