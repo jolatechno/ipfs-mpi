@@ -6,7 +6,6 @@ import (
   "path/filepath"
 
   "github.com/coreos/go-semver/semver"
-  "github.com/jolatechno/ipfs-mpi/core/mpi-interface"
 
   shell "github.com/ipfs/go-ipfs-api"
 )
@@ -21,20 +20,20 @@ type File struct {
   version semver.Version
 }
 
-func (f *File)String(){
-  return f.name + "/" + f.version.String
+func (f *File)String() string{
+  return f.name + "/" + f.version.String()
 }
 
 type IpfsShell struct {
   shell *shell.Shell
-  store map[string][]version
+  store map[string][]semver.Version
 }
 
 func (s *IpfsShell)Add(f File) {
   _, ok := s.store[f.name]
 
   if !ok {
-    s.store[f.name] = []version
+    s.store[f.name] = []semver.Version
   }
 
   s.store[f.name] = append(s.store[f.name], f.version)
@@ -43,11 +42,11 @@ func (s *IpfsShell)Add(f File) {
 func NewShell(url string) (IpfsShell, error) {
   Shell := shell.NewShell(url)
 
-  store := make(map[string][]semver.version)
+  store := make(map[string][]semver.Version)
 
   files, err := ioutil.ReadDir(base_path)
   if err != nil {
-      return Files, err
+      return nil, err
   }
 
   for _, f := range files {
@@ -57,7 +56,7 @@ func NewShell(url string) (IpfsShell, error) {
       continue
     }
 
-    s.store[f.name] = []version
+    store[f.name] = []semver.Version
 
     for _, v := range versions {
       version, err := semver.NewVersion(v.Name())
@@ -117,7 +116,7 @@ func (s *IpfsShell)Dowload(f File) error {
   return nil
 }
 
-func (s *IpfsShell)Occupied() (int64, err) {
+func (s *IpfsShell)Occupied() (int64, error) {
   var size int64
   err := filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
       if err != nil {
