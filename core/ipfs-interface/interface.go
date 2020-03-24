@@ -22,7 +22,7 @@ type File struct {
   Version *semver.Version
 }
 
-func (f *File)String() string{
+func (f *File)String() string {
   return f.Name + "/" + f.Version.String()
 }
 

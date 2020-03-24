@@ -21,7 +21,7 @@ type Store struct {
   maxsize uint64
 }
 
-func NewStore(ctx context.Context, url string, host host.Host, BootstrapPeers []maddr.Multiaddr, base protocol.ID, path string, ipfs_store string, maxsize uint64) (*Store, error){
+func NewStore(ctx context.Context, url string, host host.Host, BootstrapPeers []maddr.Multiaddr, base protocol.ID, path string, ipfs_store string, maxsize uint64) (*Store, error) {
   shell, err := file.NewShell(url, path, ipfs_store)
   if err != nil {
     return nil, err
@@ -54,11 +54,11 @@ func (s *Store)Add(f file.File, ctx context.Context) error {
   return nil
 }
 
-func (s *Store)Del(f file.File) error{
+func (s *Store)Del(f file.File) error {
   return s.shell.Del(f)
 }
 
-func (s *Store)Start(ctx context.Context) error{
+func (s *Store)Start(ctx context.Context) error {
   files := (*s.shell).List()
 
   for _, f := range files {
@@ -71,7 +71,7 @@ func (s *Store)Start(ctx context.Context) error{
   return nil
 }
 
-func (s *Store)Get(ctx context.Context) error{
+func (s *Store)Get(ctx context.Context) error {
   used, err := s.shell.Occupied()
   if err != nil {
     return err
