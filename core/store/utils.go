@@ -22,10 +22,10 @@ type Entry struct {
   shell *file.IpfsShell
 }
 
-func NewEntry(host *host.Host, routingDiscovery *discovery.RoutingDiscovery, f file.File, shell *file.IpfsShell) Entry{
+func NewEntry(host *host.Host, routingDiscovery *discovery.RoutingDiscovery, f file.File, shell *file.IpfsShell) *Entry{
   rdv := f.String()
   p := peerstore.NewPeerstore(host, routingDiscovery, rdv)
-  return Entry{ store:p, file:f, shell:shell }
+  return &Entry{ store:p, file:f, shell:shell }
 }
 
 func (e *Entry)InitEntry() error{
