@@ -57,7 +57,7 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
 
 		rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
 
-    w := func(str string) error{
+		e.store.Add(peer.IDB58Encode(id), func(str string) error{
     	_, err := rw.WriteString(fmt.Sprintf("%s\n", str))
     	if err != nil {
     		return err
@@ -68,9 +68,7 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
     	}
 
     	return nil
-    }
-
-		e.store.Add(peer.IDB58Encode(id), &w)
+    })
 	}
 
   StreamHandler := func(stream network.Stream) {
