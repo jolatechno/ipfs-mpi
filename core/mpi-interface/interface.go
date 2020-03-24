@@ -1,52 +1,55 @@
 package mpi
 
 import (
-  "github.com/coreos/go-semver/semver"
-
-  "fmt"
+  "strings"
+  "errors"
+  "os/exec"
 )
-
-//TEMPORARY VAR :
-var (
-  handle = func(Message) ([]Message, error) {
-    return []Message{}, nil
-  }
-)
-
-type File struct {
-  Name string
-  Version *semver.Version
-}
 
 type Message struct {
   From string
   To string
+  Data []byte
 }
 
 type Handler func(Message) ([]Message, error)
 
 func (m *Message)String() string {
-  //convert a Message to string
-  return ""
+  return m.From + "," + m.To + "," + string(m.Data)
 }
 
-func FromString(msg string) (Message, error) {
-  //read a Message from string
-  return Message{}, nil
+func FromString(msg string) (*Message, error) {
+  split := strings.Split(msg, ",")
+  if len(split) != 3 {
+    return nil, errors.New("Message invalid")
+  }
+  return &Message{ From:split[0], To:split[1], Data:[]byte(split[2]) }, nil
 }
 
-func Load(f File) (*Handler, error) {
-  fmt.Println("mpi-interface/Load")
-  //Loading the file
-  //TODO
+func Load(path string) *Handler {
+  handler := Handler(func(msg Message) ([]Message, error){
+    msgs := []Message{}
 
-  //for now:
-  handler := Handler(handle)
+    out, err := exec.Command("python3", path + "run.py", msg.String()).Output()
+    if err != nil{
+      return msgs, nil
+    }
 
-  return &handler, nil
+    strs := strings.Split(string(out), ";")
+    for _, str := range strs {
+      msg, err := FromString(str)
+      if err != nil {
+        return msgs, err
+      }
+      msgs = append(msgs, *msg)
+    }
+    return msgs, nil
+  })
+
+  return &handler
 }
 
-func Install(f File) error {
-  //Install the file
-  return nil
+func Install(path string) error {
+  _, err := exec.Command("python3", path + "init.py").Output()
+	return err
 }

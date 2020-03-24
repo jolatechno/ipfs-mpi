@@ -12,7 +12,7 @@ import (
 
 var (
   url = "/ip4/127.0.0.1/tcp/5001"
-  examplesHash = "QmddRNU2VWkpm8FaK2S4QcXCHD3x5kUSiDpKLa1MttRUso/"
+  examplesHash = "QmRfk8DdfrPQUxxThhgRxpPYvoa9qpjwV1veqXaSYgrrWf/"
   BootstrapPeers = []maddr.Multiaddr{}
   Id = protocol.ID("test/0.0.0")
   ListenAddresses = []maddr.Multiaddr{}

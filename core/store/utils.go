@@ -20,13 +20,14 @@ type Entry struct {
   store peerstore.Peerstore
   file file.File
   shell *file.IpfsShell
+  path string
 }
 
-func NewEntry(host *host.Host, routingDiscovery *discovery.RoutingDiscovery, f file.File, shell *file.IpfsShell) *Entry {
+func NewEntry(host *host.Host, routingDiscovery *discovery.RoutingDiscovery, f file.File, shell *file.IpfsShell, path string) *Entry {
   rdv := f.String()
   p := peerstore.NewPeerstore(host, routingDiscovery, rdv)
 
-  return &Entry{ store:*p, file:f, shell:shell }
+  return &Entry{ store:*p, file:f, shell:shell, path:path }
 }
 
 func (e *Entry)InitEntry() error{
@@ -35,11 +36,11 @@ func (e *Entry)InitEntry() error{
     return err
   }
 
-  return mpi.Install(mpi.File(e.file))
+  return mpi.Install(e.path + e.file.String())
 }
 
 func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
-  handler, err := mpi.Load(mpi.File(e.file))
+  handler, err := mpi.Load(e.path + e.file.String())
   if err != nil {
     return err
   }
@@ -84,10 +85,7 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
     			continue
     		}
 
-        reps, err := (*handler)(msg)
-        if err != nil {
-    			continue
-    		}
+        reps := (*handler)(msg)
 
         for _, rep := range reps{
           if e.store.Has(rep.To){
@@ -106,20 +104,13 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
     }()
   }
 
-  fmt.Println("store/utils.go/LoadEntry ~ SetHostId ...")
-  e.store.SetHostId()
-  fmt.Println("store/utils.go/LoadEntry ~ SetHostId v")
-
+  e.store.SetHostId(
   err = e.store.SetStreamHandler(base, StreamHandler)
-  fmt.Println("store/utils.go/LoadEntry ~ SetStreamHandler v")
   if err != nil {
-    fmt.Println("store/utils.go/LoadEntry ~ SetStreamHandler x")
     return err
   }
 
   e.store.Listen(ctx, discoveryHandler)
-  fmt.Println("store/utils.go/LoadEntry ~ discoveryHandler v")
   e.store.Annonce(ctx)
-  fmt.Println("store/utils.go/LoadEntry ~ discoveryHandler v")
   return nil
 }

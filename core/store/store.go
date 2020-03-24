@@ -21,6 +21,7 @@ type Store struct {
   shell *file.IpfsShell
   protocol protocol.ID
   maxsize uint64
+  path string
 }
 
 func NewStore(ctx context.Context, url string, host host.Host, BootstrapPeers []maddr.Multiaddr, base protocol.ID, path string, ipfs_store string, maxsize uint64) (*Store, error) {
@@ -36,12 +37,12 @@ func NewStore(ctx context.Context, url string, host host.Host, BootstrapPeers []
 
   store := make(map[file.File] *Entry)
 
-  return &Store{ store:store, host:host, routingDiscovery:routingDiscovery, shell:shell, protocol:base, maxsize:maxsize }, nil
+  return &Store{ store:store, host:host, routingDiscovery:routingDiscovery, shell:shell, protocol:base, maxsize:maxsize, path:path }, nil
 }
 
 
 func (s *Store)Add(f file.File, ctx context.Context) error {
-  e := NewEntry(&s.host, s.routingDiscovery, f, s.shell)
+  e := NewEntry(&s.host, s.routingDiscovery, f, s.shell, s.path)
 
   err := e.InitEntry()
   if err != nil {
@@ -49,7 +50,6 @@ func (s *Store)Add(f file.File, ctx context.Context) error {
   }
 
   err = e.LoadEntry(ctx, s.protocol)
-  fmt.Println("store/store.go/Add ~ LoadEntry v")
   if err != nil {
     return err
   }
@@ -64,8 +64,6 @@ func (s *Store)Del(f file.File) error {
 
 func (s *Store)Start(ctx context.Context) error {
   files := (*s.shell).List()
-
-  fmt.Println("files : ", files)
 
   for _, f := range files {
     err := s.Add(f, ctx)
