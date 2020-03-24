@@ -43,19 +43,15 @@ func NewStore(ctx context.Context, url string, host host.Host, BootstrapPeers []
 
 func (s *Store)Add(f file.File, ctx context.Context) error {
   e := NewEntry(s.host, s.routingDiscovery, f, s.shell)
-  fmt.Println("store/store.go/Add ~ NewEntry v")
 
   err := e.InitEntry()
-  fmt.Println("store/store.go/Add ~ InitEntry v")
   if err != nil {
-    fmt.Println("store/store.go/Add ~ InitEntry x")
     return err
   }
 
   err = e.LoadEntry(ctx, s.protocol)
   fmt.Println("store/store.go/Add ~ LoadEntry v")
   if err != nil {
-    fmt.Println("store/store.go/Add ~ LoadEntry x")
     return err
   }
 

@@ -24,18 +24,15 @@ type Entry struct {
 
 func NewEntry(host *host.Host, routingDiscovery *discovery.RoutingDiscovery, f file.File, shell *file.IpfsShell) *Entry {
   rdv := f.String()
-  fmt.Println("store/utils.go/NewEntry ~ rdv v")
   p := peerstore.NewPeerstore(host, routingDiscovery, rdv)
-  fmt.Println("store/utils.go/NewEntry ~ NewPeerstore v")
+
   e := Entry{ store:p, file:f, shell:shell }
   return &e
 }
 
 func (e *Entry)InitEntry() error{
   err := e.shell.Dowload(e.file)
-  fmt.Println("store/utils.go/InitEntry ~ Dowload v")
   if err != nil {
-    fmt.Println("store/utils.go/InitEntry ~ Dowload x")
     return err
   }
 
@@ -44,8 +41,9 @@ func (e *Entry)InitEntry() error{
 
 func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
   handler, err := mpi.Load(mpi.File(e.file))
-
+  fmt.Println("store/utils.go/LoadEntry ~ Load v")
   if err != nil {
+    fmt.Println("store/utils.go/LoadEntry ~ Load x")
     return err
   }
 
@@ -114,9 +112,18 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
   }
 
   e.store.SetHostId()
-  e.store.SetStreamHandler(base, StreamHandler)
-  e.store.Listen(ctx, discoveryHandler)
-  e.store.Annonce(ctx)
+  fmt.Println("store/utils.go/LoadEntry ~ SetHostId v")
 
+  err = e.store.SetStreamHandler(base, StreamHandler)
+  fmt.Println("store/utils.go/LoadEntry ~ SetStreamHandler v")
+  if err != nil {
+    fmt.Println("store/utils.go/LoadEntry ~ SetStreamHandler x")
+    return err
+  }
+
+  e.store.Listen(ctx, discoveryHandler)
+  fmt.Println("store/utils.go/LoadEntry ~ discoveryHandler v")
+  e.store.Annonce(ctx)
+  fmt.Println("store/utils.go/LoadEntry ~ discoveryHandler v")
   return nil
 }
