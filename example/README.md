@@ -1,3 +1,3 @@
 # ipfs-mpi example
 
-Example
+Example mpi handler
