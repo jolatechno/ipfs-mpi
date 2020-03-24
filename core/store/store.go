@@ -36,8 +36,7 @@ func NewStore(ctx context.Context, url string, host host.Host, BootstrapPeers []
 
   store := make(map[file.File] *Entry)
 
-  s := Store{ store:store, host:nil, routingDiscovery:routingDiscovery, shell:shell, protocol:base, maxsize:maxsize }
-  return &s, nil
+  return &Store{ store:store, host:nil, routingDiscovery:routingDiscovery, shell:shell, protocol:base, maxsize:maxsize }, nil
 }
 
 

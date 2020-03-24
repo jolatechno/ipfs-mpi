@@ -2,6 +2,8 @@ package mpi
 
 import (
   "github.com/coreos/go-semver/semver"
+
+  "fmt"
 )
 
 //TEMPORARY VAR :
@@ -34,6 +36,7 @@ func FromString(msg string) (Message, error) {
 }
 
 func Load(f File) (*Handler, error) {
+  fmt.Println("mpi-interface/Load")
   //Loading the file
   //TODO
 

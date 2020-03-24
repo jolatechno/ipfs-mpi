@@ -26,8 +26,7 @@ func NewEntry(host *host.Host, routingDiscovery *discovery.RoutingDiscovery, f f
   rdv := f.String()
   p := peerstore.NewPeerstore(host, routingDiscovery, rdv)
 
-  e := Entry{ store:p, file:f, shell:shell }
-  return &e
+  return &Entry{ store:p, file:f, shell:shell }
 }
 
 func (e *Entry)InitEntry() error{
@@ -41,9 +40,7 @@ func (e *Entry)InitEntry() error{
 
 func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
   handler, err := mpi.Load(mpi.File(e.file))
-  fmt.Println("store/utils.go/LoadEntry ~ Load v")
   if err != nil {
-    fmt.Println("store/utils.go/LoadEntry ~ Load x")
     return err
   }
 
@@ -109,6 +106,7 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
     }()
   }
 
+  fmt.Println("store/utils.go/LoadEntry ~ SetHostId ...")
   e.store.SetHostId()
   fmt.Println("store/utils.go/LoadEntry ~ SetHostId v")
 
