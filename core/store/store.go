@@ -41,22 +41,16 @@ func NewStore(ctx context.Context, url string, host host.Host, BootstrapPeers []
 
 
 func (s *Store)Add(f file.File, ctx context.Context) error {
-  fmt.Println("store.go/Add")
 
   e := NewEntry(s.host, s.routingDiscovery, f, s.shell)
+  fmt.Println("error at store.go/Add ~ NewEntry() v")
   err := e.InitEntry()
   if err != nil {
-
-    fmt.Println("error at store.go/Add ~ InitEntry()")
-
     return err
   }
 
   err = e.LoadEntry(ctx, s.protocol)
   if err != nil {
-
-    fmt.Println("error at store.go/Add ~ LoadEntry()")
-
     return err
   }
 
@@ -79,6 +73,15 @@ func (s *Store)Start(ctx context.Context) error {
       return err
     }
   }
+
+  go func(){
+    for{
+      err := s.Get(ctx)
+      if err != nil { //No new file to add
+        return
+      }
+    }
+  }()
 
   return nil
 }

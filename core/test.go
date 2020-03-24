@@ -35,8 +35,6 @@ func main(){
 		panic(err)
 	}
 
-  err = Store.Get(ctx)
-
   err = Store.Start(ctx)
   if err != nil {
 		panic(err)
