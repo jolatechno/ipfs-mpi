@@ -72,7 +72,8 @@ func NewShell(url string, path string, ipfs_store string) (*IpfsShell, error) {
     }
   }
 
-  return &IpfsShell{ Shell:Shell, Store:store, path:path, ipfs_store:ipfs_store }, nil
+  s := IpfsShell{ Shell:Shell, Store:store, path:path, ipfs_store:ipfs_store }
+  return &s, nil
 }
 
 func (s *IpfsShell)List() []File {
@@ -188,7 +189,8 @@ func (s *IpfsShell)Get(maxSize uint64) (*File, error) {
       continue
     }
 
-    return &File{ Name:obj.Name, Version:vers }, nil
+    F := File{ Name:obj.Name, Version:vers }
+    return &F, nil
   }
 
   return nil, errors.New("exceded max draw")

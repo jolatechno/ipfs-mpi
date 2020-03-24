@@ -24,12 +24,10 @@ type Entry struct {
 
 func NewEntry(host *host.Host, routingDiscovery *discovery.RoutingDiscovery, f file.File, shell *file.IpfsShell) *Entry {
   rdv := f.String()
-  fmt.Println("store/utils.go/NewEntry ~ f.String() v")
-
   p := peerstore.NewPeerstore(host, routingDiscovery, rdv)
-  fmt.Println("store/utils.go/NewEntry ~ peerstore.NewPeerstore() v")
 
-  return &Entry{ store:p, file:f, shell:shell }
+  e := Entry{ store:p, file:f, shell:shell }
+  return &e
 }
 
 func (e *Entry)InitEntry() error{
