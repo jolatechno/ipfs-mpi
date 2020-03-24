@@ -123,7 +123,7 @@ func (s *IpfsShell)Del(f File) err {
   }
 
   if len(s.Store[f.Name]) == 0 {
-    delete(s.Store, f.Name]);
+    delete(s.Store, f.Name])
   }
 
   return nil
