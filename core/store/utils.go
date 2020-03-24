@@ -14,8 +14,6 @@ import (
   "github.com/jolatechno/mpi-peerstore"
   "github.com/jolatechno/ipfs-mpi/core/ipfs-interface"
   "github.com/jolatechno/ipfs-mpi/core/mpi-interface"
-
-  "fmt"
 )
 
 type Entry struct {
