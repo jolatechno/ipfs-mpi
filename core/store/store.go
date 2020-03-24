@@ -50,6 +50,10 @@ func (s *Store)Add(f file.File){
   s.store[f] = e
 }
 
+func (s *Store)Del(f file.File) error{
+  return s.shell.Del(f)
+}
+
 func (s *Store)Start() error{
   files, err := s.shell.List()
   if err != nil {

@@ -1,6 +1,7 @@
-/core/interpretors
-
 *
 !/**/
 !*.*
 !**/LICENSE
+
+/core/interpretors/
+/core/interpretors/*

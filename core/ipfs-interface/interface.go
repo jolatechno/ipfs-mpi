@@ -4,6 +4,7 @@ import (
   "io/ioutil"
   "os"
   "path/filepath"
+  "errors"
 
   "github.com/coreos/go-semver/semver"
 
@@ -104,6 +105,30 @@ func (s *IpfsShell)Has(f File) bool {
   return false
 }
 
+func (s *IpfsShell)Del(f File) err {
+  if !s.Has(f){
+    return errors.New("No file to delete")
+  }
+
+  err := os.Remove(base_path + f.String())
+  if err != nil {
+    return nil
+  }
+
+  for idx, vers := range s.Store[f.Name] {
+    if vers == f.Version {
+      s.Store[f.Name] = append(s.Store[f.Name][:idx], s.Store[f.Name][idx+1:]...)
+      break
+    }
+  }
+
+  if len(s.Store[f.Name]) == 0 {
+    delete(s.Store, f.Name]);
+  }
+
+  return nil
+}
+
 func (s *IpfsShell)Dowload(f File) error {
   if _, err := os.Stat(base_path + f.Name); os.IsNotExist(err) {
     new_err := os.Mkdir(base_path + f.Name, ModePerm)
@@ -119,7 +144,7 @@ func (s *IpfsShell)Dowload(f File) error {
     return err
   }
 
-  err = s.Shell.Get(hash, base_path + f.Name + "/" + f.Version.String())
+  err = s.Shell.Get(hash, base_path + f.String())
   if err != nil {
     return err
   }
