@@ -34,7 +34,7 @@ func (e *Entry)InitEntry() error{
     return err
   }
 
-  return mpi.Install(e.file)
+  return mpi.Install(mpi.File{ Name:e.file.Name, Version:e.file.Version })
 }
 
 func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error{
