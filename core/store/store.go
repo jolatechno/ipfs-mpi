@@ -16,7 +16,7 @@ import (
 
 type Store struct {
   store map[file.File] *Entry
-  host *host.Host
+  host host.Host
   routingDiscovery *discovery.RoutingDiscovery
   shell *file.IpfsShell
   protocol protocol.ID
@@ -36,12 +36,12 @@ func NewStore(ctx context.Context, url string, host host.Host, BootstrapPeers []
 
   store := make(map[file.File] *Entry)
 
-  return &Store{ store:store, host:nil, routingDiscovery:routingDiscovery, shell:shell, protocol:base, maxsize:maxsize }, nil
+  return &Store{ store:store, host:host, routingDiscovery:routingDiscovery, shell:shell, protocol:base, maxsize:maxsize }, nil
 }
 
 
 func (s *Store)Add(f file.File, ctx context.Context) error {
-  e := NewEntry(s.host, s.routingDiscovery, f, s.shell)
+  e := NewEntry(*s.host, s.routingDiscovery, f, s.shell)
 
   err := e.InitEntry()
   if err != nil {
