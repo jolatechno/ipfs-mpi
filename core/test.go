@@ -6,7 +6,7 @@ import (
 )
 
 const (
-  url = "/ip4/127.0.0.1/tcp/4001"
+  url = "/ip4/127.0.0.1/tcp/5001"
   examplesHash = "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv"
 )
 
@@ -16,5 +16,13 @@ func main(){
     panic(err)
   }
 
-  s.Dowload(file.File{ name:examplesHash, version:semver.Version("0.0.0")})
+  vers, err := semver.NewVersion("0.0.0")
+  if err != nil {
+    panic(err)
+  }
+
+  err = s.Dowload(file.File{ Name:examplesHash, Version:vers})
+  if err != nil {
+    panic(err)
+  }
 }

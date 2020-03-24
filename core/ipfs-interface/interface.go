@@ -24,6 +24,13 @@ func (f *File)String() string{
   return f.Name + "/" + f.Version.String()
 }
 
+func (f *File)GetHash() (string, error){
+  // get the write version
+  //TODO
+  return f.Name, nil
+}
+
+
 type IpfsShell struct {
   Shell *shell.Shell
   Store map[string][] *semver.Version
@@ -107,7 +114,7 @@ func (s *IpfsShell)Dowload(f File) error {
     return err
   }
 
-  err := s.Shell.Get(f.Name, base_path + f.Name + "/" + f.Version.String())
+  err := s.Shell.Get(f.GetHash(), base_path + f.Name + "/" + f.Version.String())
   if err != nil {
     return err
   }

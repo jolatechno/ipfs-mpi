@@ -17,9 +17,15 @@ type Store struct{
   store map[file.File]Entry
   host *host.Host
   routingDiscovery *discovery.RoutingDiscovery
+  shell *file.IpfsShell
 }
 
-func NewStore(ctx context.Context, host host.Host, BootstrapPeers []maddr.Multiaddr) (Store, err){
+func NewStore(ctx context.Context, url string, host host.Host, BootstrapPeers []maddr.Multiaddr) (*Store, err){
+  shell, err := file.NewShell(url)
+  if err != nil {
+    return nil, err
+  }
+
   host, err := libp2p.New(ctx,
 		libp2p.ListenAddrs([]multiaddr.Multiaddr(config.ListenAddresses)...),
 	)
@@ -36,16 +42,16 @@ func NewStore(ctx context.Context, host host.Host, BootstrapPeers []maddr.Multia
 
   store := make(map[file.File]Entry)
 
-  return Store{ store:store, host:&host, routingDiscovery:routingDiscovery }
+  return &Store{ store:store, host:&host, routingDiscovery:routingDiscovery, shell:shell }
 }
 
 func (s *Store)Add(f file.File){
-  e := NewEntry(s.host, s.routingDiscovery, f)
+  e := NewEntry(s.host, s.routingDiscovery, f, s.shell)
   s.store[f] = e
 }
 
 func (s *Store)Start() error{
-  files, err := file.List()
+  files, err := s.shell.List()
   if err != nil {
     return err
   }

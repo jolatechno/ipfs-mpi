@@ -19,16 +19,17 @@ import (
 type Entry struct {
   store peerstore.Peerstore
   file file.File
+  shell *file.shell
 }
 
-func NewEntry(host *host.Host, routingDiscovery *discovery.RoutingDiscovery, f file;File) Entry{
+func NewEntry(host *host.Host, routingDiscovery *discovery.RoutingDiscovery, f file.File, shell *file.shell) Entry{
   rdv := version + "/" + version.String()
   p := peerstore.NewPeerstore(host, routingDiscovery, rdv)
-  return Entry{ store:p, file:f }
+  return Entry{ store:p, file:f, shell:shell }
 }
 
 func (e *Entry)InitEntry() error{
-  return file.Dowload(e.file)
+  return e.shell.Dowload(e.file)
 }
 
 func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error{
