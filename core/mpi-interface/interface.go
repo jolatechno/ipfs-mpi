@@ -5,13 +5,13 @@ import (
 )
 
 type File struct {
-  name string
-  version *semver.Version
+  Name string
+  Version *semver.Version
 }
 
 type Message struct {
-  from string
-  to string
+  From string
+  To string
 }
 
 type Handler func(Message) ([]Message, error)

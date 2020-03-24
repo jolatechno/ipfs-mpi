@@ -86,13 +86,13 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error{
     		}
 
         for _, rep := range reps{
-          if e.store.Has(rep.to){
-            e.store.Write(rep.to, rep.String()) // pass on the responces
+          if e.store.Has(rep.To){
+            e.store.Write(rep.To, rep.String()) // pass on the responces
             continue
           }
 
-          discoveryHandler(e.store, rep.to)
-          e.store.Write(rep.to, rep.String()) // pass on the responces
+          discoveryHandler(e.store, rep.To)
+          e.store.Write(rep.To, rep.String()) // pass on the responces
         }
       }
     }

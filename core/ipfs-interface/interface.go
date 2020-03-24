@@ -16,27 +16,27 @@ const (
 )
 
 type File struct {
-  name string
-  version *semver.Version
+  Name string
+  Version *semver.Version
 }
 
 func (f *File)String() string{
-  return f.name + "/" + f.version.String()
+  return f.Name + "/" + f.Version.String()
 }
 
 type IpfsShell struct {
-  shell *shell.Shell
-  store map[string][] *semver.Version
+  Shell *shell.Shell
+  Store map[string][] *semver.Version
 }
 
 func (s *IpfsShell)Add(f File) {
-  _, ok := s.store[f.name]
+  _, ok := s.Store[f.Name]
 
   if !ok {
-    s.store[f.name] = [] *semver.Version{}
+    s.Store[f.Name] = [] *semver.Version{}
   }
 
-  s.store[f.name] = append(s.store[f.name], f.version)
+  s.Store[f.Name] = append(s.Store[f.Name], f.Version)
 }
 
 func NewShell(url string) (*IpfsShell, error) {
@@ -68,15 +68,15 @@ func NewShell(url string) (*IpfsShell, error) {
     }
   }
 
-  return &IpfsShell{ shell:Shell, store:store }, nil
+  return &IpfsShell{ Shell:Shell, Store:store }, nil
 }
 
 func (s *IpfsShell)List() []File {
   list := []File{}
 
-  for name, versions := range s.store {
+  for name, versions := range s.Store {
     for _, vers := range versions {
-      f := File{ name:name, version:vers }
+      f := File{ Name:name, Version:vers }
       list = append(list, f)
     }
   }
@@ -84,13 +84,13 @@ func (s *IpfsShell)List() []File {
 }
 
 func (s *IpfsShell)Has(f File) bool {
-  versions, ok := s.store[f.name]
+  versions, ok := s.Store[f.Name]
   if !ok {
     return false
   }
 
   for _, vers := range versions {
-    if vers.Major == f.version.Major && vers.Minor >= f.version.Minor {
+    if vers.Major == f.Version.Major && vers.Minor >= f.Version.Minor {
       return true
     }
   }
@@ -98,8 +98,8 @@ func (s *IpfsShell)Has(f File) bool {
 }
 
 func (s *IpfsShell)Dowload(f File) error {
-  if _, err := os.Stat(base_path + f.name); os.IsNotExist(err) {
-    new_err := os.Mkdir(base_path + f.name, ModePerm)
+  if _, err := os.Stat(base_path + f.Name); os.IsNotExist(err) {
+    new_err := os.Mkdir(base_path + f.Name, ModePerm)
     if new_err != nil{
       return err
     }
@@ -107,7 +107,7 @@ func (s *IpfsShell)Dowload(f File) error {
     return err
   }
 
-  err := s.shell.Get(f.name, base_path + f.name + "/" + f.version.String())
+  err := s.Shell.Get(f.Name, base_path + f.Name + "/" + f.Version.String())
   if err != nil {
     return err
   }
