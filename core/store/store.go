@@ -2,6 +2,7 @@ package store
 
 import (
   "context"
+  "os"
 
   "github.com/jolatechno/mpi-peerstore/utils"
   "github.com/jolatechno/ipfs-mpi/core/ipfs-interface"
@@ -23,6 +24,12 @@ type Store struct {
 }
 
 func NewStore(ctx context.Context, url string, host host.Host, BootstrapPeers []maddr.Multiaddr, base protocol.ID, path string, ipfs_store string, maxsize uint64) (*Store, error) {
+  if _, err := os.Stat(path); os.IsNotExist(err) {
+    os.MkdirAll(path, file.ModePerm)
+  } else if err != nil {
+    return nil, err
+  }
+
   shell, err := file.NewShell(url, path, ipfs_store)
   if err != nil {
     return nil, err
