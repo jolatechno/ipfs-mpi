@@ -41,6 +41,8 @@ func NewStore(ctx context.Context, url string, host host.Host, BootstrapPeers []
 
 
 func (s *Store)Add(f file.File, ctx context.Context) error {
+  fmt.Println("store.go/Add")
+
   e := NewEntry(s.host, s.routingDiscovery, f, s.shell)
   err := e.InitEntry()
   if err != nil {
@@ -67,6 +69,8 @@ func (s *Store)Del(f file.File) error {
 }
 
 func (s *Store)Start(ctx context.Context) error {
+  fmt.Println("store.go/Start")
+
   files := (*s.shell).List()
 
   for _, f := range files {

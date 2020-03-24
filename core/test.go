@@ -36,9 +36,6 @@ func main(){
 	}
 
   err = Store.Get(ctx)
-  if err != nil {
-		panic(err)
-	}
 
   err = Store.Start(ctx)
   if err != nil {
