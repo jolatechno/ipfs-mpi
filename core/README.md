@@ -1,5 +1,3 @@
-# WARNING : Development in progress
-
 # ipfs-mpi-plugin
 
 [![](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.io/)
@@ -14,25 +12,21 @@
 go build -o main
 ```
 
+For more detail consult : `./core -h`
+
 ## Usage
 
 Use different terminal windows to run
 
 ```
-./main -listen /ip4/127.0.0.1/tcp/6666
+./main
 ```
 
 ## Architecture
 
 This plugin dynamically matches peer using __libp2b__'s _rendezvous_ to handle message passing.
 
-## ToDo
-
-__main changes:__
-
-- [ ] create an interface with standard Message Passing Interface (or MPI)
-- [ ] implement message-passing through ipfs-key
-- [ ] make the plugin buildable using the __build/build.sh__ file
+### WARNING : Development in progress, might contain bug
 
 ## License
 

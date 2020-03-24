@@ -1,5 +1,3 @@
-# WARNING : Development in progress
-
 # mpi-interface
 
 [![](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.io/)
@@ -10,12 +8,14 @@
 
 Interface with mpi.
 
+### WARNING : Development in progress, might contain bug
+
 ## ToDo
 
 __main changes:__
 
-- [ ] manage mpi function loading
-- [ ] handle mpi message
+- [x] manage mpi function loading
+- [x] handle mpi message
 
 ## License
 

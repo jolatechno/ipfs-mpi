@@ -2,6 +2,7 @@ package main
 
 import (
   "context"
+  "fmt"
 
   "github.com/jolatechno/ipfs-mpi/core/store"
 
@@ -10,27 +11,30 @@ import (
   maddr "github.com/multiformats/go-multiaddr"
 )
 
-var (
-  url = "/ip4/127.0.0.1/tcp/5001"
-  examplesHash = "QmRfk8DdfrPQUxxThhgRxpPYvoa9qpjwV1veqXaSYgrrWf/"
-  BootstrapPeers = []maddr.Multiaddr{}
-  Id = protocol.ID("test/0.0.0")
-  ListenAddresses = []maddr.Multiaddr{}
-  path = "interpretors/"
-  maxsize uint64 = 60000000
-)
-
 func main(){
+  config := ParseFlags()
   ctx := context.Background()
 
   host, err := libp2p.New(ctx,
-		libp2p.ListenAddrs([]maddr.Multiaddr(ListenAddresses)...),
+		libp2p.ListenAddrs([]maddr.Multiaddr(config.ListenAddresses)...),
 	)
 	if err != nil {
 		panic(err)
 	}
 
-	Store, err := store.NewStore(ctx, url, host, BootstrapPeers, Id, path, examplesHash, maxsize)
+  fmt.Println("Our adress is: ", host.ID())
+
+	Store, err := store.NewStore(
+    ctx,
+    config.url,
+    host,
+    config.BootstrapPeers,
+    protocol.ID(config.ipfs_store + config.ProtocolID),
+    config.path,
+    config.ipfs_store,
+    config.maxsize,
+  )
+
   if err != nil {
 		panic(err)
 	}

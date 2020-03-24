@@ -1,5 +1,3 @@
-# WARNING : Development in progress
-
 # ipfs-interface
 
 [![](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.io/)
@@ -10,11 +8,13 @@
 
 The store handles mpi program storing. It automatically delete unused file after a given delay.
 
+### WARNING : Development in progress, might contain bug
+
 ## ToDo
 
 __main changes:__
 
-- [ ] manage file downloading through ipfs
+- [x] manage file downloading through ipfs
 - [ ] automatically delete file after a given time
 
 ## License
