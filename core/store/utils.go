@@ -14,6 +14,8 @@ import (
   "github.com/jolatechno/mpi-peerstore"
   "github.com/jolatechno/ipfs-mpi/core/ipfs-interface"
   "github.com/jolatechno/ipfs-mpi/core/mpi-interface"
+
+  "fmt"
 )
 
 type Entry struct {
@@ -24,7 +26,11 @@ type Entry struct {
 
 func NewEntry(host *host.Host, routingDiscovery *discovery.RoutingDiscovery, f file.File, shell *file.IpfsShell) *Entry {
   rdv := f.String()
+  fmt.Println("store/utils.go/NewEntry ~ f.String() v")
+
   p := peerstore.NewPeerstore(host, routingDiscovery, rdv)
+  fmt.Println("store/utils.go/NewEntry ~ peerstore.NewPeerstore() v")
+
   return &Entry{ store:p, file:f, shell:shell }
 }
 

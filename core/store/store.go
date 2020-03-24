@@ -10,8 +10,6 @@ import (
   "github.com/libp2p/go-libp2p-discovery"
   "github.com/libp2p/go-libp2p-core/host"
   maddr "github.com/multiformats/go-multiaddr"
-
-  "fmt"
 )
 
 type Store struct {
@@ -41,9 +39,8 @@ func NewStore(ctx context.Context, url string, host host.Host, BootstrapPeers []
 
 
 func (s *Store)Add(f file.File, ctx context.Context) error {
-
   e := NewEntry(s.host, s.routingDiscovery, f, s.shell)
-  fmt.Println("error at store.go/Add ~ NewEntry() v")
+
   err := e.InitEntry()
   if err != nil {
     return err
@@ -63,8 +60,6 @@ func (s *Store)Del(f file.File) error {
 }
 
 func (s *Store)Start(ctx context.Context) error {
-  fmt.Println("store.go/Start")
-
   files := (*s.shell).List()
 
   for _, f := range files {
