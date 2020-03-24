@@ -27,7 +27,7 @@ func FromString(msg string) (*Message, error) {
 }
 
 func Load(path string) *Handler {
-  handler := Handler(func(msg Message) ([]Message, error){
+  return Handler(func(msg Message) ([]Message, error){
     msgs := []Message{}
 
     out, err := exec.Command("python3", path + "run.py", msg.String()).Output()
@@ -45,8 +45,6 @@ func Load(path string) *Handler {
     }
     return msgs, nil
   })
-
-  return &handler
 }
 
 func Install(path string) error {

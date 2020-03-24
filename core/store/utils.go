@@ -40,10 +40,7 @@ func (e *Entry)InitEntry() error{
 }
 
 func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
-  handler, err := mpi.Load(e.path + e.file.String())
-  if err != nil {
-    return err
-  }
+  handler := mpi.Load(e.path + e.file.String())
 
   discoveryHandler := func (p *peerstore.Peerstore, id peer.ID) {
 		Protocol := protocol.ID(e.file.String() + "//" + string(base))
@@ -85,7 +82,7 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
     			continue
     		}
 
-        reps := (*handler)(msg)
+        reps := handler(*msg)
 
         for _, rep := range reps{
           if e.store.Has(rep.To){
@@ -104,8 +101,8 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
     }()
   }
 
-  e.store.SetHostId(
-  err = e.store.SetStreamHandler(base, StreamHandler)
+  e.store.SetHostId()
+  err := e.store.SetStreamHandler(base, StreamHandler)
   if err != nil {
     return err
   }

@@ -10,8 +10,6 @@ import (
   "github.com/libp2p/go-libp2p-discovery"
   "github.com/libp2p/go-libp2p-core/host"
   maddr "github.com/multiformats/go-multiaddr"
-
-  "fmt"
 )
 
 type Store struct {
