@@ -62,8 +62,10 @@ func (s *Store)Start(ctx context.Context) error{
   files := (*s.shell).List()
 
   for _, f := range files {
-    s.Add(f, ctx)
-    s.store[f].LoadEntry(ctx, s.protocol)
+    err := s.Add(f, ctx)
+    if err != nil {
+      return err
+    }
   }
 
   return nil
