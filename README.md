@@ -1,5 +1,3 @@
-# WARNING : Development in progress
-
 # ipfs-mpi
 
 [![](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.io/)
@@ -8,14 +6,15 @@
 
 Message Passing Interface computing using ipfs as a back-bone to build computational pool.
 
+### WARNING : Development in progress, might contain bug
+
 # ToDo
 
 __main changes:__
 
-- [ ] create an interface with standard Message Passing Interface (or MPI)
-- [ ] implement message-passing through ipfs-key
-- [ ] make the plugin buildable
-- [ ] implement the ipfs-mpi-store
+- [x] implement basic message passing using libp2p
+- [ ] handle fault (like unexpected peer hangup)
+- [ ] automatically delete unused file
 
 __'cosmetic' changes:__
 
