@@ -29,7 +29,12 @@ func NewEntry(host *host.Host, routingDiscovery *discovery.RoutingDiscovery, f f
 }
 
 func (e *Entry)InitEntry() error{
-  return e.shell.Dowload(e.file)
+  err := e.shell.Dowload(e.file)
+  if err != nil {
+    return err
+  }
+
+  return mpi.Install(e.file)
 }
 
 func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error{
@@ -81,7 +86,7 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error{
     			continue
     		}
 
-        reps, err := handler(msg)
+        reps, err := (*handler)(msg)
         if err != nil {
     			continue
     		}

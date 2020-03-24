@@ -26,7 +26,12 @@ func FromString(msg string) (Message, error){
   return Message{}, nil
 }
 
-func Load(f File) (Handler, error) {
+func Load(f File) (*Handler, error) {
   //Loading the file
   return nil, nil
+}
+
+func Install(f File) error {
+  //Install the file
+  return nil
 }
