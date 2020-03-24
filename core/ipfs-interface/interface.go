@@ -114,7 +114,12 @@ func (s *IpfsShell)Dowload(f File) error {
     return err
   }
 
-  err := s.Shell.Get(f.GetHash(), base_path + f.Name + "/" + f.Version.String())
+  hash, err := f.GetHash()
+  if err != nil {
+    return err
+  }
+
+  err := s.Shell.Get(hash, base_path + f.Name + "/" + f.Version.String())
   if err != nil {
     return err
   }
