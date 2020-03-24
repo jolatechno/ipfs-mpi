@@ -19,8 +19,8 @@ var (
   BootstrapPeers = []maddr.Multiaddr{}
   Id = protocol.ID("test/0.0.0")
   ListenAddresses = []maddr.Multiaddr{}
-
   path = "/interpretors"
+  maxsize uint64 = 60,000,000
 )
 
 func main(){
@@ -33,7 +33,7 @@ func main(){
 		panic(err)
 	}
 
-	Store, err := store.NewStore(ctx, url, host, BootstrapPeers, Id, path, examplesHash)
+	Store, err := store.NewStore(ctx, url, host, BootstrapPeers, Id, path, examplesHash, maxsize)
   if err != nil {
 		panic(err)
 	}
