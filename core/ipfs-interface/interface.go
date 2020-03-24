@@ -33,13 +33,13 @@ func (s *IpfsShell)Add(f File) {
   _, ok := s.store[f.name]
 
   if !ok {
-    s.store[f.name] = []semver.Version
+    s.store[f.name] = []semver.Version{}
   }
 
   s.store[f.name] = append(s.store[f.name], f.version)
 }
 
-func NewShell(url string) (IpfsShell, error) {
+func NewShell(url string) (*IpfsShell, error) {
   Shell := shell.NewShell(url)
 
   store := make(map[string][]semver.Version)
@@ -56,7 +56,7 @@ func NewShell(url string) (IpfsShell, error) {
       continue
     }
 
-    store[f.name] = []semver.Version
+    store[f_name] = []semver.Version{}
 
     for _, v := range versions {
       version, err := semver.NewVersion(v.Name())
@@ -68,16 +68,16 @@ func NewShell(url string) (IpfsShell, error) {
     }
   }
 
-  return IpfsShell{ shell:Shell, sore:store }
+  return &IpfsShell{ shell:Shell, store:store }, nil
 }
 
 func (s *IpfsShell)List() []File {
   list := []File{}
 
   for name, versions := range s.store {
-    for _, vers := range f {
+    for _, vers := range versions {
       f := File{ name:name, version:vers }
-      list = append(list, new_file)
+      list = append(list, f)
     }
   }
   return list
@@ -90,7 +90,7 @@ func (s *IpfsShell)Has(f File) bool {
   }
 
   for _, vers := range versions {
-    if version.Major == f.version.Major && version.Minor >= f.version.Minor {
+    if vers.Major == f.version.Major && vers.Minor >= f.version.Minor {
       return true
     }
   }
