@@ -66,6 +66,7 @@ github.com/hashicorp/go-multierror v1.0.0 h1:iVjPR7a6H0tWELX5NxNe7bYopibicUzc7uP
 github.com/hashicorp/go-multierror v1.0.0/go.mod h1:dHtQlpGsu+cZNNAkkCN/P3hoUDHhCYQXV3UM06sGGrk=
 github.com/hashicorp/golang-lru v0.5.0/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ4Ao+sR/qLZy8=
 github.com/hashicorp/golang-lru v0.5.1/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ4Ao+sR/qLZy8=
+github.com/hashicorp/golang-lru v0.5.3 h1:YPkqC67at8FYaadspW/6uE0COsBxS2656RLEr8Bppgk=
 github.com/hashicorp/golang-lru v0.5.3/go.mod h1:iADmTwqILo4mZ8BN3D2Q6+9jd8WM5uGBxy+E8yxSoD4=
 github.com/hashicorp/golang-lru v0.5.4 h1:YDjusn29QI/Das2iO9M0BHnIbxPeyuCHsjMW+lJfyTc=
 github.com/hashicorp/golang-lru v0.5.4/go.mod h1:iADmTwqILo4mZ8BN3D2Q6+9jd8WM5uGBxy+E8yxSoD4=
@@ -84,7 +85,10 @@ github.com/ipfs/go-cid v0.0.5/go.mod h1:plgt+Y5MnOey4vO4UlUazGqdbEXuFYitED67Fexh
 github.com/ipfs/go-datastore v0.0.1/go.mod h1:d4KVXhMt913cLBEI/PXAy6ko+W7e9AhyAKBGh803qeE=
 github.com/ipfs/go-datastore v0.1.0/go.mod h1:d4KVXhMt913cLBEI/PXAy6ko+W7e9AhyAKBGh803qeE=
 github.com/ipfs/go-datastore v0.1.1/go.mod h1:w38XXW9kVFNp57Zj5knbKWM2T+KOZCGDRVNdgPHtbHw=
+github.com/ipfs/go-datastore v0.3.1 h1:SS1t869a6cctoSYmZXUk8eL6AzVXgASmKIWFNQkQ1jU=
 github.com/ipfs/go-datastore v0.3.1/go.mod h1:w38XXW9kVFNp57Zj5knbKWM2T+KOZCGDRVNdgPHtbHw=
+github.com/ipfs/go-datastore v0.4.2 h1:h8/n7WPzhp239kkLws+epN3Ic7YtcBPgcaXfEfdVDWM=
+github.com/ipfs/go-datastore v0.4.2/go.mod h1:SX/xMIKoCszPqp+z9JhPYCmoOoXTvaa13XEbGtsFUhA=
 github.com/ipfs/go-datastore v0.4.4 h1:rjvQ9+muFaJ+QZ7dN5B1MSDNQ0JVZKkkES/rMZmA8X8=
 github.com/ipfs/go-datastore v0.4.4/go.mod h1:SX/xMIKoCszPqp+z9JhPYCmoOoXTvaa13XEbGtsFUhA=
 github.com/ipfs/go-detect-race v0.0.1/go.mod h1:8BNT7shDZPo99Q74BpGMK+4D8Mn4j46UU0LZ723meps=
@@ -123,8 +127,12 @@ github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200324114532-0f66554d
 github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200324114710-990ba525511e/go.mod h1:RfMBVBZhWSW1u/nNAqQ58T0TM1yh9OLlIFB592R6mdw=
 github.com/jolatechno/mpi-peerstore v0.0.0-20200324113120-d4995b64c458 h1:DEuuMC0cHa6xmTIMCBFphovAW2525pM3wWrGjGYKcmQ=
 github.com/jolatechno/mpi-peerstore v0.0.0-20200324113120-d4995b64c458/go.mod h1:zfLnyQo8mmsrTYreJgicIirGj5Vr8YnEf+OyD1i4osE=
+github.com/jolatechno/mpi-peerstore v0.0.0-20200324123033-2aacb3fceefa h1:/quk+gX00kJl2ZyQGrmwM7IdYDVawNqgq9ooPabfTd8=
+github.com/jolatechno/mpi-peerstore v0.0.0-20200324123033-2aacb3fceefa/go.mod h1:d8aptYapVb/5Z/QddGgjMlhylImf97RdZrMqyt7ZVjY=
 github.com/jolatechno/mpi-peerstore/utils v0.0.0-20200324113120-d4995b64c458 h1:ZWebeDkJWgOyiMufWnEDqh9l1wucg3IYaOSotLwbcJk=
 github.com/jolatechno/mpi-peerstore/utils v0.0.0-20200324113120-d4995b64c458/go.mod h1:kjRuLmr/SCelGHcDq3SK8A9OPDm3s+zWNb7Gyv6bt6Q=
+github.com/jolatechno/mpi-peerstore/utils v0.0.0-20200324123033-2aacb3fceefa h1:D/rYZRy3w+sORVcmWrd88fY3Qbd0+44KLow59M0lWhs=
+github.com/jolatechno/mpi-peerstore/utils v0.0.0-20200324123033-2aacb3fceefa/go.mod h1:y6K/3EYaMNlvtFZ8RPeGMaeLEof85TCtQr098joggcc=
 github.com/jrick/logrotate v1.0.0/go.mod h1:LNinyqDIJnpAur+b8yyulnQw/wDuN1+BYKlTRt3OuAQ=
 github.com/kami-zh/go-capturer v0.0.0-20171211120116-e492ea43421d/go.mod h1:P2viExyCEfeWGU259JnaQ34Inuec4R38JCyBx2edgD0=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=
@@ -152,6 +160,7 @@ github.com/libp2p/go-flow-metrics v0.0.2/go.mod h1:HeoSNUrOJVK1jEpDqVEiUOIXqhbnS
 github.com/libp2p/go-flow-metrics v0.0.3 h1:8tAs/hSdNvUiLgtlSy3mxwxWP4I9y/jlkPFT7epKdeM=
 github.com/libp2p/go-flow-metrics v0.0.3/go.mod h1:HeoSNUrOJVK1jEpDqVEiUOIXqhbnS27omG0uWU5slZs=
 github.com/libp2p/go-libp2p v0.1.0/go.mod h1:6D/2OBauqLUoqcADOJpn9WbKqvaM07tDw68qHM0BxUM=
+github.com/libp2p/go-libp2p v0.5.0 h1:/nnb5mc2TK6TwknECsWIkfCwMTHv0AXbvzxlnVivfeg=
 github.com/libp2p/go-libp2p v0.5.0/go.mod h1:Os7a5Z3B+ErF4v7zgIJ7nBHNu2LYt8ZMLkTQUB3G/wA=
 github.com/libp2p/go-libp2p v0.5.2 h1:fjQUTyB7x/4XgO31OEWkJ5uFeHRgpoExlf0rXz5BO8k=
 github.com/libp2p/go-libp2p v0.5.2/go.mod h1:o2r6AcpNl1eNGoiWhRtPji03NYOvZumeQ6u+X6gSxnM=
@@ -180,6 +189,7 @@ github.com/libp2p/go-libp2p-crypto v0.1.0/go.mod h1:sPUokVISZiy+nNuTTH/TY+leRSxn
 github.com/libp2p/go-libp2p-discovery v0.1.0/go.mod h1:4F/x+aldVHjHDHuX85x1zWoFTGElt8HnoDzwkFZm29g=
 github.com/libp2p/go-libp2p-discovery v0.2.0 h1:1p3YSOq7VsgaL+xVHPi8XAmtGyas6D2J6rWBEfz/aiY=
 github.com/libp2p/go-libp2p-discovery v0.2.0/go.mod h1:s4VGaxYMbw4+4+tsoQTqh7wfxg97AEdo4GYBt6BadWg=
+github.com/libp2p/go-libp2p-kad-dht v0.5.0 h1:kDMtCftpQOL2s84/dZmw5z4NmBe6ByeDLKpcn6TcyxU=
 github.com/libp2p/go-libp2p-kad-dht v0.5.0/go.mod h1:42YDfiKXzIgaIexiEQ3rKZbVPVPziLOyHpXbOCVd814=
 github.com/libp2p/go-libp2p-kad-dht v0.5.2 h1:b10l1YIQk1R23skrvfbcU09yvepdkuMLIGdGuX/JRiA=
 github.com/libp2p/go-libp2p-kad-dht v0.5.2/go.mod h1:vRwh1sMmuxym6YFIHxICbxQ7rgY0ALkKuMKdmQSUnHE=
@@ -306,6 +316,7 @@ github.com/multiformats/go-multiaddr-fmt v0.1.0 h1:WLEFClPycPkp4fnIzoFoV9FVd49/e
 github.com/multiformats/go-multiaddr-fmt v0.1.0/go.mod h1:hGtDIW4PU4BqJ50gW2quDuPVjyWNZxToGUh/HwTZYJo=
 github.com/multiformats/go-multiaddr-net v0.0.1/go.mod h1:nw6HSxNmCIQH27XPGBuX+d1tnvM7ihcFwHMSstNAVUU=
 github.com/multiformats/go-multiaddr-net v0.1.0/go.mod h1:5JNbcfBOP4dnhoZOv10JJVkJO0pCCEf8mTnipAo2UZQ=
+github.com/multiformats/go-multiaddr-net v0.1.1 h1:jFFKUuXTXv+3ARyHZi3XUqQO+YWMKgBdhEvuGRfnL6s=
 github.com/multiformats/go-multiaddr-net v0.1.1/go.mod h1:5JNbcfBOP4dnhoZOv10JJVkJO0pCCEf8mTnipAo2UZQ=
 github.com/multiformats/go-multiaddr-net v0.1.2 h1:P7zcBH9FRETdPkDrylcXVjQLQ2t1JQtNItZULWNWgeg=
 github.com/multiformats/go-multiaddr-net v0.1.2/go.mod h1:QsWt3XK/3hwvNxZJp92iMQKME1qHfpYmyIjFVsSOY6Y=
@@ -318,6 +329,7 @@ github.com/multiformats/go-multihash v0.0.9/go.mod h1:YSLudS+Pi8NHE7o6tb3D8vrpKa
 github.com/multiformats/go-multihash v0.0.10/go.mod h1:YSLudS+Pi8NHE7o6tb3D8vrpKa63epEDmG8nTduyAew=
 github.com/multiformats/go-multihash v0.0.13 h1:06x+mk/zj1FoMsgNejLpy6QTvJqlSt/BhLEy87zidlc=
 github.com/multiformats/go-multihash v0.0.13/go.mod h1:VdAWLKTwram9oKAatUcLxBNUjdtcVwxObEQBtRfuyjc=
+github.com/multiformats/go-multistream v0.1.0 h1:UpO6jrsjqs46mqAK3n6wKRYFhugss9ArzbyUzU+4wkQ=
 github.com/multiformats/go-multistream v0.1.0/go.mod h1:fJTiDfXJVmItycydCnNx4+wSzZ5NwG2FEVAI30fiovg=
 github.com/multiformats/go-multistream v0.1.1 h1:JlAdpIFhBhGRLxe9W6Om0w++Gd6KMWoFPZL/dEnm9nI=
 github.com/multiformats/go-multistream v0.1.1/go.mod h1:KmHZ40hzVxiaiwlj3MEbYgK9JFk2/9UktWZAF54Du38=
