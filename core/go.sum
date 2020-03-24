@@ -118,6 +118,8 @@ github.com/jolatechno/ipfs-mpi/core/ipfs-interface v0.0.0-20200323230215-b55e271
 github.com/jolatechno/ipfs-mpi/core/ipfs-interface v0.0.0-20200323230215-b55e2713da6d/go.mod h1:IabzgGDe3eotoNQKkJzy0sl4M+VlMiq5rIR8fXqw+JY=
 github.com/jolatechno/ipfs-mpi/core/ipfs-interface v0.0.0-20200324092109-7a3650663324 h1:11H+VRVbIFtOKS4B4cbUZT6WHCS6zq6SVbxJy08Py94=
 github.com/jolatechno/ipfs-mpi/core/ipfs-interface v0.0.0-20200324092109-7a3650663324/go.mod h1:D+VL3OCrCnbZXYClp4+yHmIfL0Ipg5x412kSeBxALgE=
+github.com/jolatechno/ipfs-mpi/core/ipfs-interface v0.0.0-20200324093134-dac4e9af9888 h1:jIQEfu0Hf1Uobts/Jook+3ritDauBPS6Tm7MiL5fjeY=
+github.com/jolatechno/ipfs-mpi/core/ipfs-interface v0.0.0-20200324093134-dac4e9af9888/go.mod h1:AfWzUr96ECWIp3zDuhASp2Ehtyuv9p6ll2sXT0UJ7BA=
 github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200323224012-1277145ab164 h1:JGSENP2voaWsJ+I6rkdVNW4QsA9bwpTuqRrqwIfKRN0=
 github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200323224012-1277145ab164/go.mod h1:lxyUJp8btkfJOLQ0Pv0nMa4qvlmZiWhgOKbkop5e/Ps=
 github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200323224248-bbd1fe278ad8 h1:iW+3x8BHiNWkwDhuELYGcqvBPCQ6Qium8z31KS/qmGc=
@@ -130,6 +132,8 @@ github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200323230215-b55e2713
 github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200323230215-b55e2713da6d/go.mod h1:bPv2cx9zBS8i8uweyPaPskZ6h9hBMt46+W7CsdbsSA8=
 github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200324092109-7a3650663324 h1:xLF0Kj5blY44M6IOddFOVEs6e2y7079OE6G/VjyNLDQ=
 github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200324092109-7a3650663324/go.mod h1:QNws9WXuOCWrRo/jWlHz16Furk0I8B+qqB8brBn9TNg=
+github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200324093134-dac4e9af9888 h1:O/zeLYZj6NjEkfrrJJ3/74XqfKcm0tzkN1fYnpkmJls=
+github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200324093134-dac4e9af9888/go.mod h1:jF9idxX3QtDuA6QGCyhtrVX3RidZo5DJCbm/mZI+88M=
 github.com/jolatechno/mpi-peerstore v0.0.0-20200323150448-3331cef53d50/go.mod h1:Tbqcf1BYubConj/i4cFWr8f7IOcBGGxv0WcBL/Ap+xw=
 github.com/jrick/logrotate v1.0.0/go.mod h1:LNinyqDIJnpAur+b8yyulnQw/wDuN1+BYKlTRt3OuAQ=
 github.com/kami-zh/go-capturer v0.0.0-20171211120116-e492ea43421d/go.mod h1:P2viExyCEfeWGU259JnaQ34Inuec4R38JCyBx2edgD0=

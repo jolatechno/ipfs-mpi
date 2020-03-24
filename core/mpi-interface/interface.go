@@ -1,10 +1,13 @@
 package mpi
 
 import (
-  "github.com/jolatechno/ipfs-mpi/core/ipfs-interface"
-
   "github.com/coreos/go-semver/semver"
 )
+
+type File struct {
+  name string
+  version semver.Version
+}
 
 type Message struct {
   from string
@@ -23,7 +26,7 @@ func FromString(msg string) (Message, error){
   return Message{}, nil
 }
 
-func Load(f file.File) (Handler, error) {
+func Load(f File) (Handler, error) {
   //Loading the file
   return nil, nil
 }
