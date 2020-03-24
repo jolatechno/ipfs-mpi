@@ -113,6 +113,7 @@ github.com/jolatechno/ipfs-mpi/core/ipfs-interface v0.0.0-20200323224248-bbd1fe2
 github.com/jolatechno/ipfs-mpi/core/ipfs-interface v0.0.0-20200323224929-be3d43bb84a5/go.mod h1:8cNmZCh/iRKUcduQLm5Kt8mzV2i3vRV05Ymxv/eWdkc=
 github.com/jolatechno/ipfs-mpi/core/ipfs-interface v0.0.0-20200323225514-0b42a7b6caf3 h1:MkhNcgS6Rle6rh9rHnG1kjTxTpela4yEQPQzSntfS7Y=
 github.com/jolatechno/ipfs-mpi/core/ipfs-interface v0.0.0-20200323225514-0b42a7b6caf3/go.mod h1:GMD00f+rDeuD5oAFnL6JmnUZRIPOedpFKFeQS3KPLFg=
+github.com/jolatechno/ipfs-mpi/core/ipfs-interface v0.0.0-20200323230215-b55e2713da6d/go.mod h1:IabzgGDe3eotoNQKkJzy0sl4M+VlMiq5rIR8fXqw+JY=
 github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200323224012-1277145ab164 h1:JGSENP2voaWsJ+I6rkdVNW4QsA9bwpTuqRrqwIfKRN0=
 github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200323224012-1277145ab164/go.mod h1:lxyUJp8btkfJOLQ0Pv0nMa4qvlmZiWhgOKbkop5e/Ps=
 github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200323224248-bbd1fe278ad8 h1:iW+3x8BHiNWkwDhuELYGcqvBPCQ6Qium8z31KS/qmGc=
@@ -121,6 +122,7 @@ github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200323224929-be3d43bb
 github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200323224929-be3d43bb84a5/go.mod h1:EAIkr4T3LETnLzFV0nhetwzFRGYjy3GK6OJNvOmqf1M=
 github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200323225514-0b42a7b6caf3 h1:MFXGCvUcuWbyQW4OCSVQP3OdFb+umM1F2HbKITlle0c=
 github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200323225514-0b42a7b6caf3/go.mod h1:Vstowc6OYkRbIENrO0yYSIT2YYPPqnFUg12opfOYOSM=
+github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200323230215-b55e2713da6d/go.mod h1:bPv2cx9zBS8i8uweyPaPskZ6h9hBMt46+W7CsdbsSA8=
 github.com/jolatechno/mpi-peerstore v0.0.0-20200323150448-3331cef53d50/go.mod h1:Tbqcf1BYubConj/i4cFWr8f7IOcBGGxv0WcBL/Ap+xw=
 github.com/jrick/logrotate v1.0.0/go.mod h1:LNinyqDIJnpAur+b8yyulnQw/wDuN1+BYKlTRt3OuAQ=
 github.com/kami-zh/go-capturer v0.0.0-20171211120116-e492ea43421d/go.mod h1:P2viExyCEfeWGU259JnaQ34Inuec4R38JCyBx2edgD0=
