@@ -126,6 +126,8 @@ github.com/jolatechno/ipfs-mpi/core/ipfs-interface v0.0.0-20200324094005-0645d3c
 github.com/jolatechno/ipfs-mpi/core/ipfs-interface v0.0.0-20200324094005-0645d3cc728a/go.mod h1:h+erbG2QQslSjA5XHd5eFZqLgqHC79OQBn5u/cO/eZU=
 github.com/jolatechno/ipfs-mpi/core/ipfs-interface v0.0.0-20200324094630-1513bd1924a8 h1:xqmAigttOxZMzPUo0+SgX/cJVmaI4S8kVIVIa8OHCe4=
 github.com/jolatechno/ipfs-mpi/core/ipfs-interface v0.0.0-20200324094630-1513bd1924a8/go.mod h1:Zn1LjGfm25UIXyGZ9DVhmWB1zhits1CPYOKOpUoCpYQ=
+github.com/jolatechno/ipfs-mpi/core/ipfs-interface v0.0.0-20200324095226-6d35b6063fd6 h1:QTX93zmN9pixULSDPz/TG4SrlRkM77ovp32m5rVRtzs=
+github.com/jolatechno/ipfs-mpi/core/ipfs-interface v0.0.0-20200324095226-6d35b6063fd6/go.mod h1:qHUXz2XTfz3NLUNR8kkIu2Rx2s8fJ0RVI96EwBFT/qM=
 github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200323224012-1277145ab164 h1:JGSENP2voaWsJ+I6rkdVNW4QsA9bwpTuqRrqwIfKRN0=
 github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200323224012-1277145ab164/go.mod h1:lxyUJp8btkfJOLQ0Pv0nMa4qvlmZiWhgOKbkop5e/Ps=
 github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200323224248-bbd1fe278ad8 h1:iW+3x8BHiNWkwDhuELYGcqvBPCQ6Qium8z31KS/qmGc=
@@ -144,6 +146,7 @@ github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200324093455-f3aa788e
 github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200324093455-f3aa788e8394/go.mod h1:z5rtqmp18DjB+Klt8jKJfwDPLY/BdZgXWeg6/9kLqKc=
 github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200324094005-0645d3cc728a/go.mod h1:gHL/UWw+diuxZFiIMBGOuMzT5VlUUxHPGN+s0d/6dT8=
 github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200324094630-1513bd1924a8/go.mod h1:gHL/UWw+diuxZFiIMBGOuMzT5VlUUxHPGN+s0d/6dT8=
+github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200324095226-6d35b6063fd6/go.mod h1:PRrigiq0NQH1u+bwq3q/F/3CE8wOrhi8PFuI9RZI0/s=
 github.com/jolatechno/mpi-peerstore v0.0.0-20200323150448-3331cef53d50/go.mod h1:Tbqcf1BYubConj/i4cFWr8f7IOcBGGxv0WcBL/Ap+xw=
 github.com/jrick/logrotate v1.0.0/go.mod h1:LNinyqDIJnpAur+b8yyulnQw/wDuN1+BYKlTRt3OuAQ=
 github.com/kami-zh/go-capturer v0.0.0-20171211120116-e492ea43421d/go.mod h1:P2viExyCEfeWGU259JnaQ34Inuec4R38JCyBx2edgD0=
