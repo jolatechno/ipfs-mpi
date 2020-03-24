@@ -6,7 +6,7 @@ import (
 
 type File struct {
   name string
-  version semver.Version
+  version *semver.Version
 }
 
 type Message struct {

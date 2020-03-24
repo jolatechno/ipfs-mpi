@@ -17,7 +17,7 @@ const (
 
 type File struct {
   name string
-  version semver.Version
+  version *semver.Version
 }
 
 func (f *File)String() string{
@@ -26,14 +26,14 @@ func (f *File)String() string{
 
 type IpfsShell struct {
   shell *shell.Shell
-  store map[string][]semver.Version
+  store map[string][] *semver.Version
 }
 
 func (s *IpfsShell)Add(f File) {
   _, ok := s.store[f.name]
 
   if !ok {
-    s.store[f.name] = []semver.Version{}
+    s.store[f.name] = [] *semver.Version{}
   }
 
   s.store[f.name] = append(s.store[f.name], f.version)
@@ -42,7 +42,7 @@ func (s *IpfsShell)Add(f File) {
 func NewShell(url string) (*IpfsShell, error) {
   Shell := shell.NewShell(url)
 
-  store := make(map[string][]semver.Version)
+  store := make(map[string][] *semver.Version)
 
   files, err := ioutil.ReadDir(base_path)
   if err != nil {
@@ -56,7 +56,7 @@ func NewShell(url string) (*IpfsShell, error) {
       continue
     }
 
-    store[f_name] = []semver.Version{}
+    store[f_name] = [] *semver.Version{}
 
     for _, v := range versions {
       version, err := semver.NewVersion(v.Name())
@@ -64,7 +64,7 @@ func NewShell(url string) (*IpfsShell, error) {
         continue
       }
 
-      store[f.name] = append(store[f.name], version)
+      store[f_name] = append(store[f_name], version)
     }
   }
 
@@ -100,14 +100,14 @@ func (s *IpfsShell)Has(f File) bool {
 func (s *IpfsShell)Dowload(f File) error {
   if _, err := os.Stat(base_path + f.name); os.IsNotExist(err) {
     new_err := os.Mkdir(base_path + f.name, ModePerm)
-    if err != nil{
+    if new_err != nil{
       return err
     }
   } else if err != nil {
     return err
   }
 
-  err := Shell.Get(f.name, base_path + f.name + "/" + f.version.String())
+  err := s.shell.Get(f.name, base_path + f.name + "/" + f.version.String())
   if err != nil {
     return err
   }
@@ -118,7 +118,7 @@ func (s *IpfsShell)Dowload(f File) error {
 
 func (s *IpfsShell)Occupied() (int64, error) {
   var size int64
-  err := filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
+  err := filepath.Walk(base_path, func(_ string, info os.FileInfo, err error) error {
       if err != nil {
           return err
       }
