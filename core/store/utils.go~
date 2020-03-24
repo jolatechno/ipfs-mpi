@@ -10,8 +10,8 @@ import (
   "github.com/libp2p/go-libp2p-core/network"
   "github.com/libp2p/go-libp2p-core/peer"
 
-  "github.com/jolatechno/mpi-peerstore"
-  "github.com/jolatechno/ipfs-mpi/ipfs-interface"
+  "github.com/jolatecno/mpi-peerstore"
+  "github.com/jolatecno/ipfs-mpi/ipfs-interface"
 
   "github.com/coreos/go-semver/semver"
 )
