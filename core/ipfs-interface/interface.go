@@ -105,7 +105,7 @@ func (s *IpfsShell)Has(f File) bool {
   return false
 }
 
-func (s *IpfsShell)Del(f File) err {
+func (s *IpfsShell)Del(f File) error {
   if !s.Has(f){
     return errors.New("No file to delete")
   }
