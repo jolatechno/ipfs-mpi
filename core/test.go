@@ -18,7 +18,7 @@ const (
 )
 
 func main(){
-  /*ctx := context.Background()
+  ctx := context.Background()
 
   host, err := libp2p.New(ctx,
 		libp2p.ListenAddrs([]multiaddr.Multiaddr(config.ListenAddresses)...),
@@ -41,5 +41,5 @@ func main(){
   err = Store.Start()
   if err != nil {
 		panic(err)
-	}*/
+	}
 }
