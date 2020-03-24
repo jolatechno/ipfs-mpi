@@ -41,7 +41,7 @@ func NewStore(ctx context.Context, url string, host host.Host, BootstrapPeers []
 
 
 func (s *Store)Add(f file.File, ctx context.Context) error {
-  e := NewEntry(*s.host, s.routingDiscovery, f, s.shell)
+  e := NewEntry(&s.host, s.routingDiscovery, f, s.shell)
 
   err := e.InitEntry()
   if err != nil {
