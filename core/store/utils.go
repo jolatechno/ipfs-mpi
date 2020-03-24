@@ -82,7 +82,10 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
     			continue
     		}
 
-        reps := handler(*msg)
+        reps, err := handler(*msg)
+        if err != nil {
+          continue
+        }
 
         for _, rep := range reps{
           if e.store.Has(rep.To){
