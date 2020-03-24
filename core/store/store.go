@@ -5,7 +5,7 @@ import (
 
   "github.com/jolatechno/mpi-peerstore"
   "github.com/jolatechno/mpi-peerstore/utils"
-  "github.com/jolatechno/ipfs-mpi/ipfs-interface"
+  "github.com/jolatechno/ipfs-mpi/core/ipfs-interface"
 
   "github.com/libp2p/go-libp2p"
   "github.com/libp2p/go-libp2p-discovery"

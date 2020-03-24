@@ -1,7 +1,7 @@
 package mpi
 
 import (
-  "github.com/jolatechno/ipfs-mpi/ipfs-interface"
+  "github.com/jolatechno/ipfs-mpi/core/ipfs-interface"
 
   "github.com/coreos/go-semver/semver"
 )
