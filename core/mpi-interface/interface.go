@@ -4,6 +4,13 @@ import (
   "github.com/coreos/go-semver/semver"
 )
 
+//TEMPORARY VAR :
+var (
+  handle = func(Message) ([]Message, error) {
+    return []Message{}, nil
+  }
+)
+
 type File struct {
   Name string
   Version *semver.Version
@@ -39,9 +46,4 @@ func Load(f File) (*Handler, error) {
 func Install(f File) error {
   //Install the file
   return nil
-}
-
-//for now:
-func handle(Message) ([]Message, error) {
-  return []Message{}, nil
 }
