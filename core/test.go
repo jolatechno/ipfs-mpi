@@ -2,6 +2,7 @@ package main
 
 import (
   "context"
+  "fmt"
 
   "github.com/jolatechno/ipfs-mpi/core/ipfs-interface"
   "github.com/jolatechno/ipfs-mpi/core/store"
@@ -14,10 +15,12 @@ import (
 
 var (
   url = "/ip4/127.0.0.1/tcp/5001"
-  examplesHash = "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv"
+  examplesHash = "QmddRNU2VWkpm8FaK2S4QcXCHD3x5kUSiDpKLa1MttRUso"
   BootstrapPeers = []maddr.Multiaddr{}
   Id = protocol.ID("test/0.0.0")
   ListenAddresses = []maddr.Multiaddr{}
+
+  path = "/interpretors"
 )
 
 func main(){
@@ -30,7 +33,7 @@ func main(){
 		panic(err)
 	}
 
-	Store, err := store.NewStore(ctx, url, host, BootstrapPeers)
+	Store, err := store.NewStore(ctx, url, host, BootstrapPeers, Id, path, examplesHash)
   if err != nil {
 		panic(err)
 	}
@@ -40,8 +43,8 @@ func main(){
 		panic(err)
 	}
 
-  Store.Add(file.File{ Name:examplesHash, Version:vers})
-  err = Store.Start(ctx, Id)
+  Store.Get()
+  err = Store.Start(ctx)
   if err != nil {
 		panic(err)
 	}

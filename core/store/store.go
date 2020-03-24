@@ -18,10 +18,11 @@ type Store struct {
   routingDiscovery *discovery.RoutingDiscovery
   shell *file.IpfsShell
   protocol protocol.ID
+  maxsize uint64
 }
 
-func NewStore(ctx context.Context, url string, host host.Host, BootstrapPeers []maddr.Multiaddr, base protocol.ID) (*Store, error){
-  shell, err := file.NewShell(url)
+func NewStore(ctx context.Context, url string, host host.Host, BootstrapPeers []maddr.Multiaddr, base protocol.ID, path string, ipfs_store string, maxsize uint64) (*Store, error){
+  shell, err := file.NewShell(url, path, ipfs_store)
   if err != nil {
     return nil, err
   }
@@ -33,15 +34,24 @@ func NewStore(ctx context.Context, url string, host host.Host, BootstrapPeers []
 
   store := make(map[file.File] *Entry)
 
-  return &Store{ store:store, host:nil, routingDiscovery:routingDiscovery, shell:shell, protocol:base }, nil
+  return &Store{ store:store, host:nil, routingDiscovery:routingDiscovery, shell:shell, protocol:base, maxsize:maxsize }, nil
 }
 
 
-func (s *Store)Add(f file.File, ctx context.Context){
+func (s *Store)Add(f file.File, ctx context.Context) error {
   e := NewEntry(s.host, s.routingDiscovery, f, s.shell)
-  e.InitEntry()
-  e.LoadEntry(ctx, s.protocol)
+  err := e.InitEntry()
+  if err != nil {
+    return err
+  }
+
+  err = e.LoadEntry(ctx, s.protocol)
+  if err != nil {
+    return err
+  }
+
   s.store[f] = e
+  return nil
 }
 
 func (s *Store)Del(f file.File) error{
@@ -59,9 +69,16 @@ func (s *Store)Start(ctx context.Context) error{
   return nil
 }
 
-func (s *Store)Get(ctx context.Context){
-  f := s.shell.Get()
-  s.Add(f, ctx)
-  s.store[f].InitEntry()
-  s.store[f].LoadEntry(ctx, s.protocol)
+func (s *Store)Get(ctx context.Context) error{
+  used, err := s.shell.Occupied()
+  if err != nil {
+    return err
+  }
+
+  f, err := s.shell.Get(s.maxsize - used)
+  if err != nil {
+    return err
+  }
+
+  return s.Add(*f, ctx)
 }
