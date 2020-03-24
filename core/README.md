@@ -12,14 +12,26 @@
 go build -o main
 ```
 
-For more detail consult : `./core -h`
-
 ## Usage
 
-Use different terminal windows to run
+You should first launch the ipfs daemon with `ipfs daemon` wich will output :
 
 ```
-./main
+API server listening on /ip4/127.0.0.1/tcp/5001
+```
+
+Where `/ip4/127.0.0.1/tcp/5001` is the url of the ipfs daemon.
+
+You can then run ipfs-mpi using :
+
+```
+./main -ipfs-api  /ip4/127.0.0.1/tcp/5001 -ipfs-store SomeIpfsDirectory/ -listen /ip4/YourIp/tcp/6666
+```
+
+For example :
+
+```
+./main -ipfs-api  /ip4/127.0.0.1/tcp/5001 -ipfs-store QmRfk8DdfrPQUxxThhgRxpPYvoa9qpjwV1veqXaSYgrrWf/ -listen /ip4/192.168.1.12/tcp/6666
 ```
 
 ## Architecture
