@@ -94,8 +94,9 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
 
     keys := make([]string, len(peers))
     i := 0
-    for i := 0; addr := range peers; i++ {
+    for addr := range peers {
       keys[i] = addr
+      i++
     }
 
     return host_addr, keys
