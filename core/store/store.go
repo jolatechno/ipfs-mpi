@@ -27,10 +27,10 @@ type Store struct {
 
 func NewStore(ctx context.Context, host host.Host, base protocol.ID) (*Store, error) {
   store := make(map[file.File] *Entry)
-  return &Store{ store:store, host:host, routingDiscovery:nil, shell:nil, api:nil, protocol:base, maxsize:-1, path:"" }, nil
+  return &Store{ store:store, host:host, routingDiscovery:nil, shell:nil, api:nil, protocol:base, maxsize:1, path:"" }, nil
 }
 
-func (s *Store)StartDiscovery(BootstrapPeers []maddr.Multiaddr) error{
+func (s *Store)StartDiscovery(ctx context.Context, BootstrapPeers []maddr.Multiaddr) error{
   routingDiscovery, err := utils.NewKadmeliaDHT(ctx, host, BootstrapPeers)
   if err != nil {
     return err
@@ -44,7 +44,7 @@ func (s *Store)StartShell(url string, path string, ipfs_store string, maxsize ui
   if _, err := os.Stat(path); os.IsNotExist(err) {
     os.MkdirAll(path, file.ModePerm)
   } else if err != nil {
-    return nil, err
+    return err
   }
 
   shell, err := file.NewShell(url, path, ipfs_store)
@@ -55,7 +55,7 @@ func (s *Store)StartShell(url string, path string, ipfs_store string, maxsize ui
   s.shell = shell
   s.path = path
   s.maxsize = maxsize
-  s.shell
+  s.shell = shell
   return nil
 }
 

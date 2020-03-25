@@ -51,7 +51,10 @@ func main(){
 		panic(err)
 	}
 
-  err := Store.StartDiscovery(config.BootstrapPeers)
+  err := Store.StartDiscovery(
+    ctx,
+    config.BootstrapPeers),
+  )
   if err != nil {
 		panic(err)
 	}

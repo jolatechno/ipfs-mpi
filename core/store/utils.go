@@ -44,7 +44,7 @@ func (e *Entry)InitEntry() error{
 func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
   handler := mpi.Load(e.path + e.file.String(),
   func(msg mpi.Message) error {
-    return s.api.Push(msg)
+    return e.api.Push(msg)
   })
 
   discoveryHandler := func (p *peerstore.Peerstore, id peer.ID) {
@@ -71,19 +71,19 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
     })
 	}
 
-  messageHandler := func(msg Message) error{
-    if e.store.Has(rep.To){
-      e.store.Write(rep.To, rep.String()) // pass on the responces
+  messageHandler := func(msg mpi.Message) error{
+    if e.store.Has(msg.To){
+      e.store.Write(msg.To, msg.String()) // pass on the responces
       return nil
     }
 
-    ID, err := peer.IDB58Decode(rep.To)
+    ID, err := peer.IDB58Decode(msg.To)
     if err != nil {
       return err
     }
 
     discoveryHandler(&e.store, ID)
-    e.store.Write(rep.To, rep.String()) // pass on the responces
+    e.store.Write(msg.To, rep.String()) // pass on the responces
     return nil
   }
 
