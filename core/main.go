@@ -28,6 +28,11 @@ func main(){
     host,
     store.Config(config),
   )
+  if err != nil {
+		panic(err)
+	}
+
+  fmt.Printf("Api listening on: /127.0.0.1:%d\n ", config.Api_port)
 
   err = Store.Init(ctx)
   if err != nil {
