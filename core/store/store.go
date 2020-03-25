@@ -31,7 +31,7 @@ func NewStore(ctx context.Context, host host.Host, base protocol.ID) (*Store, er
 }
 
 func (s *Store)StartDiscovery(ctx context.Context, BootstrapPeers []maddr.Multiaddr) error{
-  routingDiscovery, err := utils.NewKadmeliaDHT(ctx, host, BootstrapPeers)
+  routingDiscovery, err := utils.NewKadmeliaDHT(ctx, s.host, BootstrapPeers)
   if err != nil {
     return err
   }

@@ -83,11 +83,11 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
     }
 
     discoveryHandler(&e.store, ID)
-    e.store.Write(msg.To, rep.String()) // pass on the responces
+    e.store.Write(msg.To, msg.String()) // pass on the responces
     return nil
   }
 
-  api.AddHandler(messageHandler)
+  e.api.AddHandler(messageHandler)
 
   StreamHandler := func(stream network.Stream) {
 		// Create a buffer stream for non blocking read and write.
