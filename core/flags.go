@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"strings"
 
 	"github.com/jolatechno/ipfs-mpi/core/store"
 )

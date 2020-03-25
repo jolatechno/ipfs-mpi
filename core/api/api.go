@@ -12,8 +12,8 @@ import (
 
 type Api struct {
   server *http.Server
-  handlers map[string]handler
-  resp map[int] chan mpi.Message
+  handlers *map[string]handler
+  resp *map[int] chan mpi.Message
 }
 
 type handler struct{
@@ -31,8 +31,10 @@ type messages struct {
   messages []mpi.Message
 }
 
-func NewApi(port int, ReadTimeout int, WriteTimeout int) (*Api, error){
-  a := Api{}
+func NewApi(port int, ReadTimeout int, WriteTimeout int) *Api{
+  handlers := make(map[string]handler)
+  resp := make(map[int] chan mpi.Message)
+
   handle := func(w http.ResponseWriter, r *http.Request){
     file := r.Header.Get("File")
     if file == "" {
@@ -40,7 +42,7 @@ func NewApi(port int, ReadTimeout int, WriteTimeout int) (*Api, error){
       return
     }
 
-    handler, ok := a.handlers[file]
+    handler, ok := handlers[file]
     if !ok {
       http.Error(w, "no such file", 1)
       return
@@ -78,16 +80,16 @@ func NewApi(port int, ReadTimeout int, WriteTimeout int) (*Api, error){
         return
       }
 
-      a.resp[msg.Pid] = make(chan mpi.Message)
+      resp[msg.Pid] = make(chan mpi.Message)
       err = handler.handler(msg.messages)
       if err != nil {
         http.Error(w, err.Error(), 1)
         return
       }
 
-      resp := messages{ messages:[]mpi.Message{}}
+      res := messages{ messages:[]mpi.Message{}}
       for i := 0; i < int_expected ; i++ {
-        resp.messages = append(resp.messages, <- a.resp[msg.Pid])
+        res.messages = append(res.messages, <- resp[msg.Pid])
       }
 
       js, err := json.Marshal(resp)
@@ -100,7 +102,7 @@ func NewApi(port int, ReadTimeout int, WriteTimeout int) (*Api, error){
     }
   }
 
-  a.server = &http.Server{
+  server := &http.Server{
   	Addr:           fmt.Sprintf(":%d", port),
   	Handler:        http.HandlerFunc(handle),
   	ReadTimeout:    time.Duration(ReadTimeout) * time.Second,
@@ -109,18 +111,18 @@ func NewApi(port int, ReadTimeout int, WriteTimeout int) (*Api, error){
   }
 
   go func(){
-    panic(a.server.ListenAndServe())
+    panic(server.ListenAndServe())
   }()
 
-  return &a, nil
+  return &Api{ server:server, handlers:&handlers, resp:&resp}
 }
 
 func (a *Api)AddHandler(key string, handle func([]mpi.Message) error, list func() (string, []string)) {
-  a.handlers[key] = handler{ handler:handle, list:list }
+  (*a.handlers)[key] = handler{ handler:handle, list:list }
 }
 
 func (a *Api)Push(msg mpi.Message) error{
-  c, ok := a.resp[msg.Pid]
+  c, ok := (*a.resp)[msg.Pid]
   if !ok {
     return errors.New("no such pid")
   }

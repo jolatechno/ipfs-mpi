@@ -44,10 +44,7 @@ if _, err := os.Stat(config.Path); os.IsNotExist(err) {
     return nil, err
   }
 
-  api, err := api.NewApi(config.Api_port, config.ReadTimeout, config.WriteTimeout)
-  if err != nil {
-    return nil, err
-  }
+  api := api.NewApi(config.Api_port, config.ReadTimeout, config.WriteTimeout)
 
   return &Store{ store:store, host:host, routingDiscovery:routingDiscovery, shell:shell, api:api, protocol:proto, maxsize:config.Maxsize, path:config.Path }, nil
 }
