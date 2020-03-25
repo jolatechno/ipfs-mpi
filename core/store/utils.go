@@ -47,7 +47,7 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
     return e.api.Push(msg)
   })
 
-  fmt.Println(e.file, e.Store)
+  fmt.Println(e.Store.Host)
 
   discoveryHandler := func (p *peerstore.Peerstore, id peer.ID) {
 		Protocol := protocol.ID(e.file.String() + "//" + string(base))
