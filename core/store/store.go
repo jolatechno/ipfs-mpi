@@ -6,6 +6,7 @@ import (
 
   "github.com/jolatechno/mpi-peerstore/utils"
   "github.com/jolatechno/ipfs-mpi/core/ipfs-interface"
+  "github.com/jolatechno/ipfs-mpi/core/api"
 
   "github.com/libp2p/go-libp2p-core/protocol"
   "github.com/libp2p/go-libp2p-discovery"
@@ -18,12 +19,28 @@ type Store struct {
   host host.Host
   routingDiscovery *discovery.RoutingDiscovery
   shell *file.IpfsShell
+  api *api.Api
   protocol protocol.ID
   maxsize uint64
   path string
 }
 
-func NewStore(ctx context.Context, url string, host host.Host, BootstrapPeers []maddr.Multiaddr, base protocol.ID, path string, ipfs_store string, maxsize uint64) (*Store, error) {
+func NewStore(ctx context.Context, host host.Host, base protocol.ID) (*Store, error) {
+  store := make(map[file.File] *Entry)
+  return &Store{ store:store, host:host, routingDiscovery:nil, shell:nil, api:nil, protocol:base, maxsize:-1, path:"" }, nil
+}
+
+func (s *Store)StartDiscovery(BootstrapPeers []maddr.Multiaddr) error{
+  routingDiscovery, err := utils.NewKadmeliaDHT(ctx, host, BootstrapPeers)
+  if err != nil {
+    return err
+  }
+
+  s.routingDiscovery = routingDiscovery
+  return nil
+}
+
+func (s *Store)StartShell(url string, path string, ipfs_store string, maxsize uint64) error {
   if _, err := os.Stat(path); os.IsNotExist(err) {
     os.MkdirAll(path, file.ModePerm)
   } else if err != nil {
@@ -32,22 +49,28 @@ func NewStore(ctx context.Context, url string, host host.Host, BootstrapPeers []
 
   shell, err := file.NewShell(url, path, ipfs_store)
   if err != nil {
-    return nil, err
-  }
-  routingDiscovery, err := utils.NewKadmeliaDHT(ctx, host, BootstrapPeers)
-
-  if err != nil {
-    return nil, err
+    return err
   }
 
-  store := make(map[file.File] *Entry)
-
-  return &Store{ store:store, host:host, routingDiscovery:routingDiscovery, shell:shell, protocol:base, maxsize:maxsize, path:path }, nil
+  s.shell = shell
+  s.path = path
+  s.maxsize = maxsize
+  s.shell
+  return nil
 }
 
+func (s *Store)StartApi(port int, ReadTimeout int, WriteTimeout int) error {
+  api, err := api.NewApi(port, ReadTimeout, WriteTimeout)
+  if err != nil {
+    return err
+  }
+
+  s.api = api
+  return nil
+}
 
 func (s *Store)Add(f file.File, ctx context.Context) error {
-  e := NewEntry(&s.host, s.routingDiscovery, f, s.shell, s.path)
+  e := NewEntry(&s.host, s.routingDiscovery, f, s.shell, s.api, s.path )
 
   err := e.InitEntry()
   if err != nil {

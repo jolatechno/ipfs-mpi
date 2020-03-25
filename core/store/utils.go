@@ -14,16 +14,18 @@ import (
   "github.com/jolatechno/mpi-peerstore"
   "github.com/jolatechno/ipfs-mpi/core/ipfs-interface"
   "github.com/jolatechno/ipfs-mpi/core/mpi-interface"
+  "github.com/jolatechno/ipfs-mpi/core/api"
 )
 
 type Entry struct {
   store peerstore.Peerstore
   file file.File
   shell *file.IpfsShell
+  api *api.Api
   path string
 }
 
-func NewEntry(host *host.Host, routingDiscovery *discovery.RoutingDiscovery, f file.File, shell *file.IpfsShell, path string) *Entry {
+func NewEntry(host *host.Host, routingDiscovery *discovery.RoutingDiscovery, f file.File, shell *file.IpfsShell, api *api.Api, path string) *Entry {
   rdv := f.String()
   p := peerstore.NewPeerstore(host, routingDiscovery, rdv)
 
@@ -40,7 +42,10 @@ func (e *Entry)InitEntry() error{
 }
 
 func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
-  handler := mpi.Load(e.path + e.file.String())
+  handler := mpi.Load(e.path + e.file.String(),
+  func(msg mpi.Message) error {
+    return s.api.Push(msg)
+  })
 
   discoveryHandler := func (p *peerstore.Peerstore, id peer.ID) {
 		Protocol := protocol.ID(e.file.String() + "//" + string(base))
@@ -66,6 +71,24 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
     })
 	}
 
+  messageHandler := func(msg Message) error{
+    if e.store.Has(rep.To){
+      e.store.Write(rep.To, rep.String()) // pass on the responces
+      return nil
+    }
+
+    ID, err := peer.IDB58Decode(rep.To)
+    if err != nil {
+      return err
+    }
+
+    discoveryHandler(&e.store, ID)
+    e.store.Write(rep.To, rep.String()) // pass on the responces
+    return nil
+  }
+
+  api.AddHandler(messageHandler)
+
   StreamHandler := func(stream network.Stream) {
 		// Create a buffer stream for non blocking read and write.
 		rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
@@ -88,17 +111,7 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
         }
 
         for _, rep := range reps{
-          if e.store.Has(rep.To){
-            e.store.Write(rep.To, rep.String()) // pass on the responces
-            continue
-          }
-
-          ID, err := peer.IDB58Decode(rep.To)
-          if err != nil {
-            continue
-          }
-          discoveryHandler(&e.store, ID)
-          e.store.Write(rep.To, rep.String()) // pass on the responces
+          messageHandler(rep)
         }
       }
     }()
