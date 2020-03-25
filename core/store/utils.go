@@ -71,8 +71,6 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
     })
 	}
 
-  fmt.Println(discoveryHandler)
-
   messageHandler := func(msgs []mpi.Message) error{
     for _, msg := range msgs {
       if e.Store.Has(msg.To){
@@ -90,8 +88,6 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
     return nil
   }
 
-  fmt.Println(messageHandler)
-
   list := func() (string, []string) {
     host_addr := peer.IDB58Encode((*e.Store.Host).ID())
     peers := e.Store.Store
@@ -105,8 +101,6 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
 
     return host_addr, keys
   }
-
-  fmt.Println(list)
 
   e.api.AddHandler(e.file.String(), messageHandler, list)
 
