@@ -6,6 +6,10 @@
 
 Message Passing Interface computing using ipfs as a back-bone to build computational pool.
 
+# Getting started
+
+Refer to the Gide in the core directory readme [core](./core).
+
 ### WARNING : Development in progress, might contain bug
 
 # ToDo
