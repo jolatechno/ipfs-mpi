@@ -57,10 +57,9 @@ func NewApi(port int, ReadTimeout int, WriteTimeout int) (*Api, error){
   	MaxHeaderBytes: 1 << 20,
   }
 
-  err := a.server.ListenAndServe()
-  if err != nil {
-    return nil, err
-  }
+  go func(){
+    panic(a.server.ListenAndServe())
+  }()
 
   return &a, nil
 }
