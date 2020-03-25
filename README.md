@@ -8,7 +8,7 @@ Message Passing Interface computing using ipfs as a back-bone to build computati
 
 # Getting started
 
-Refer to the Gide in the core directory readme [core](./core).
+Refer to the Gide in the [core](./core) directory readme.
 
 ### WARNING : Development in progress, might contain bug
 
