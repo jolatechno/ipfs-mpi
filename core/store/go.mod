@@ -1,8 +1,9 @@
 module github.com/jolatechno/ipfs-mpi/core/store
 
 require (
-	github.com/jolatechno/ipfs-mpi/core/ipfs-interface v0.0.0-20200324224019-38372f1caf46
-	github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200324224019-38372f1caf46
+	github.com/jolatechno/ipfs-mpi/core/api v0.0.0-20200325090900-8779a4ce0916
+	github.com/jolatechno/ipfs-mpi/core/ipfs-interface v0.0.0-20200325090900-8779a4ce0916
+	github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200325090900-8779a4ce0916
 	github.com/jolatechno/mpi-peerstore v0.0.0-20200324175431-bce8d0c3e565
 	github.com/jolatechno/mpi-peerstore/utils v0.0.0-20200324175431-bce8d0c3e565
 	github.com/libp2p/go-libp2p-core v0.3.0

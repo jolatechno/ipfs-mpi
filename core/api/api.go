@@ -65,11 +65,11 @@ func NewApi(port int, ReadTimeout int, WriteTimeout int) (*Api, error){
   return &a, nil
 }
 
-func (a *api)AddHandler(key string, handle func(mpi.Message) error) {
+func (a *Api)AddHandler(key string, handle func(mpi.Message) error) {
   a.handlers[key] = handle
 }
 
-func (a *api)Push(msg mpi.Message) error{
+func (a *Api)Push(msg mpi.Message) error{
   c, ok := a.resp[msg.Pid]
   if !ok {
     return errors.New("no such pid")
