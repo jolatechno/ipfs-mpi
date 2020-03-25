@@ -2,7 +2,7 @@ module github.com/jolatechno/ipfs-mpi/core
 
 require (
 	github.com/coreos/go-semver v0.3.0
-	github.com/jolatechno/ipfs-mpi/core/store v0.0.0-20200325120307-9e7ffab8056e
+	github.com/jolatechno/ipfs-mpi/core/store v0.0.0-20200325120411-ebdfb4576bb1
 	github.com/libp2p/go-libp2p v0.5.0
 	github.com/libp2p/go-libp2p-core v0.3.0
 	github.com/multiformats/go-multiaddr v0.2.0
