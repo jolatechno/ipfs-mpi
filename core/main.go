@@ -27,46 +27,8 @@ func main(){
 	Store, err := store.NewStore(
     ctx,
     host,
-    protocol.ID(config.ipfs_store + config.ProtocolID),
-
+    store.Config(config),
   )
-  if err != nil {
-		panic(err)
-	}
-
-  err = Store.StartShell(
-    config.url,
-    config.path,
-    config.ipfs_store,
-    config.maxsize,
-  )
-  if err != nil {
-		panic(err)
-	}
-
-  fmt.Println("Successfully connected to ipfs-api on:", config.url)
-  fmt.Println("Connected to:", config.ipfs_store)
-
-  err = Store.StartApi(
-    config.api_port,
-    config.ReadTimeout,
-    config.WriteTimeout,
-  )
-  if err != nil {
-		panic(err)
-	}
-
-  fmt.Println("Api listening on: /127.0.0.1:", config.api_port)
-
-  err = Store.StartDiscovery(
-    ctx,
-    config.BootstrapPeers,
-  )
-  if err != nil {
-		panic(err)
-	}
-
-  fmt.Println("Successfully started peer discovery")
 
   err = Store.Init(ctx)
   if err != nil {

@@ -25,48 +25,45 @@ type Store struct {
   path string
 }
 
-func NewStore(ctx context.Context, host host.Host, base protocol.ID) (*Store, error) {
-  store := make(map[file.File] Entry)
-  return &Store{ store:store, host:host, routingDiscovery:nil, shell:nil, api:nil, protocol:base, maxsize:1, path:"" }, nil
+type Config struct {
+	url string
+	path string
+	ipfs_store string
+	BootstrapPeers []maddr.Multiaddr
+	ListenAddresses []maddr.Multiaddr
+	ProtocolID string
+	maxsize uint64
+	api_port int
+	WriteTimeout int
+	ReadTimeout int
 }
 
-func (s *Store)StartDiscovery(ctx context.Context, BootstrapPeers []maddr.Multiaddr) error{
-  routingDiscovery, err := utils.NewKadmeliaDHT(ctx, s.host, BootstrapPeers)
+func NewStore(ctx context.Context, host host.Host, config Config) (*Store, error) {
+  store := make(map[file.File] Entry)
+  proto := protocol.ID(config.ipfs_store + config.ProtocolID)
+
+  routingDiscovery, err := utils.NewKadmeliaDHT(ctx, s.host, Config.BootstrapPeers)
   if err != nil {
     return err
   }
 
-  s.routingDiscovery = routingDiscovery
-  return nil
-}
-
-func (s *Store)StartShell(url string, path string, ipfs_store string, maxsize uint64) error {
-  if _, err := os.Stat(path); os.IsNotExist(err) {
-    os.MkdirAll(path, file.ModePerm)
+if _, err := os.Stat(config.path); os.IsNotExist(err) {
+    os.MkdirAll(config.path, file.ModePerm)
   } else if err != nil {
     return err
   }
 
-  shell, err := file.NewShell(url, path, ipfs_store)
+  shell, err := file.NewShell(config.url, config.path, config.ipfs_store)
   if err != nil {
     return err
   }
 
-  s.shell = shell
-  s.path = path
-  s.maxsize = maxsize
-  s.shell = shell
-  return nil
-}
-
-func (s *Store)StartApi(port int, ReadTimeout int, WriteTimeout int) error {
-  api, err := api.NewApi(port, ReadTimeout, WriteTimeout)
+  api, err := api.NewApi(config.port, config.ReadTimeout, config.WriteTimeout)
   if err != nil {
     return err
   }
 
-  s.api = api
-  return nil
+  return &Store{ store:store, host:host, routingDiscovery:routingDiscovery, shell:shell, api:api, protocol:proto, maxsize:config.maxsize, path:config.path }, nil
 }
 
 func (s *Store)Init(ctx context.Context) error {
@@ -76,7 +73,6 @@ func (s *Store)Init(ctx context.Context) error {
     e := NewEntry(&s.host, s.routingDiscovery, f, s.shell, s.api, s.path)
     err := e.LoadEntry(ctx, s.protocol)
     if err != nil {
-      delete(s.store, f)
       return err
     }
 

@@ -116,11 +116,7 @@ func NewApi(port int, ReadTimeout int, WriteTimeout int) (*Api, error){
 }
 
 func (a *Api)AddHandler(key string, handle func([]mpi.Message) error, list func() (string, []string)) {
-  handl := handler{ handler:handle, list:list }
-
-  fmt.Println(key, handl)
-
-  a.handlers[key] = handl
+  a.handlers[key] = handler{ handler:handle, list:list }
 }
 
 func (a *Api)Push(msg mpi.Message) error{
