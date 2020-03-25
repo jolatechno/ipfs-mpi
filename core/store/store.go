@@ -42,25 +42,25 @@ func NewStore(ctx context.Context, host host.Host, config Config) (*Store, error
   store := make(map[file.File] Entry)
   proto := protocol.ID(config.ipfs_store + config.ProtocolID)
 
-  routingDiscovery, err := utils.NewKadmeliaDHT(ctx, s.host, Config.BootstrapPeers)
+  routingDiscovery, err := utils.NewKadmeliaDHT(ctx, host, config.BootstrapPeers)
   if err != nil {
-    return err
+    return nil, err
   }
 
 if _, err := os.Stat(config.path); os.IsNotExist(err) {
     os.MkdirAll(config.path, file.ModePerm)
   } else if err != nil {
-    return err
+    return nil, err
   }
 
   shell, err := file.NewShell(config.url, config.path, config.ipfs_store)
   if err != nil {
-    return err
+    return nil, err
   }
 
-  api, err := api.NewApi(config.port, config.ReadTimeout, config.WriteTimeout)
+  api, err := api.NewApi(config.api_port, config.ReadTimeout, config.WriteTimeout)
   if err != nil {
-    return err
+    return nil, err
   }
 
   return &Store{ store:store, host:host, routingDiscovery:routingDiscovery, shell:shell, api:api, protocol:proto, maxsize:config.maxsize, path:config.path }, nil
