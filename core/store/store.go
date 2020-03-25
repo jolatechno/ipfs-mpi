@@ -104,7 +104,7 @@ func (s *Store)Init(ctx context.Context) error {
     for{
       err := s.Get(ctx)
       if err != nil { //No new file to add
-        return
+        break
       }
     }
   }()
