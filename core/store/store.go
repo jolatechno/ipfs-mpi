@@ -94,12 +94,12 @@ func (s *Store)Init(ctx context.Context) error {
   files := (*s.shell).List()
 
   for _, f := range files {
-    e := NewEntry(&s.host, s.routingDiscovery, f, s.shell, s.api, s.path)
-    err := e.LoadEntry(ctx, s.protocol)
+    s.store[f] = NewEntry(&s.host, s.routingDiscovery, f, s.shell, s.api, s.path)
+    err := s.store[f].LoadEntry(ctx, s.protocol)
     if err != nil {
+      delete(s.store, f)
       return err
     }
-    s.store[f] = e
   }
 
   go func(){
