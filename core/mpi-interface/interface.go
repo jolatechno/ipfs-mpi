@@ -35,7 +35,7 @@ func Load(path string, responder func(Message) error) Handler {
     msgs := []Message{}
 
     if msg.Pid == -1 {
-      out, err := exec.Command("python3", path + "run.py", msg.String()).Output()
+      out, err := exec.Command("python3", path + "/run.py", msg.String()).Output()
       if err != nil{
         return msgs, nil
       }
@@ -56,6 +56,6 @@ func Load(path string, responder func(Message) error) Handler {
 }
 
 func Install(path string) error {
-  _, err := exec.Command("python3", path + "init.py").Output()
+  _, err := exec.Command("python3", path + "/init.py").Output()
 	return err
 }
