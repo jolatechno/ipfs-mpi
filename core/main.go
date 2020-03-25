@@ -56,7 +56,7 @@ func main(){
 		panic(err)
 	}
 
-  fmt.Println("Api listening on: /127.0.0.1/", config.api_port)
+  fmt.Println("Api listening on: /127.0.0.1:", config.api_port)
 
   err = Store.StartDiscovery(
     ctx,

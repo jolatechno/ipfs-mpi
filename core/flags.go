@@ -57,7 +57,7 @@ func ParseFlags() Config {
 	config.ProtocolID = "ipfs-mpi/1.0.0" //set to the ipfs-mpi version
 
 	flag.StringVar(&config.url, "ipfs-api", "/ip4/127.0.0.1/tcp/5001", "Local ipfs daemon url")
-	flag.StringVar(&config.path, "path", "interpretors/", "path to the interpretor directory")
+	flag.StringVar(&config.path, "path", "interpreter/", "path to the interpretor directory")
 	flag.StringVar(&config.ipfs_store, "ipfs-store", "QmRfk8DdfrPQUxxThhgRxpPYvoa9qpjwV1veqXaSYgrrWf/",
 		"Unique string to identify the ipfs store you are using")
 	flag.Var(&config.BootstrapPeers, "peer", "Adds a peer multiaddress to the bootstrap list")

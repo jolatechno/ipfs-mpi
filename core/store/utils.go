@@ -18,7 +18,7 @@ import (
 )
 
 type Entry struct {
-  store peerstore.Peerstore
+  Store peerstore.Peerstore
   file file.File
   shell *file.IpfsShell
   api *api.Api
@@ -29,7 +29,7 @@ func NewEntry(host *host.Host, routingDiscovery *discovery.RoutingDiscovery, f f
   rdv := f.String()
   p := peerstore.NewPeerstore(host, routingDiscovery, rdv)
 
-  return &Entry{ store:*p, file:f, shell:shell, path:path }
+  return &Entry{ Store:*p, file:f, shell:shell, path:path }
 }
 
 func (e *Entry)InitEntry() error{
@@ -49,7 +49,7 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
 
   discoveryHandler := func (p *peerstore.Peerstore, id peer.ID) {
 		Protocol := protocol.ID(e.file.String() + "//" + string(base))
-		stream, err := (*e.store.Host).NewStream(ctx, id, Protocol)
+		stream, err := (*e.Store.Host).NewStream(ctx, id, Protocol)
 
 		if err != nil {
 			return
@@ -57,7 +57,7 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
 
 		rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
 
-		e.store.Add(peer.IDB58Encode(id), func(str string) error{
+		e.Store.Add(peer.IDB58Encode(id), func(str string) error{
     	_, err := rw.WriteString(fmt.Sprintf("%s\n", str))
     	if err != nil {
     		return err
@@ -71,23 +71,37 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
     })
 	}
 
-  messageHandler := func(msg mpi.Message) error{
-    if e.store.Has(msg.To){
-      e.store.Write(msg.To, msg.String()) // pass on the responces
-      return nil
-    }
+  messageHandler := func(msgs []mpi.Message) error{
+    for _, msg := range msgs {
+      if e.Store.Has(msg.To){
+        e.Store.Write(msg.To, msg.String()) // pass on the responces
+      }
 
-    ID, err := peer.IDB58Decode(msg.To)
-    if err != nil {
-      return err
-    }
+      ID, err := peer.IDB58Decode(msg.To)
+      if err != nil {
+        return err
+      }
 
-    discoveryHandler(&e.store, ID)
-    e.store.Write(msg.To, msg.String()) // pass on the responces
+      discoveryHandler(&e.Store, ID)
+      e.Store.Write(msg.To, msg.String()) // pass on the responces
+    }
     return nil
   }
 
-  e.api.AddHandler(e.file.String(), messageHandler)
+  list := func() (string, []string) {
+    host_addr := peer.IDB58Encode((*e.Store.Host).ID())
+    peers := e.Store.Store
+
+    keys := make([]string, len(peers))
+    i := 0
+    for i := 0; addr := range peers; i++ {
+      keys[i] = addr
+    }
+
+    return host_addr, keys
+  }
+
+  e.api.AddHandler(e.file.String(), messageHandler, list)
 
   StreamHandler := func(stream network.Stream) {
 		// Create a buffer stream for non blocking read and write.
@@ -110,20 +124,18 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
           continue
         }
 
-        for _, rep := range reps{
-          messageHandler(rep)
-        }
+        messageHandler(reps)
       }
     }()
   }
 
-  e.store.SetHostId()
-  err := e.store.SetStreamHandler(base, StreamHandler)
+  e.Store.SetHostId()
+  err := e.Store.SetStreamHandler(base, StreamHandler)
   if err != nil {
     return err
   }
 
-  e.store.Listen(ctx, discoveryHandler)
-  e.store.Annonce(ctx)
+  e.Store.Listen(ctx, discoveryHandler)
+  e.Store.Annonce(ctx)
   return nil
 }
