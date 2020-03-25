@@ -26,20 +26,37 @@ func main(){
 
 	Store, err := store.NewStore(
     ctx,
-    config.url,
     host,
-    config.BootstrapPeers,
     protocol.ID(config.ipfs_store + config.ProtocolID),
+
+  )
+
+  err = Store.StartShell(
+    config.url,
     config.path,
     config.ipfs_store,
     config.maxsize,
   )
-
   if err != nil {
 		panic(err)
 	}
 
-  err = Store.Start(ctx)
+
+  err = Store.StartApi(
+    config.api_port,
+    config.ReadTimeout,
+    config.WriteTimeout,
+  )
+  if err != nil {
+		panic(err)
+	}
+
+  err := Store.StartDiscovery(config.BootstrapPeers)
+  if err != nil {
+		panic(err)
+	}
+
+  err = Store.Init(ctx)
   if err != nil {
 		panic(err)
 	}

@@ -90,7 +90,7 @@ func (s *Store)Del(f file.File) error {
   return s.shell.Del(f)
 }
 
-func (s *Store)Start(ctx context.Context) error {
+func (s *Store)Init(ctx context.Context) error {
   files := (*s.shell).List()
 
   for _, f := range files {

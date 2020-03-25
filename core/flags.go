@@ -46,6 +46,9 @@ type Config struct {
 	ListenAddresses addrList
 	ProtocolID string
 	maxsize uint64
+	api_port int
+	WriteTimeout int
+	ReadTimeout int
 }
 
 func ParseFlags() Config {
@@ -60,6 +63,9 @@ func ParseFlags() Config {
 	flag.Var(&config.BootstrapPeers, "peer", "Adds a peer multiaddress to the bootstrap list")
 	flag.Var(&config.ListenAddresses, "listen", "Adds a multiaddress to the listen list")
 	flag.Uint64Var(&config.maxsize, "maxsize", 100000, "Set the max use space")
+	flag.Uint64Var(&config.api_port, "p", 8000, "Set the api port")
+	flag.Uint64Var(&config.WriteTimeout, "WriteTimeout", 100, "Set the write timeout")
+	flag.Uint64Var(&config.ReadTimeout, "ReadTimeout", 1, "Set the max use space")
 	flag.Parse()
 
 	return config
