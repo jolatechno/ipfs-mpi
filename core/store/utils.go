@@ -87,7 +87,7 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
     return nil
   }
 
-  e.api.AddHandler(messageHandler)
+  e.api.AddHandler(e.file.String(), messageHandler)
 
   StreamHandler := func(stream network.Stream) {
 		// Create a buffer stream for non blocking read and write.
