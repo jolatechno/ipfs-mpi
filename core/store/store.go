@@ -11,7 +11,6 @@ import (
   "github.com/libp2p/go-libp2p-core/protocol"
   "github.com/libp2p/go-libp2p-discovery"
   "github.com/libp2p/go-libp2p-core/host"
-  maddr "github.com/multiformats/go-multiaddr"
 )
 
 type Store struct {
@@ -25,45 +24,32 @@ type Store struct {
   path string
 }
 
-type Config struct {
-	url string
-	path string
-	ipfs_store string
-	BootstrapPeers []maddr.Multiaddr
-	ListenAddresses []maddr.Multiaddr
-	ProtocolID string
-	maxsize uint64
-	api_port int
-	WriteTimeout int
-	ReadTimeout int
-}
-
 func NewStore(ctx context.Context, host host.Host, config Config) (*Store, error) {
   store := make(map[file.File] Entry)
-  proto := protocol.ID(config.ipfs_store + config.ProtocolID)
+  proto := protocol.ID(config.Ipfs_store + config.ProtocolID)
 
   routingDiscovery, err := utils.NewKadmeliaDHT(ctx, host, config.BootstrapPeers)
   if err != nil {
     return nil, err
   }
 
-if _, err := os.Stat(config.path); os.IsNotExist(err) {
-    os.MkdirAll(config.path, file.ModePerm)
+if _, err := os.Stat(config.Path); os.IsNotExist(err) {
+    os.MkdirAll(config.Path, file.ModePerm)
   } else if err != nil {
     return nil, err
   }
 
-  shell, err := file.NewShell(config.url, config.path, config.ipfs_store)
+  shell, err := file.NewShell(config.Url, config.Path, config.Ipfs_store)
   if err != nil {
     return nil, err
   }
 
-  api, err := api.NewApi(config.api_port, config.ReadTimeout, config.WriteTimeout)
+  api, err := api.NewApi(config.Api_port, config.ReadTimeout, config.WriteTimeout)
   if err != nil {
     return nil, err
   }
 
-  return &Store{ store:store, host:host, routingDiscovery:routingDiscovery, shell:shell, api:api, protocol:proto, maxsize:config.maxsize, path:config.path }, nil
+  return &Store{ store:store, host:host, routingDiscovery:routingDiscovery, shell:shell, api:api, protocol:proto, maxsize:config.Maxsize, path:config.Path }, nil
 }
 
 func (s *Store)Init(ctx context.Context) error {
