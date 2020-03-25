@@ -29,10 +29,10 @@ func NewEntry(host *host.Host, routingDiscovery *discovery.RoutingDiscovery, f f
   rdv := f.String()
   p := peerstore.NewPeerstore(host, routingDiscovery, rdv)
 
-  return &Entry{ Store:*p, file:f, shell:shell, path:path }
+  return &Entry{ Store:*p, file:f, shell:shell, api:api, path:path }
 }
 
-func (e *Entry)InitEntry() error{
+func (e *Entry)InitEntry() error {
   err := e.shell.Dowload(e.file)
   if err != nil {
     return err
@@ -102,7 +102,7 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
     return host_addr, keys
   }
 
-  (*e.api).AddHandler(e.file.String(), messageHandler, list)
+  e.api.AddHandler(e.file.String(), messageHandler, list)
 
   StreamHandler := func(stream network.Stream) {
 		// Create a buffer stream for non blocking read and write.
