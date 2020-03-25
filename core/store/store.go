@@ -15,7 +15,7 @@ import (
 )
 
 type Store struct {
-  store map[file.File] *Entry
+  store map[file.File] Entry
   host host.Host
   routingDiscovery *discovery.RoutingDiscovery
   shell *file.IpfsShell
@@ -26,7 +26,7 @@ type Store struct {
 }
 
 func NewStore(ctx context.Context, host host.Host, base protocol.ID) (*Store, error) {
-  store := make(map[file.File] *Entry)
+  store := make(map[file.File] Entry)
   return &Store{ store:store, host:host, routingDiscovery:nil, shell:nil, api:nil, protocol:base, maxsize:1, path:"" }, nil
 }
 
@@ -69,6 +69,32 @@ func (s *Store)StartApi(port int, ReadTimeout int, WriteTimeout int) error {
   return nil
 }
 
+func (s *Store)Init(ctx context.Context) error {
+  files := (*s.shell).List()
+
+  for _, f := range files {
+    e := NewEntry(&s.host, s.routingDiscovery, f, s.shell, s.api, s.path)
+    err := e.LoadEntry(ctx, s.protocol)
+    if err != nil {
+      delete(s.store, f)
+      return err
+    }
+
+    s.store[f] = *e
+  }
+
+  go func(){
+    for{
+      err := s.Get(ctx)
+      if err != nil { //No new file to add
+        return
+      }
+    }
+  }()
+
+  return nil
+}
+
 func (s *Store)Add(f file.File, ctx context.Context) error {
   e := NewEntry(&s.host, s.routingDiscovery, f, s.shell, s.api, s.path )
 
@@ -82,36 +108,12 @@ func (s *Store)Add(f file.File, ctx context.Context) error {
     return err
   }
 
-  s.store[f] = e
+  s.store[f] = *e
   return nil
 }
 
 func (s *Store)Del(f file.File) error {
   return s.shell.Del(f)
-}
-
-func (s *Store)Init(ctx context.Context) error {
-  files := (*s.shell).List()
-
-  for _, f := range files {
-    s.store[f] = NewEntry(&s.host, s.routingDiscovery, f, s.shell, s.api, s.path)
-    err := s.store[f].LoadEntry(ctx, s.protocol)
-    if err != nil {
-      delete(s.store, f)
-      return err
-    }
-  }
-
-  go func(){
-    for{
-      err := s.Get(ctx)
-      if err != nil { //No new file to add
-        return
-      }
-    }
-  }()
-
-  return nil
 }
 
 func (s *Store)Get(ctx context.Context) error {
