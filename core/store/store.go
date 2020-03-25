@@ -102,14 +102,14 @@ func (s *Store)Init(ctx context.Context) error {
     }
   }
 
-  go func(){
+  //go func(){
     for{
       err := s.Get(ctx)
       if err != nil { //No new file to add
         return
       }
     }
-  }()
+  //}()
 
   return nil
 }

@@ -101,7 +101,7 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
 
     return host_addr, keys
   }
-
+  
   e.api.AddHandler(e.file.String(), messageHandler, list)
 
   StreamHandler := func(stream network.Stream) {
