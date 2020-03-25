@@ -47,6 +47,8 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
     return e.api.Push(msg)
   })
 
+  fmt.Println(e.file, e.Store)
+
   discoveryHandler := func (p *peerstore.Peerstore, id peer.ID) {
 		Protocol := protocol.ID(e.file.String() + "//" + string(base))
 		stream, err := (*e.Store.Host).NewStream(ctx, id, Protocol)
@@ -101,7 +103,7 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
 
     return host_addr, keys
   }
-  
+
   e.api.AddHandler(e.file.String(), messageHandler, list)
 
   StreamHandler := func(stream network.Stream) {
