@@ -94,20 +94,22 @@ func (s *Store)Init(ctx context.Context) error {
   files := (*s.shell).List()
 
   for _, f := range files {
-    err := s.Add(f, ctx)
+    e := NewEntry(&s.host, s.routingDiscovery, f, s.shell, s.api, s.path )
+    
+    err = e.LoadEntry(ctx, s.protocol)
     if err != nil {
       return err
     }
   }
 
-  /*go func(){
+  go func(){
     for{
       err := s.Get(ctx)
       if err != nil { //No new file to add
         return
       }
     }
-  }()*/
+  }()
 
   return nil
 }
