@@ -6,7 +6,7 @@ import (
 )
 
 func ListToString(host string, peers []string) string{
-  return fmt.Sprintf("%q,%q", host, strings.Join(peers, ","))
+  return fmt.Sprintf("%s,%s", host, strings.Join(peers, ","))
 }
 
 func ListFromString(str string) (string, []string){
