@@ -10,8 +10,8 @@ import (
 )
 
 type handler struct{
-  handler func(mpi.Message) error
-  list func() (string, []string)
+  handler *func(mpi.Message) error
+  list *func() (string, []string)
 }
 
 type Api struct {
@@ -81,7 +81,7 @@ func NewApi(port int) (*Api, error){
           }
 
           if content == "List" {
-            fmt.Fprint(c, "List,%s,\n", ListToString(handler.list()))
+            fmt.Fprint(c, "List,%s,\n", ListToString((*handler.list)()))
             continue
           }
 
@@ -91,7 +91,7 @@ func NewApi(port int) (*Api, error){
             return
           }
 
-          err = handler.handler(*m)
+          err = (*handler.handler)(*m)
           if err != nil {
             delete(*a.resp, pid)
             return
@@ -104,7 +104,7 @@ func NewApi(port int) (*Api, error){
   return &a, nil
 }
 
-func (a *Api)AddHandler(key string, handle func(mpi.Message) error, list func() (string, []string)) {
+func (a *Api)AddHandler(key string, handle *func(mpi.Message) error, list *func() (string, []string)) {
   (*a.handlers)[key] = handler{ handler:handle, list:list }
 }
 

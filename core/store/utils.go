@@ -86,8 +86,9 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
     return nil
   }
 
-  hostId := peer.IDB58Encode((*e.Store.Host).ID())
   list := func() (string, []string) {
+    hostId := peer.IDB58Encode((*e.Store.Host).ID())
+
     fmt.Println("list")
     peers := (*e.Store).Store
     fmt.Println("list/peers")
@@ -102,7 +103,7 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
     return hostId, keys
   }
 
-  e.api.AddHandler(e.file.String(), messageHandler, list)
+  e.api.AddHandler(e.file.String(), &messageHandler, &list)
 
   StreamHandler := func(stream network.Stream) {
 		// Create a buffer stream for non blocking read and write.
