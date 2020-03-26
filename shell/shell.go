@@ -33,7 +33,6 @@ func NewShell(port int, pid int) (*Shell, chan mpi.Message, error) {
   go func(){
     for {
       msg, err := bufio.NewReader(s).ReadString('\n')
-      fmt.Println(msg, err)
       if err != nil {
         panic(err)
       }

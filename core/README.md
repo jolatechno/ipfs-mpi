@@ -9,7 +9,7 @@
 ## How to build ?
 
 ```
-go build -o main
+go build
 ```
 
 ## Getting started
@@ -25,13 +25,13 @@ Where `/ip4/127.0.0.1/tcp/5001` is the url of the ipfs daemon.
 You can then run ipfs-mpi using :
 
 ```
-./main -ipfs-api  /ip4/127.0.0.1/tcp/5001 -ipfs-store SomeIpfsDirectory/ -listen /ip4/YourIp/tcp/6666
+./core -ipfs-api  /ip4/127.0.0.1/tcp/5001 -ipfs-store SomeIpfsDirectory/ -listen /ip4/YourIp/tcp/6666
 ```
 
 For example :
 
 ```
-./main -ipfs-api  /ip4/127.0.0.1/tcp/5001 -ipfs-store QmRfk8DdfrPQUxxThhgRxpPYvoa9qpjwV1veqXaSYgrrWf/ -listen /ip4/192.168.1.12/tcp/6666
+./core -ipfs-api  /ip4/127.0.0.1/tcp/5001 -ipfs-store QmRfk8DdfrPQUxxThhgRxpPYvoa9qpjwV1veqXaSYgrrWf/ -listen /ip4/192.168.1.12/tcp/6666
 ```
 
 ## Usage
