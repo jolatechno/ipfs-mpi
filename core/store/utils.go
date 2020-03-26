@@ -86,8 +86,8 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
     return nil
   }
 
+  hostId := peer.IDB58Encode((*e.Store.Host).ID())
   list := func() (string, []string) {
-    hostId := peer.IDB58Encode((*e.Store.Host).ID())
     peers := (*e.Store).Store
 
     keys := make([]string, len(peers))
@@ -133,7 +133,6 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
     }()
   }
 
-  e.Store.SetHostId()
   err := e.Store.SetStreamHandler(base, StreamHandler)
   if err != nil {
     return err
