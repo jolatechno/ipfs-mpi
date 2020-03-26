@@ -38,7 +38,7 @@ func NewShell(port int, pid int) (*Shell, chan mpi.Message, error) {
       }
 
       var header, content string
-      fmt.Sscanf(msg, "%s;%s\n", &header, &content)
+      fmt.Sscanf(msg, "%q,%q\n", &header, &content)
 
       if header == "List" {
         host, peers := api.ListFromString(content)
@@ -61,12 +61,12 @@ func NewShell(port int, pid int) (*Shell, chan mpi.Message, error) {
 }
 
 func (s *Shell)List(file string) (string, []string){
-  fmt.Fprintf(s.conn, "%s;List\n", file)
+  fmt.Fprintf(s.conn, "%q,\"List\"\n", file)
 
   list := <- s.listChan
   return list.host, list.peers
 }
 
 func (s *Shell)Send(file string, msg mpi.Message) {
-  fmt.Fprintf(s.conn, "%s;%s\n", file, msg.String())
+  fmt.Fprintf(s.conn, "%q,%q\n", file, msg.String())
 }

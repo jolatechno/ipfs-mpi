@@ -17,12 +17,12 @@ type Message struct {
 type Handler func(Message) ([]Message, error)
 
 func (m *Message)String() string {
-  return fmt.Sprintf("%d,%s,%s,%x", m.Pid, m.From, m.To, m.Data)
+  return fmt.Sprintf("%d,%x,%x,%x", m.Pid, m.From, m.To, m.Data)
 }
 
 func FromString(msg string) (*Message, error) {
   m := Message{}
-  n, err := fmt.Sscanf(msg, "%d,%s,%s,%x", &m.Pid, &m.From, &m.To, &m.Data)
+  n, err := fmt.Sscanf(msg, "%d,%x,%x,%x", &m.Pid, &m.From, &m.To, &m.Data)
   if n != 4 {
     return nil, errors.New("message dosen't have the write number of field")
   }
