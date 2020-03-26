@@ -22,6 +22,7 @@ type Store struct {
   protocol protocol.ID
   maxsize uint64
   path string
+  ipfs_store string
 }
 
 func NewStore(ctx context.Context, host host.Host, config Config) (*Store, error) {
@@ -49,14 +50,14 @@ if _, err := os.Stat(config.Path); os.IsNotExist(err) {
     return nil, err
   }
 
-  return &Store{ store:store, host:host, routingDiscovery:routingDiscovery, shell:shell, api:api, protocol:proto, maxsize:config.Maxsize, path:config.Path }, nil
+  return &Store{ store:store, host:host, routingDiscovery:routingDiscovery, shell:shell, api:api, protocol:proto, maxsize:config.Maxsize, path:config.Path, ipfs_store:config.Ipfs_store }, nil
 }
 
 func (s *Store)Init(ctx context.Context) error {
   files := (*s.shell).List()
 
   for _, f := range files {
-    e := NewEntry(&s.host, s.routingDiscovery, f, s.shell, s.api, s.path)
+    e := NewEntry(&s.host, s.routingDiscovery, f, s.shell, s.api, s.path, s.ipfs_store)
     err := e.LoadEntry(ctx, s.protocol)
     if err != nil {
       return err
@@ -78,7 +79,7 @@ func (s *Store)Init(ctx context.Context) error {
 }
 
 func (s *Store)Add(f file.File, ctx context.Context) error {
-  e := NewEntry(&s.host, s.routingDiscovery, f, s.shell, s.api, s.path )
+  e := NewEntry(&s.host, s.routingDiscovery, f, s.shell, s.api, s.path, s.ipfs_store)
 
   err := e.InitEntry()
   if err != nil {

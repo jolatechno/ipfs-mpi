@@ -25,7 +25,7 @@ type Entry struct {
   path string
 }
 
-func NewEntry(host *host.Host, routingDiscovery *discovery.RoutingDiscovery, f file.File, shell *file.IpfsShell, api *api.Api, path string) *Entry {
+func NewEntry(host *host.Host, routingDiscovery *discovery.RoutingDiscovery, f file.File, shell *file.IpfsShell, api *api.Api, path string, ipfs_store string) *Entry {
   rdv := f.String()
   p := peerstore.NewPeerstore(host, routingDiscovery, rdv)
 
