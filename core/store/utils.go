@@ -71,7 +71,7 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
     })
 	}
 
-  messageHandler := func(msgs mpi.Message) error{
+  messageHandler := func(msg mpi.Message) error{
     if e.Store.Has(msg.To){
       e.Store.Write(msg.To, msg.String()) // pass on the responces
     }
@@ -124,7 +124,7 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
         }
 
         for _, rep := range reps {
-          err := messageHandler(reps)
+          err := messageHandler(rep)
           if err != nil {
             continue
           }

@@ -8,11 +8,13 @@
 
 ## Usage
 
-To create a new shell use `Shell, err := shell.NewShell(api_url)` where `api_url` is the url of the ipfs-mpi api.
+To create a new shell use `Shell, c, err := shell.NewShell(port, pid)` where `port` is the port of the ipfs-mpi api.
+
+`c` is a channel on which you will receive incoming messages.
 
 `Shell.List(file)` will return `host, peers` where `host` is the host address and `peers` is a list of the addresses of all peers listening fore the `file` interpreter.
 
-`Shell.Openn(pid)` will return two channels, the first one used to send messages and the other one used to receive them.
+`Shell.Send(msg)` will send `msg` to `msg.To` (see the Message type of [ipfs-mpi/core/mpi-interface](../core/mpi-interface) for more information).
 
 ### WARNING : Development in progress, might contain bug
 
