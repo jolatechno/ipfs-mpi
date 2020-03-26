@@ -100,6 +100,7 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
       i++
     }
 
+    fmt.Println(hostId, keys)
     return hostId, keys
   }
 

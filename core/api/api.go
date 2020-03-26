@@ -60,15 +60,11 @@ func NewApi(port int) (*Api, error){
 
       go func(){
         for {
-          fmt.Println(0)
-
           msg, err := reader.ReadString('\n')
           if err != nil {
             delete(*a.resp, pid)
             return
           }
-
-          fmt.Println(1, msg)
 
           var File, content string
           n, err := fmt.Sscanf(msg, "%q,%q\n", &File, &content)
@@ -80,20 +76,14 @@ func NewApi(port int) (*Api, error){
             return
           }
 
-          fmt.Println(2)
-
           handler, ok := (*a.handlers)[File]
           if !ok {
             delete(*a.resp, pid)
             return
           }
 
-          fmt.Println(3)
-
           if content == "List" {
             fmt.Fprint(c, "\"List\",%q,\n", ListToString((*handler.list)()))
-
-            fmt.Println("4L")
 
             continue
           } else if content == "Msg" {
@@ -103,15 +93,11 @@ func NewApi(port int) (*Api, error){
               return
             }
 
-            fmt.Println("4M")
-
             err = (*handler.handler)(*m)
             if err != nil {
               delete(*a.resp, pid)
               return
             }
-
-            fmt.Println("5M")
           }
         }
       }()
