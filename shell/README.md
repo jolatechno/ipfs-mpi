@@ -14,7 +14,7 @@ To create a new shell use `Shell, c, err := shell.NewShell(port, pid)` where `po
 
 `Shell.List(file)` will return `host, peers` where `host` is the host address and `peers` is a list of the addresses of all peers listening fore the `file` interpreter.
 
-`Shell.Send(msg)` will send `msg` to `msg.To` (see the Message type of [ipfs-mpi/core/mpi-interface](../core/mpi-interface) for more information).
+`Shell.Send(file, msg)` will send `msg` to `msg.To` to be interpreted by `file` (see the Message type of [ipfs-mpi/core/mpi-interface](../core/mpi-interface) for more information).
 
 ### WARNING : Development in progress, might contain bug
 

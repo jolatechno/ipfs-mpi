@@ -42,7 +42,7 @@ func NewShell(port int, pid int) (*Shell, chan mpi.Message, error) {
 }
 
 func (s *Shell)List(file string) (string, []string, error){
-  fmt.Fprintf(s.conn, "List\n")
+  fmt.Fprintf(s.conn, "$s,List\n", file)
 
   str, err := bufio.NewReader(s.conn).ReadString('\n')
   if err != nil {
@@ -53,6 +53,6 @@ func (s *Shell)List(file string) (string, []string, error){
   return host, peers, nil
 }
 
-func (s *Shell)Send(msg mpi.Message) {
-  fmt.Fprintf(s.conn, "%s\n", msg.String())
+func (s *Shell)Send(file string, msg mpi.Message) {
+  fmt.Fprintf(s.conn, "%s,%s\n", file, msg.String())
 }
