@@ -36,48 +36,7 @@ For example :
 
 ## Usage
 
-This service will launch an api on a local port like `/127.0.0.1:8000`, push a message to other peers you need to formulate a request to this port with :
-
-- a header named `Expected` which will be a string-formatted integer which will tel the api how many messages it should expect as a response.
-- a header named `File``File` formatted as `interpreter_name/version`
-- the request body with the message formatted as follow :
-
-```json
-{
-  "Pid": 11,
-  "messages" : [
-      {
-        "Pid":11,
-        "To":"ToAdress1",
-        "From":"YourAdress",
-        "Data": [12, 32, 40]
-      },
-      {
-        "Pid":11,
-        "To":"ToAdress2",
-        "From":"YourAdress",
-        "Data": [20, 50, 51, 54]
-      },
-      {
-        "Pid":11,
-        "To":"ToAdress3",
-        "From":"YourAdress",
-        "Data": [12, 20]
-      }
-  ]
-}
-```
-
-You will then receive the same json formatted message in response.
-
-If you add a header named `List` containing any non-empty string you will get a response as follow :
-
-```json
-{
-  "host":"HostAdress",
-  "peers": ["Peer1Adress", "Peer2Adress", "Peer3Adress"...]
-}
-```
+See [ipfs-mpi/shell](../shell) for a Gide on designing software that use ipfs-mpi and [ipfs-mpi/example](../example) to design an interpretor for ipfs-mpi.
 
 ## Architecture
 
