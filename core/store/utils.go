@@ -86,9 +86,11 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
     return nil
   }
 
+  hostId := peer.IDB58Encode((*e.Store.Host).ID())
   list := func() (string, []string) {
-    host_addr := peer.IDB58Encode((*e.Store.Host).ID())
+    fmt.Prinln("list")
     peers := (*e.Store).Store
+    fmt.Prinln("list/peers")
 
     keys := make([]string, len(peers))
     i := 0
@@ -97,7 +99,7 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
       i++
     }
 
-    return host_addr, keys
+    return hostId, keys
   }
 
   e.api.AddHandler(e.file.String(), messageHandler, list)
