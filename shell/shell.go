@@ -33,11 +33,10 @@ func NewShell(port int, pid int) (*Shell, chan mpi.Message, error) {
   go func(){
     for {
       msg, err := bufio.NewReader(s).ReadString('\n')
+      fmt.Println(msg, err)
       if err != nil {
         panic(err)
       }
-
-      fmt.Println(msg)
 
       var header, content string
       fmt.Sscanf(msg, "%q;%q\n", &header, &content)

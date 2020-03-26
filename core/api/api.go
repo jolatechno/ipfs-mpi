@@ -55,7 +55,7 @@ func NewApi(port int) (*Api, error) {
       }
 
       (*a.resp)[pid] = func(msg mpi.Message) {
-        fmt.Fprint(c, "\"Msg\";%q\n", msg.String())
+        fmt.Fprintf(c, "\"Msg\";%q\n", msg.String())
       }
 
       go func(){
@@ -81,9 +81,9 @@ func NewApi(port int) (*Api, error) {
           }
 
           if content == "List" {
-            fmt.Fprint(c, "\"List\";%q\n", ListToString((*handler.list)()))
+            fmt.Fprintf(c, "\"List\";%q\n", ListToString((*handler.list)()))
             continue
-          } else if content == "Msg" {
+          } else {
             m, err := mpi.FromString(content)
             if err != nil {
               delete(*a.resp, pid)
