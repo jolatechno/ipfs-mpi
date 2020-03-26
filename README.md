@@ -10,6 +10,8 @@ Message Passing Interface computing using ipfs as a back-bone to build computati
 
 Refer to the Gide in the [core](./core) directory readme.
 
+See [ipfs-mpi/shell](../shell) for a Gide on designing software that use ipfs-mpi and [ipfs-mpi/example](../example) to design an interpretor for ipfs-mpi.
+
 ### WARNING : Development in progress, might contain bug
 
 # ToDo
@@ -22,7 +24,7 @@ __main changes:__
 
 __'cosmetic' changes:__
 
-- [ ] write an example
+- [x] write an example
 
 __long-term goals:__
 

@@ -12,7 +12,7 @@ To create a new shell use `Shell, err := shell.NewShell(api_url)` where `api_url
 
 `Shell.List(file)` will return `host, peers` where `host` is the host address and `peers` is a list of the addresses of all peers listening fore the `file` interpreter.
 
-`Shell.Send(pid, expected, messages)` will return a list of response messages of length `expected`.
+`Shell.Openn(pid)` will return two channels, the first one used to send messages and the other one used to receive them.
 
 ### WARNING : Development in progress, might contain bug
 
