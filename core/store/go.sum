@@ -113,11 +113,15 @@ github.com/jolatechno/ipfs-mpi/core/api v0.0.0-20200326160430-5d34320b37d4 h1:Iu
 github.com/jolatechno/ipfs-mpi/core/api v0.0.0-20200326160430-5d34320b37d4/go.mod h1:xDHNmsZoJI+LZ+MavGORGvSsb27kQK8NvrByTs8dklo=
 github.com/jolatechno/ipfs-mpi/core/api v0.0.0-20200326160817-1aab17a7353a h1:voEEqNkDAClXilSVtmipMhqtI7No8KPsIJdVmq5rxvM=
 github.com/jolatechno/ipfs-mpi/core/api v0.0.0-20200326160817-1aab17a7353a/go.mod h1:xDHNmsZoJI+LZ+MavGORGvSsb27kQK8NvrByTs8dklo=
+github.com/jolatechno/ipfs-mpi/core/api v0.0.0-20200326164930-43a0e56032c0 h1:c3caZimE9Sr2rNDXWuVXxxa1K27eTvTBU3SlJZFi2H0=
+github.com/jolatechno/ipfs-mpi/core/api v0.0.0-20200326164930-43a0e56032c0/go.mod h1:jXevZi7hzQprsSqCXlhWmzCQ3bbGQ/iVQMXnxxISr8k=
 github.com/jolatechno/ipfs-mpi/core/ipfs-interface v0.0.0-20200326154905-cc98433525c8 h1:SUOSyNxUukZknaWRoJRm7Wj8JAvuZc4e8t15GldlzP4=
 github.com/jolatechno/ipfs-mpi/core/ipfs-interface v0.0.0-20200326154905-cc98433525c8/go.mod h1:uhds0VkQGn28U4wqS0SwsJKvJetQRT0qf+GkNXXeSbU=
 github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200326154316-79576da251fc/go.mod h1:F6HxH/lsw+3aQJJn9b5xXbUpILxC8M+AOXSzBimN/0k=
 github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200326154905-cc98433525c8 h1:3zNlTBioWoW3dusreEpsP6pYY40++vQPMf+J66X6rtk=
 github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200326154905-cc98433525c8/go.mod h1:F6HxH/lsw+3aQJJn9b5xXbUpILxC8M+AOXSzBimN/0k=
+github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200326164556-268360b7d323 h1:KJnd/ByP2qYZQEYQHzJaZ3Xj3gMWGAoVR90QGclsaQo=
+github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200326164556-268360b7d323/go.mod h1:F6HxH/lsw+3aQJJn9b5xXbUpILxC8M+AOXSzBimN/0k=
 github.com/jolatechno/mpi-peerstore v0.0.0-20200324175431-bce8d0c3e565 h1:xnKJhzcvjVK4bxFAV5fHlXR6O5neGTNs4CW6fg+c9Wg=
 github.com/jolatechno/mpi-peerstore v0.0.0-20200324175431-bce8d0c3e565/go.mod h1:d8aptYapVb/5Z/QddGgjMlhylImf97RdZrMqyt7ZVjY=
 github.com/jolatechno/mpi-peerstore/utils v0.0.0-20200324175431-bce8d0c3e565 h1:2oSDcLAauw3WjOu8sIUeMmKmuLsB6PFPBM7KR5LJT2M=
