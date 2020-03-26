@@ -18,7 +18,7 @@ import (
 )
 
 type Entry struct {
-  Store peerstore.Peerstore
+  Store *peerstore.Peerstore
   file file.File
   shell *file.IpfsShell
   api *api.Api
@@ -29,7 +29,7 @@ func NewEntry(host *host.Host, routingDiscovery *discovery.RoutingDiscovery, f f
   rdv := f.String()
   p := peerstore.NewPeerstore(host, routingDiscovery, rdv)
 
-  return &Entry{ Store:*p, file:f, shell:shell, api:api, path:path }
+  return &Entry{ Store:p, file:f, shell:shell, api:api, path:path }
 }
 
 func (e *Entry)InitEntry() error {
@@ -82,7 +82,7 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
         return err
       }
 
-      discoveryHandler(&e.Store, ID)
+      discoveryHandler(e.Store, ID)
       e.Store.Write(msg.To, msg.String()) // pass on the responces
     }
     return nil
@@ -90,7 +90,7 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
 
   list := func() (string, []string) {
     host_addr := peer.IDB58Encode((*e.Store.Host).ID())
-    peers := e.Store.Store
+    peers := (*e.Store).Store
 
     keys := make([]string, len(peers))
     i := 0
