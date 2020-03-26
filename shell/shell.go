@@ -37,6 +37,8 @@ func NewShell(port int, pid int) (*Shell, chan mpi.Message, error) {
         panic(err)
       }
 
+      fmt.Println(msg)
+
       var header, content string
       fmt.Sscanf(msg, "%q;%q\n", &header, &content)
 
