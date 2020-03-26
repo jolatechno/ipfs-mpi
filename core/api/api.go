@@ -20,7 +20,7 @@ type Api struct {
   resp *map[int] func(mpi.Message)
 }
 
-func NewApi(port int) (*Api, error){
+func NewApi(port int) (*Api, error) {
   handlers := make(map[string] handler)
   resp := make(map[int] func(mpi.Message))
 
@@ -54,8 +54,8 @@ func NewApi(port int) (*Api, error){
         continue
       }
 
-      (*a.resp)[pid] = func(msg mpi.Message){
-        fmt.Fprint(c, "\"Msg\",%q,\n", msg.String())
+      (*a.resp)[pid] = func(msg mpi.Message) {
+        fmt.Fprint(c, "\"Msg\";%q\n", msg.String())
       }
 
       go func(){
@@ -67,9 +67,7 @@ func NewApi(port int) (*Api, error){
           }
 
           var File, content string
-          n, err := fmt.Sscanf(msg, "%q,%q\n", &File, &content)
-
-          fmt.Println(1.5, n, err)
+          n, err := fmt.Sscanf(msg, "%q;%q\n", &File, &content)
 
           if err != nil || n != 2 {
             delete(*a.resp, pid)
@@ -83,8 +81,7 @@ func NewApi(port int) (*Api, error){
           }
 
           if content == "List" {
-            fmt.Fprint(c, "\"List\",%q,\n", ListToString((*handler.list)()))
-
+            fmt.Fprint(c, "\"List\";%q\n", ListToString((*handler.list)()))
             continue
           } else if content == "Msg" {
             m, err := mpi.FromString(content)

@@ -89,9 +89,7 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
   list := func() (string, []string) {
     hostId := peer.IDB58Encode((*e.Store.Host).ID())
 
-    fmt.Println("list")
     peers := (*e.Store).Store
-    fmt.Println("list/peers")
 
     keys := make([]string, len(peers))
     i := 0
