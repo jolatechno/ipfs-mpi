@@ -71,20 +71,18 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
     })
 	}
 
-  messageHandler := func(msgs []mpi.Message) error{
-    for _, msg := range msgs {
-      if e.Store.Has(msg.To){
-        e.Store.Write(msg.To, msg.String()) // pass on the responces
-      }
-
-      ID, err := peer.IDB58Decode(msg.To)
-      if err != nil {
-        return err
-      }
-
-      discoveryHandler(e.Store, ID)
+  messageHandler := func(msgs mpi.Message) error{
+    if e.Store.Has(msg.To){
       e.Store.Write(msg.To, msg.String()) // pass on the responces
     }
+
+    ID, err := peer.IDB58Decode(msg.To)
+    if err != nil {
+      return err
+    }
+
+    discoveryHandler(e.Store, ID)
+    e.Store.Write(msg.To, msg.String()) // pass on the responces
     return nil
   }
 
@@ -125,7 +123,12 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
           continue
         }
 
-        messageHandler(reps)
+        for _, rep := range reps {
+          err := messageHandler(reps)
+          if err != nil {
+            continue
+          }
+        }
       }
     }()
   }

@@ -19,8 +19,6 @@ func ParseFlags() store.Config {
 	flag.Var(&config.ListenAddresses, "listen", "Adds a multiaddress to the listen list")
 	flag.Uint64Var(&config.Maxsize, "maxsize", 100000, "Set the max use space")
 	flag.IntVar(&config.Api_port, "p", 8000, "Set the api port")
-	flag.IntVar(&config.WriteTimeout, "WriteTimeout", 100, "Set the write timeout")
-	flag.IntVar(&config.ReadTimeout, "ReadTimeout", 1, "Set the max use space")
 	flag.Parse()
 
 	return config

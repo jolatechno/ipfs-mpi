@@ -2,7 +2,7 @@ package store
 
 import (
   "strings"
-  
+
   maddr "github.com/multiformats/go-multiaddr"
 )
 
@@ -25,8 +25,6 @@ type Config struct {
 	ProtocolID string
 	Maxsize uint64
 	Api_port int
-	WriteTimeout int
-	ReadTimeout int
 }
 
 func (al *AddrList) Set(value string) error {
