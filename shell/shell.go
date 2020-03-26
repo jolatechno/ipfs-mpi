@@ -61,7 +61,7 @@ func NewShell(port int, pid int) (*Shell, chan mpi.Message, error) {
 }
 
 func (s *Shell)List(file string) (string, []string){
-  fmt.Fprintf(s.conn, "$s,List\n", file)
+  fmt.Fprintf(s.conn, "%s,List\n", file)
 
   list := <- s.listChan
   return list.host, list.peers

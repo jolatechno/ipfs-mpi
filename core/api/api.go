@@ -42,14 +42,12 @@ func NewApi(port int) (*Api, error){
       if err != nil {
         continue
       }
-      fmt.Println("1")
 
       reader := bufio.NewReader(c)
       str, err := reader.ReadString('\n')
       if err != nil {
         continue
       }
-      fmt.Println("2")
 
       var pid int
       n, err := fmt.Sscanf(str, "%d\n", &pid)
@@ -60,7 +58,6 @@ func NewApi(port int) (*Api, error){
       (*a.resp)[pid] = func(msg mpi.Message){
         fmt.Fprint(c, "Msg,%s,\n", msg.String())
       }
-      fmt.Println("3")
 
       go func(){
         for {
@@ -69,7 +66,6 @@ func NewApi(port int) (*Api, error){
             delete(*a.resp, pid)
             return
           }
-          fmt.Println("4")
 
           var File, content string
           n, err := fmt.Sscanf(msg, "%s,%s\n", &File, &content)
@@ -77,34 +73,29 @@ func NewApi(port int) (*Api, error){
             delete(*a.resp, pid)
             return
           }
-          fmt.Println("5")
 
           handler, ok := (*a.handlers)[File]
           if !ok {
             delete(*a.resp, pid)
             return
           }
-          fmt.Println("6")
 
           if content == "List" {
             fmt.Fprint(c, "List,%s,\n", ListToString((*handler.list)()))
             continue
           }
-          fmt.Println("7")
 
           m, err := mpi.FromString(content)
           if err != nil {
             delete(*a.resp, pid)
             return
           }
-          fmt.Println("8")
 
           err = (*handler.handler)(*m)
           if err != nil {
             delete(*a.resp, pid)
             return
           }
-          fmt.Println("9")
         }
       }()
     }
