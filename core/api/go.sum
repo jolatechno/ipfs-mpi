@@ -85,8 +85,8 @@ github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200326082149-10b4e2bd
 github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200326082149-10b4e2bde69e/go.mod h1:F6HxH/lsw+3aQJJn9b5xXbUpILxC8M+AOXSzBimN/0k=
 github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200326133936-adca3fea6c6f h1:nr7Xzm60UL/a34nDKPgeBanmQHNF+ZYIumKhN/F2/0E=
 github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200326133936-adca3fea6c6f/go.mod h1:F6HxH/lsw+3aQJJn9b5xXbUpILxC8M+AOXSzBimN/0k=
-github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200326144804-88b30a98c19a h1:7SM9mC3pjSNMcmINLZyT6yKbd/HWa0I8yYU5M30YDxM=
-github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200326144804-88b30a98c19a/go.mod h1:F6HxH/lsw+3aQJJn9b5xXbUpILxC8M+AOXSzBimN/0k=
+github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200326145950-15823267b5f4 h1:7SM9mC3pjSNMcmINLZyT6yKbd/HWa0I8yYU5M30YDxM=
+github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200326145950-15823267b5f4/go.mod h1:F6HxH/lsw+3aQJJn9b5xXbUpILxC8M+AOXSzBimN/0k=
 github.com/jolatechno/mpi-peerstore v0.0.0-20200323150448-3331cef53d50/go.mod h1:Tbqcf1BYubConj/i4cFWr8f7IOcBGGxv0WcBL/Ap+xw=
 github.com/jolatechno/mpi-peerstore v0.0.0-20200324113120-d4995b64c458/go.mod h1:zfLnyQo8mmsrTYreJgicIirGj5Vr8YnEf+OyD1i4osE=
 github.com/jolatechno/mpi-peerstore v0.0.0-20200324131234-ccd78b7648aa/go.mod h1:d8aptYapVb/5Z/QddGgjMlhylImf97RdZrMqyt7ZVjY=
