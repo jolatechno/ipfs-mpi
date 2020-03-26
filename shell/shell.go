@@ -4,17 +4,25 @@ import (
   "bufio"
   "fmt"
   "net"
+  "errors"
 
   "github.com/jolatechno/ipfs-mpi/core/api"
   "github.com/jolatechno/ipfs-mpi/core/mpi-interface"
 )
 
+type list struct {
+  host string
+  peers []string
+}
+
 type Shell struct {
   conn net.Conn
+  listChan chan list
 }
 
 func NewShell(port int, pid int) (*Shell, chan mpi.Message, error) {
   c := make(chan mpi.Message)
+  listChan := make(chan list)
 
   s, err := net.Dial("tcp", fmt.Sprintf(":%d", port))
   if err != nil {
@@ -29,28 +37,34 @@ func NewShell(port int, pid int) (*Shell, chan mpi.Message, error) {
         panic(err)
       }
 
-      m, err := mpi.FromString(msg)
-      if err != nil {
-        panic(err)
+      var header, content string
+      fmt.Sscanf(msg, "%s,%s\n", &header, &content)
+
+      if header == "List" {
+        host, peers := api.ListFromString(content)
+        listChan <- list{ host:host, peers:peers }
+      } else if header == "Msg" {
+        m, err := mpi.FromString(content)
+        if err != nil {
+          panic(err)
+        }
+
+        c <- *m
+      } else {
+        panic(errors.New("Header not understood"))
       }
 
-      c <- *m
     }
   }()
 
-  return &Shell{ conn:s }, c, nil
+  return &Shell{ conn:s, listChan:listChan }, c, nil
 }
 
-func (s *Shell)List(file string) (string, []string, error){
+func (s *Shell)List(file string) (string, []string){
   fmt.Fprintf(s.conn, "$s,List\n", file)
 
-  str, err := bufio.NewReader(s.conn).ReadString('\n')
-  if err != nil {
-    return "", []string{}, nil
-  }
-
-  host, peers := api.ListFromString(str)
-  return host, peers, nil
+  list := <- s.listChan
+  return list.host, list.peers
 }
 
 func (s *Shell)Send(file string, msg mpi.Message) {
