@@ -69,7 +69,7 @@ func NewApi(port int) (*Api, error){
 
           var File, content string
           n, err := fmt.Sscanf(msg, "%s,%s\n", &File, &content)
-          if err != nil || n != 2 {
+          if err != nil || n != 1 {
             delete(*a.resp, pid)
             return
           }
