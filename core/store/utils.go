@@ -44,7 +44,6 @@ func (e *Entry)InitEntry() error {
 func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
   handler := mpi.Load(e.path + e.file.String(),
   func(msg mpi.Message) error {
-    fmt.Println("handler") //----------------------------------------------------------------------------
     return (*e.api).Push(msg)
   })
 
@@ -125,15 +124,10 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
     			continue
     		}
 
-        fmt.Println("StreamHandler 0, ", *msg) //----------------------------------------------------------------------------
-
         reps, err := handler(*msg)
         if err != nil {
-          fmt.Println("StreamHandler 0, err, ", err) //----------------------------------------------------------------------------
           continue
         }
-
-        fmt.Println("StreamHandler 1, ", reps) //----------------------------------------------------------------------------
 
         for _, rep := range reps {
           err := messageHandler(rep)
