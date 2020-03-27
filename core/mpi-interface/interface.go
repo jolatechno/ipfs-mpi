@@ -23,6 +23,9 @@ func (m *Message)String() string {
 func FromString(msg string) (*Message, error) {
   m := Message{}
   n, err := fmt.Sscanf(msg, "%d,%x,%x,%x", &m.Pid, &m.From, &m.To, &m.Data)
+  if err != nil {
+    return nil, err
+  }
   if n != 4 {
     return nil, errors.New("message dosen't have the write number of field")
   }
@@ -43,11 +46,16 @@ func Load(path string, responder func(Message) error) Handler {
         return msgs, nil
       }
 
-      fmt.Println("mpi handler 1, ", string(out)) //----------------------------------------------------------------------------
+      out_str := string(out)
+      if out_str[len(out_str) - 2:] == "\n" {
+        out_str = out_str[:len(out_str) - 2]
+      }
 
-      strs := strings.Split(string(out), ";")
+      fmt.Println("mpi handler 1, ", out_str) //----------------------------------------------------------------------------
 
-      fmt.Println("mpi handler 2, ", strs) //----------------------------------------------------------------------------
+      strs := strings.Split(out_str, ";")
+
+      fmt.Println("mpi handler 2, ", len(out_str), " , ", out_str) //----------------------------------------------------------------------------
 
       for _, str := range strs {
         m, err := FromString(str)
