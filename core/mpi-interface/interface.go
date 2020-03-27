@@ -1,6 +1,8 @@
 package mpi
 
 import (
+  b64 "encoding/base64"
+  "strconv"
   "strings"
   "errors"
   "os/exec"
@@ -17,20 +19,26 @@ type Message struct {
 type Handler func(Message) ([]Message, error)
 
 func (m *Message)String() string {
-  return fmt.Sprintf("%d,%x,%x,%x", m.Pid, m.From, m.To, m.Data)
+  return fmt.Sprintf("%d,%s,%s,%s", m.Pid, m.From, m.To, b64.StdEncoding.EncodeToString(m.Data))
 }
 
 func FromString(msg string) (*Message, error) {
-  m := Message{}
-  n, err := fmt.Sscanf(msg, "%d,%x,%x,%x", &m.Pid, &m.From, &m.To, &m.Data)
-  if err != nil {
-    return nil, err
-  }
-  if n != 4 {
+  splitted := strings.Split(msg, ",")
+  if len(splitted) != 4 {
     return nil, errors.New("message dosen't have the write number of field")
   }
 
-  return &m, err
+  pid, err := strconv.Atoi(splitted[0])
+  if err != nil {
+    return nil, err
+  }
+
+  Data, err := b64.StdEncoding.DecodeString(splitted[3])
+  if err != nil {
+    return nil, err
+  }
+
+  return &Message{ Pid:pid, From:splitted[1], To:splitted[1], Data:Data }, err
 }
 
 func Load(path string, responder func(Message) error) Handler {
