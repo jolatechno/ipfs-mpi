@@ -38,7 +38,7 @@ func FromString(msg string) (*Message, error) {
     return nil, err
   }
 
-  return &Message{ Pid:pid, From:splitted[1], To:splitted[1], Data:Data }, err
+  return &Message{ Pid:pid, From:splitted[1], To:splitted[2], Data:Data }, nil
 }
 
 func Load(path string, responder func(Message) error) Handler {
