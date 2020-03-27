@@ -35,12 +35,20 @@ func Load(path string, responder func(Message) error) Handler {
     msgs := []Message{}
 
     if msg.Pid == -1 {
+
+      fmt.Println("mpi handler 0") //----------------------------------------------------------------------------
+
       out, err := exec.Command("python3", path + "/run.py", msg.String()).Output()
       if err != nil{
         return msgs, nil
       }
 
+      fmt.Println("mpi handler 1, ", string(out)) //----------------------------------------------------------------------------
+
       strs := strings.Split(string(out), ";")
+
+      fmt.Println("mpi handler 2, ", strs) //----------------------------------------------------------------------------
+
       for _, str := range strs {
         m, err := FromString(str)
         if err != nil {
