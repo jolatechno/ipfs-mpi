@@ -3,7 +3,7 @@ module github.com/jolatechno/ipfs-mpi/core/ipfs-interface
 require (
 	github.com/coreos/go-semver v0.3.0
 	github.com/ipfs/go-ipfs-api v0.0.3
-	github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200327131909-23e3493af800
+	github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200327132634-c3c5e46eab2f
 )
 
 go 1.13
