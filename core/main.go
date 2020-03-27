@@ -15,7 +15,7 @@ func main(){
   if err != nil {
     panic(err)
   }
-  
+
   ctx := context.Background()
 
   host, err := libp2p.New(ctx,
@@ -39,7 +39,7 @@ func main(){
 		panic(err)
 	}
 
-  fmt.Printf("Api listening on: /ip4/127.0.0.1/tcp/%d\n", config.Api_port)
+  fmt.Printf("Api listening on: /ip4/127.0.0.1/tcp/%d\n", Store.Api.Port)
 
   err = Store.Init(ctx)
   if err != nil {

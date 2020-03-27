@@ -18,7 +18,7 @@ type Store struct {
   host host.Host
   routingDiscovery *discovery.RoutingDiscovery
   shell *file.IpfsShell
-  api *api.Api
+  Api *api.Api
   protocol protocol.ID
   maxsize uint64
   path string
@@ -50,14 +50,14 @@ if _, err := os.Stat(config.Path); os.IsNotExist(err) {
     return nil, err
   }
 
-  return &Store{ store:store, host:host, routingDiscovery:routingDiscovery, shell:shell, api:api, protocol:proto, maxsize:config.Maxsize, path:config.Path }, nil
+  return &Store{ store:store, host:host, routingDiscovery:routingDiscovery, shell:shell, Api:api, protocol:proto, maxsize:config.Maxsize, path:config.Path }, nil
 }
 
 func (s *Store)Init(ctx context.Context) error {
   files := (*s.shell).List()
 
   for _, f := range files {
-    e := NewEntry(&s.host, s.routingDiscovery, f, s.shell, s.api, s.path)
+    e := NewEntry(&s.host, s.routingDiscovery, f, s.shell, s.Api, s.path)
     err := e.LoadEntry(ctx, s.protocol)
     if err != nil {
       return err
@@ -79,7 +79,7 @@ func (s *Store)Init(ctx context.Context) error {
 }
 
 func (s *Store)Add(f file.File, ctx context.Context) error {
-  e := NewEntry(&s.host, s.routingDiscovery, f, s.shell, s.api, s.path )
+  e := NewEntry(&s.host, s.routingDiscovery, f, s.shell, s.Api, s.path )
 
   err := e.InitEntry()
   if err != nil {

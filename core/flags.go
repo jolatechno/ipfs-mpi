@@ -12,7 +12,7 @@ import (
 )
 
 func ListIpAdresses() ([]maddr.Multiaddr, error) {
-	returnAddr := []maddr.Multiaddr{}
+	returnAddr := []maddr.Multiaddr{maddr.NewMultiaddr("/ip4/127.0.0.1/tcp/0"}
 
 	addrs, err := net.InterfaceAddrs()
   if err != nil {
