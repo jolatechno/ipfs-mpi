@@ -47,8 +47,8 @@ func Load(path string, responder func(Message) error) Handler {
       }
 
       out_str := string(out)
-      if out_str[len(out_str) - 2:] == "\n" {
-        out_str = out_str[:len(out_str) - 2]
+      if out_str[len(out_str) - 1:] == "\n" {
+        out_str = out_str[:len(out_str) - 1]
       }
 
       fmt.Println("mpi handler 1, ", out_str) //----------------------------------------------------------------------------
