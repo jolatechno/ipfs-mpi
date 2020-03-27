@@ -11,7 +11,11 @@ import (
 )
 
 func main(){
-  config := ParseFlags()
+  config, err := ParseFlags()
+  if err != nil {
+    panic(err)
+  }
+  
   ctx := context.Background()
 
   host, err := libp2p.New(ctx,
@@ -21,6 +25,9 @@ func main(){
 		panic(err)
 	}
 
+  for _, addr := range host.Addrs() {
+    fmt.Println("Swarm listenning on: ", addr)
+  }
   fmt.Println("Our adress is: ", host.ID())
 
 	Store, err := store.NewStore(

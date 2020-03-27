@@ -15,7 +15,7 @@ type handler struct {
 }
 
 type Api struct {
-  port int
+  Port int
   handlers *map[string] handler
   resp *map[int] func(mpi.Message)
 }
@@ -24,15 +24,15 @@ func NewApi(port int) (*Api, error) {
   handlers := make(map[string] handler)
   resp := make(map[int] func(mpi.Message))
 
-  a := Api{
-    port:port,
-    handlers:&handlers,
-    resp:&resp,
-  }
-
-  l, err := net.Listen("tcp", fmt.Sprintf(":%d", a.port))
+  l, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
   if err != nil {
     return nil, err
+  }
+
+  a := Api{
+    Port:l.Addr().(*net.TCPAddr).Port,
+    handlers:&handlers,
+    resp:&resp,
   }
 
   go func(){
