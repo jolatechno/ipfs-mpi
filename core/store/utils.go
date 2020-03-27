@@ -125,6 +125,7 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
 
         reps, err := handler(*msg)
         if err != nil {
+          fmt.Println("StreamHandler 0, err, ", err) //----------------------------------------------------------------------------
           continue
         }
 
