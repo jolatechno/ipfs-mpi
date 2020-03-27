@@ -116,6 +116,10 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
     			continue
     		}
 
+        if str[len(str) - 2:] == "\n" {
+          str = str[:len(str) - 2]
+        }
+
         msg, err := mpi.FromString(str)
         if err != nil {
     			continue
