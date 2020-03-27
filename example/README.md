@@ -14,16 +14,16 @@ Wich will give an output ressembling :
 added QmYjH4sibLpCSNCVbHXhfCZY78Ckj2aDDMWFwup7NGJ3JD test_interpreters/dummy/0.0.0/init.py
 added Qmb5jKmyFQFDceBXLCkjdfQbJrJ5fQ6KLGJHESTJ8E5mZo test_interpreters/dummy/0.0.0/run.py
 added QmYjH4sibLpCSNCVbHXhfCZY78Ckj2aDDMWFwup7NGJ3JD test_interpreters/echo/0.0.0/init.py
-added QmYauZgRAAvxarnenQ9u8kQDRwAHRq4utRfSeqbbTpqws1 test_interpreters/echo/0.0.0/run.py
+added QmQXxoEsJSnN4BYuAXscbRLcwUP9U566YWkTtERF8MqVbq test_interpreters/echo/0.0.0/run.py
 added QmUQT4c4btHFZGgcrSzzxXTstFWSe3eS32YhVCJYGqtut7 test_interpreters/dummy/0.0.0
 added QmZ3cvbBb82beSnMZV1KP8rhzoSFJJETrtWgPm8N7xWBPM test_interpreters/dummy
-added QmS9cQp6qcgQ5GfrhQdEte8DHurgVzQNzUVWToatFfNEnv test_interpreters/echo/0.0.0
-added QmSsobFQjpYNXqQb6FLFzZHrLnZNENjh93brQYEaCRxfEf test_interpreters/echo
-added QmasBzS9wap9gJjyrd8idTa1Ray4g1URNbJa8k8sKNMNxu test_interpreters
- 519 B / 519 B [======================================================================================================================================] 100.00%
+added QmPCFULBU5tXMiJ3BnqFHWHA6w5UCA1u5WUbDD5gRP4r5s test_interpreters/echo/0.0.0
+added Qmf5WSF2TedYanhtyMFM9t8zwCSkb9ASR9PJ21TuJ1ZRXT test_interpreters/echo
+added QmPY2JaF8ZWqYY2zMm1c2RpfUKuZm4mk59ojMe62C6LYjc test_interpreters
+ 518 B / 518 B [======================================================================================================================================] 100.00%
 ```
 
-Where the line corresponding to the whole directory is `added QmasBzS9wap9gJjyrd8idTa1Ray4g1URNbJa8k8sKNMNxu test_interpreters`, so the ipfs-store that you should use will be `QmasBzS9wap9gJjyrd8idTa1Ray4g1URNbJa8k8sKNMNxu/`
+Where the line corresponding to the whole directory is `added QmPY2JaF8ZWqYY2zMm1c2RpfUKuZm4mk59ojMe62C6LYjc test_interpreters`, so the ipfs-store that you should use will be `QmPY2JaF8ZWqYY2zMm1c2RpfUKuZm4mk59ojMe62C6LYjc/`
 
 ## How to interact with an interpreter ?
 
