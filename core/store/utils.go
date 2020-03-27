@@ -49,14 +49,24 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
   })
 
   discoveryHandler := func (p *peerstore.Peerstore, id peer.ID) {
+
+    fmt.Println("discoveryHandler, 0")
+
 		Protocol := protocol.ID(e.file.String() + "//" + string(base))
+
+    fmt.Println("discoveryHandler, 1")
+
 		stream, err := (*e.Store.Host).NewStream(ctx, id, Protocol)
+
+    fmt.Println("discoveryHandler, 2")
 
 		if err != nil {
 			return
 		}
 
 		rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
+
+    fmt.Println("discoveryHandler, 3")
 
 		e.Store.Add(peer.IDB58Encode(id), func(str string) error{
     	_, err := rw.WriteString(fmt.Sprintf("%s\n", str))
