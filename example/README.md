@@ -24,3 +24,13 @@ added QmVsod5dSMxnwZfmCVE2GWXDocPRwdUjLgkggx8LV8GVPq test_interpreters
 ```
 
 Where the line corresponding to the whole directory is `added QmZyay35BsdK49tDCJpJgtJzXmtimupEbvWgisFbnPpvyi test_interpreters`, so the ipfs-store that you should use will be `QmZyay35BsdK49tDCJpJgtJzXmtimupEbvWgisFbnPpvyi/`
+
+## How to interact with an interpreter ?
+
+Using [ipfs-mpi/shell](../shell) as demonstrated in the [client.go](./) file (which demonstrate the [echo/0.0.0](./test_interpreters/echo/0.0.0) interpreter), you can send and receive messages and list connected peers.
+
+The [client.go](./) file can be built using `go build -o client` and used as follow :
+
+```
+./client ipfs-mpi-port pid
+```
