@@ -34,15 +34,11 @@ func Load(path string, responder func(Message) error) Handler {
   return Handler(func(msg Message) ([]Message, error){
     msgs := []Message{}
 
-    fmt.Println("message : ", msg)
-
     if msg.Pid == -1 {
       out, err := exec.Command("python3", path + "/run.py", msg.String()).Output()
       if err != nil{
         return msgs, nil
       }
-
-      fmt.Println(string(out))
 
       strs := strings.Split(string(out), ";")
       for _, str := range strs {
@@ -52,8 +48,6 @@ func Load(path string, responder func(Message) error) Handler {
         }
         msgs = append(msgs, *m)
       }
-
-      fmt.Println(msgs)
 
       return msgs, nil
     }

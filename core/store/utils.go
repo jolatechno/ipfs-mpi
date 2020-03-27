@@ -44,8 +44,8 @@ func (e *Entry)InitEntry() error {
 func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
   handler := mpi.Load(e.path + e.file.String(),
   func(msg mpi.Message) error {
-    fmt.Print("handler, 0")
-    return e.api.Push(msg)
+    fmt.Println("handler") //----------------------------------------------------------------------------
+    return (*e.api).Push(msg)
   })
 
   discoveryHandler := func (p *peerstore.Peerstore, id peer.ID) {
@@ -58,7 +58,7 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
 
 		rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
 
-		e.Store.Add(peer.IDB58Encode(id), func(str string) error{
+		(*e.Store).Add(peer.IDB58Encode(id), func(str string) error{
     	_, err := rw.WriteString(fmt.Sprintf("%s\n", str))
     	if err != nil {
     		return err
@@ -103,7 +103,7 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
     return hostId, keys
   }
 
-  e.api.AddHandler(e.file.String(), &messageHandler, &list)
+  (*e.api).AddHandler(e.file.String(), &messageHandler, &list)
 
   StreamHandler := func(stream network.Stream) {
 		// Create a buffer stream for non blocking read and write.
@@ -121,15 +121,14 @@ func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
     			continue
     		}
 
-        fmt.Println("StreamHandler 0 , ", *msg)
+        fmt.Println("StreamHandler 0, ", *msg) //----------------------------------------------------------------------------
 
         reps, err := handler(*msg)
-
-        fmt.Println("StreamHandler 1 , ", reps)
-
         if err != nil {
           continue
         }
+
+        fmt.Println("StreamHandler 1, ", reps) //----------------------------------------------------------------------------
 
         for _, rep := range reps {
           err := messageHandler(rep)
