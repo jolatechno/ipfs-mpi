@@ -40,18 +40,11 @@ func FromString(msg string) (*Message, error) {
   return &Message{ Pid:pid, File:splitted[1], Origin:splitted[2], From:splitted[3], To:splitted[4], Data:Data }, nil
 }
 
-type MessageStore map[string] chan []byte
-
-func (m *MessageStore)Add(msg Message) {
-  if _, ok := (*m)[msg.From]; !ok {
-    (*m)[msg.From] = make(chan []byte)
-  }
-  (*m)[msg.From] <- msg.Data
+func ListToString(host string, peers []string) string {
+  return fmt.Sprintf("%s,%s", host, strings.Join(peers, ","))
 }
 
-func (m *MessageStore)Read(From string) []byte {
-  if _, ok := (*m)[From]; !ok {
-    (*m)[From] = make(chan []byte)
-  }
-  return <- (*m)[From]
+func ListFromString(str string) (string, []string) {
+  splited := strings.Split(str, ",")
+  return splited[0], splited[1:]
 }
