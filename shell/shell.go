@@ -39,7 +39,7 @@ func NewShell(port int, pid int, file string) (*Shell, error) {
         panic(err)
       }
 
-      splitted_msg := strings.Split(msg, ";")
+      splitted_msg := strings.Split(msg[:len(msg) - 1], ";")
       if len(splitted_msg) != 2 {
         panic(errors.New("Message dosen't have a clearly defined header and content"))
       }
