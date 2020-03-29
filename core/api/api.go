@@ -90,6 +90,9 @@ func NewApi(port int, handler *message.Handler) (*Api, error) {
 
           err = store[k].Manage(msg[:len(msg) - 1])
           if err != nil {
+
+            fmt.Println("api go 1 err, ", err) //------------------------------------------------------------------------
+
             delete(store, k)
             return
           }
