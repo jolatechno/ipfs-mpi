@@ -58,7 +58,7 @@ func NewApi(port int, handler *message.Handler) (*Api, error) {
       }
 
       k := Key{ File:splitted[1], Pid:pid }
-      a.Store[k] = a.Handler.MessageStore(func(str string) error{
+      a.Store[k] = a.Handler.MessageStore(func(str string) error {
         fmt.Fprintf(c, str)
         return nil
       })
@@ -84,7 +84,7 @@ func NewApi(port int, handler *message.Handler) (*Api, error) {
   return &a, nil
 }
 
-func (a *Api)Push(msg message.Message) error{
+func (a *Api)Push(msg message.Message) error {
   f, ok := a.Store[Key{ File:msg.File, Pid:msg.Pid }]
   if !ok {
     return errors.New("no such pid")

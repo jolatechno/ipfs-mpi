@@ -2,6 +2,9 @@ package mpi
 
 import (
   "os/exec"
+  "io"
+  "bufio"
+  "fmt"
 
   "github.com/jolatechno/ipfs-mpi/core/messagestore"
 )
@@ -39,12 +42,6 @@ func (d *DaemonStore)Push(msg message.Message) error {
 }
 
 func (d *DaemonStore)Load(k Key) error {
-  d.Store[k] = d.Handler.MessageStore(func(string) error{
-    //Prgm
-    return nil
-  })
-
-  /*
   cmd := exec.Command("python3", d.Path + "/run.py")
   stdin, err := cmd.StdinPipe()
 	if err != nil {
@@ -56,17 +53,41 @@ func (d *DaemonStore)Load(k Key) error {
 		return err
 	}
 
-  stderr, err := cmd.StderrPipe()
-	if err != nil {
-		return err
-	}
-
   if err = cmd.Start(); err != nil {
     return err
-  }*/
+  }
+
+  defer stdin.Close()
+  defer stdout.Close()
+
+  reader := bufio.NewReader(stdout)
+
+  fmt.Fprintf(stdin, "%s,%s,%s", k.Origin, k.File, k.Pid)
+
+  d.Store[k] = d.Handler.MessageStore(func(str string) error{
+    io.WriteString(stdin, str)
+    return nil
+  })
 
   go func(){
+    for {
+      msg, err := reader.ReadString('\n')
+      if err != nil {
+        delete(d.Store, k)
+        return
+      }
 
+      err = d.Store[k].Manage(msg)
+      if err != nil {
+        delete(d.Store, k)
+        return
+      }
+    }
+  }()
+
+  go func(){
+    cmd.Wait()
+    delete(d.Store, k)
   }()
 
   return nil
