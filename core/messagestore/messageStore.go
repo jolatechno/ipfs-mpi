@@ -1,4 +1,4 @@
-package mpi
+package message
 
 import (
   "strings"
@@ -6,18 +6,18 @@ import (
   "fmt"
 )
 
-type handler struct {
-  send *func(Message) error
-  list *func(string) (string, []string)
+type Handler struct {
+  Send *func(Message) error
+  List *func(string) (string, []string)
 }
 
 type MessageStore struct {
   Store *map[string] chan []byte
-  Handler *handler
+  Handler *Handler
   Sender func(string) error
 }
 
-func (h *handler)MessageStore(Sender func(string) error) *MessageStore {
+func (h *Handler)MessageStore(Sender func(string) error) *MessageStore {
   store := make(map[string] chan []byte)
 
   return &MessageStore{
@@ -48,7 +48,7 @@ func (m *MessageStore)Manage(msg string) error {
   }
 
   if splitted_msg[0] == "List" {
-    (*m).Sender(fmt.Sprintf("List;%q\n", ListToString((*m.Handler.list)(splitted_msg[1]))))
+    (*m).Sender(fmt.Sprintf("List;%q\n", ListToString((*m.Handler.List)(splitted_msg[1]))))
     return nil
 
   } else if splitted_msg[0] == "Req" {
@@ -61,7 +61,7 @@ func (m *MessageStore)Manage(msg string) error {
       return err
     }
 
-    err = (*m.Handler.send)(*message)
+    err = (*m.Handler.Send)(*message)
     if err != nil {
       return err
     }

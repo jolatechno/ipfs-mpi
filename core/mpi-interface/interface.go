@@ -2,6 +2,8 @@ package mpi
 
 import (
   "os/exec"
+
+  "github.com/jolatechno/ipfs-mpi/messagestore"
 )
 
 type Key struct {
@@ -11,23 +13,20 @@ type Key struct {
 }
 
 type DaemonStore struct {
-  Store map[Key] *MessageStore
-  Handler *handler
+  Store map[Key] *message.MessageStore
+  Handler *messagehandler
   Path string
 }
 
-func NewDaemonStore(path string, send *func(Message) error, list *func(string) (string, []string)) DaemonStore {
+func NewDaemonStore(path string, handler *message.Handler) DaemonStore {
   return DaemonStore{
     Store: make(map[Key] *MessageStore),
-    Handler:&handler{
-      list:list,
-      send:send,
-    },
+    Handler:handler,
     Path:path,
   }
 }
 
-func (d *DaemonStore)Push(msg Message) error {
+func (d *DaemonStore)Push(msg message.Message) error {
   k := Key{ Origin:msg.Origin, Pid:msg.Pid }
   if _, ok := d.Store[k]; !ok {
     if err := d.load(k); err != nil {

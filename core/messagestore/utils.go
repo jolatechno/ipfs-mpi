@@ -1,4 +1,4 @@
-package mpi
+package message
 
 import (
   b64 "encoding/base64"
