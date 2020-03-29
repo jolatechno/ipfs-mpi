@@ -59,7 +59,7 @@ func NewApi(port int, handler *message.Handler) (*Api, error) {
 
       k := Key{ File:splitted[1], Pid:pid }
       a.Store[k] = a.Handler.MessageStore(func(str string) error {
-        fmt.Fprintf(c, str)
+        fmt.Fprintf(c, str + "\n")
         return nil
       })
 

@@ -24,7 +24,7 @@ func (m *Message)String() string {
 func FromString(msg string) (*Message, error) {
   splitted := strings.Split(msg, ",")
   if len(splitted) != 6 {
-    return nil, errors.New("message dosen't have the write number of field")
+    return nil, errors.New("message dosen't have the right number of field")
   }
 
   pid, err := strconv.Atoi(splitted[0])

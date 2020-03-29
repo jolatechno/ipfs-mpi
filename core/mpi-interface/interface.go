@@ -63,7 +63,7 @@ func (d *DaemonStore)Load(k Key) error {
   reader := bufio.NewReader(stdout)
 
   d.Store[k] = d.Handler.MessageStore(func(str string) error{
-    io.WriteString(stdin, str)
+    io.WriteString(stdin, str + "\n")
     return nil
   })
 
@@ -75,7 +75,7 @@ func (d *DaemonStore)Load(k Key) error {
         return
       }
 
-      err = d.Store[k].Manage(msg)
+      err = d.Store[k].Manage(msg[:len(msg) - 1])
       if err != nil {
         delete(d.Store, k)
         return
