@@ -72,11 +72,11 @@ func (s *Shell)List(file string) (string, []string){
 }
 
 func (s *Shell)Send(msg message.Message) {
-  fmt.Fprintf(s.Conn, "%Send;%s\n", msg.String())
+  fmt.Fprintf(s.Conn, "Send;%s\n", msg.String())
 }
 
 func (s *Shell)Request(From string) message.Message {
-  fmt.Fprintf(s.Conn, "%Req;%s\n", From)
+  fmt.Fprintf(s.Conn, "Req;%s\n", From)
 
   return <- s.MessageChan
 }
