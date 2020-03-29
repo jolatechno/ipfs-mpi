@@ -74,7 +74,7 @@ func (s *Shell)Send(msg message.Message) {
   fmt.Fprintf(s.Conn, "%Msg;%s\n", msg.String())
 }
 
-func (s *Shell)Reqest(From string) message.Message {
+func (s *Shell)Request(From string) message.Message {
   fmt.Fprintf(s.Conn, "%Req;%s\n", From)
 
   return <- s.MessageChan
