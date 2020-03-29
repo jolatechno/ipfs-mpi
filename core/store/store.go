@@ -58,15 +58,10 @@ func NewStore(ctx context.Context, host host.Host, config Config) (*Store, error
 
   hostId := peer.IDB58Encode(host.ID())
   list := func(str string) (string, []string, error) {
-
-    fmt.Println("list 0") //------------------------------------------------------------------------
-
     s, ok := store[str]
     if !ok {
       return hostId, []string{}, errors.New("no such interpreter")
     }
-
-    fmt.Println("list 1") //------------------------------------------------------------------------
 
     peers := s.Store
 
@@ -76,8 +71,6 @@ func NewStore(ctx context.Context, host host.Host, config Config) (*Store, error
       keys[i] = addr
       i++
     }
-
-    fmt.Println("list 2") //------------------------------------------------------------------------
 
     return hostId, keys, nil
   }
