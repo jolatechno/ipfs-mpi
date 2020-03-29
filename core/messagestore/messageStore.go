@@ -8,7 +8,7 @@ import (
 
 type Handler struct {
   Send *func(Message) error
-  List *func(string) (string, []string)
+  List *func(string) (string, []string, error)
 }
 
 type MessageStore struct {
@@ -48,7 +48,12 @@ func (m *MessageStore)Manage(msg string) error {
   }
 
   if splitted_msg[0] == "List" {
-    (*m).Sender(fmt.Sprintf("List;%s\n", ListToString((*m.Handler.List)(splitted_msg[1]))))
+    host, peers, err := (*m.Handler.List)(splitted_msg[1])
+    if err != nil {
+      return err
+    }
+    
+    (*m).Sender(fmt.Sprintf("List;%s\n", ListToString(host, peers)))
     return nil
 
   } else if splitted_msg[0] == "Req" {
