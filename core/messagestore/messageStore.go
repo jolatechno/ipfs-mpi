@@ -52,7 +52,7 @@ func (m *MessageStore)Manage(msg string) error {
     if err != nil {
       return err
     }
-    
+
     (*m).Sender(fmt.Sprintf("List;%s\n", ListToString(host, peers)))
     return nil
 

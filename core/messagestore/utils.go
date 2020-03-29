@@ -48,3 +48,8 @@ func ListFromString(str string) (string, []string) {
   splited := strings.Split(str, ",")
   return splited[0], splited[1:]
 }
+
+func Install(path string) error {
+  _, err := exec.Command("python3", path + "/init.py").Output()
+	return err
+}

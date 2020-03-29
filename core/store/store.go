@@ -3,30 +3,39 @@ package store
 import (
   "context"
   "os"
+  "errors"
 
   "github.com/jolatechno/mpi-peerstore/utils"
   "github.com/jolatechno/ipfs-mpi/core/ipfs-interface"
+  "github.com/jolatechno/ipfs-mpi/core/mpi-interface"
   "github.com/jolatechno/ipfs-mpi/core/api"
+  "github.com/jolatechno/ipfs-mpi/core/messagestore"
+  "github.com/jolatechno/mpi-peerstore"
 
   "github.com/libp2p/go-libp2p-core/protocol"
   "github.com/libp2p/go-libp2p-discovery"
   "github.com/libp2p/go-libp2p-core/host"
+  "github.com/libp2p/go-libp2p-core/peer"
 )
 
 type Store struct {
-  store map[file.File] Entry
-  host host.Host
-  routingDiscovery *discovery.RoutingDiscovery
-  shell *file.IpfsShell
+  Handler *message.Handler
+  DaemonStore *mpi.DaemonStore
   Api *api.Api
-  protocol protocol.ID
-  maxsize uint64
-  path string
+  Shell *file.IpfsShell
+  Store *map[string] *peerstore.Peerstore
+
+  Host *host.Host
+  RoutingDiscovery *discovery.RoutingDiscovery
+
+  Protocol protocol.ID
+  Maxsize uint64
+  Path string
   Ipfs_store string
 }
 
 func NewStore(ctx context.Context, host host.Host, config Config) (*Store, error) {
-  store := make(map[file.File] Entry)
+  store := make(map[string] *peerstore.Peerstore)
   proto := protocol.ID(config.Ipfs_store + config.ProtocolID)
 
   routingDiscovery, err := utils.NewKadmeliaDHT(ctx, host, config.BootstrapPeers)
@@ -34,7 +43,7 @@ func NewStore(ctx context.Context, host host.Host, config Config) (*Store, error
     return nil, err
   }
 
-if _, err := os.Stat(config.Path); os.IsNotExist(err) {
+  if _, err := os.Stat(config.Path); os.IsNotExist(err) {
     os.MkdirAll(config.Path, file.ModePerm)
   } else if err != nil {
     return nil, err
@@ -45,70 +54,70 @@ if _, err := os.Stat(config.Path); os.IsNotExist(err) {
     return nil, err
   }
 
-  api, err := api.NewApi(config.Api_port)
-  if err != nil {
-    return nil, err
+  hostId := peer.IDB58Encode(host.ID())
+  list := func(str string) (string, []string, error) {
+    e, ok := store[str]
+    if !ok {
+      return hostId, []string{}, errors.New("no such interpreter")
+    }
+
+    peers := e.Store
+
+    keys := make([]string, len(peers))
+    i := 0
+    for addr := range peers {
+      keys[i] = addr
+      i++
+    }
+
+    return hostId, keys, nil
   }
 
-  return &Store{ store:store, host:host, routingDiscovery:routingDiscovery, shell:shell, Api:api, protocol:proto, maxsize:config.Maxsize, path:config.Path }, nil
-}
+  send := func(msg message.Message) error {
+    s, ok := store[msg.File]
+    if !ok {
+      return errors.New("no such interpreter")
+    }
 
-func (s *Store)Init(ctx context.Context) error {
-  files := (*s.shell).List()
+    if (*s).Has(msg.To){
+      (*s).Write(msg.To, msg.String()) // pass on the responces
+      return nil
+    }
 
-  for _, f := range files {
-    e := NewEntry(&s.host, s.routingDiscovery, f, s.shell, s.Api, s.path)
-    err := e.LoadEntry(ctx, s.protocol)
+    ID, err := peer.IDB58Decode(msg.To)
     if err != nil {
       return err
     }
 
-    s.store[f] = *e
+    (*s.AddPeer)(s, ID)
+    (*s).Write(msg.To, msg.String()) // pass on the responces
+
+    return nil
   }
 
-  go func(){
-    for{
-      err := s.Get(ctx)
-      if err != nil { //No new file to add
-        return
-      }
-    }
-  }()
+  handler := &message.Handler{
+    List:&list,
+    Send:&send,
+  }
 
-  return nil
-}
-
-func (s *Store)Add(f file.File, ctx context.Context) error {
-  e := NewEntry(&s.host, s.routingDiscovery, f, s.shell, s.Api, s.path )
-
-  err := e.InitEntry()
+  api, err := api.NewApi(config.Api_port, handler)
   if err != nil {
-    return err
+    return nil, err
   }
 
-  err = e.LoadEntry(ctx, s.protocol)
-  if err != nil {
-    return err
-  }
+  dameonStore := mpi.NewDaemonStore(config.Path, handler)
 
-  s.store[f] = *e
-  return nil
-}
-
-func (s *Store)Del(f file.File) error {
-  return s.shell.Del(f)
-}
-
-func (s *Store)Get(ctx context.Context) error {
-  used, err := s.shell.Occupied()
-  if err != nil {
-    return err
-  }
-
-  f, err := s.shell.Get(s.maxsize - used)
-  if err != nil {
-    return err
-  }
-
-  return s.Add(*f, ctx)
+  return &Store{
+    Handler: handler,
+    DaemonStore: &dameonStore,
+    Api: api,
+    Shell: shell,
+    Store: &store,
+    Host: &host,
+    RoutingDiscovery: routingDiscovery,
+    Protocol: proto,
+    Maxsize: config.Maxsize,
+    Path: config.Path,
+    Ipfs_store: config.Ipfs_store,
+  }, nil
 }
