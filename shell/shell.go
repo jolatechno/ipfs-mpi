@@ -31,7 +31,7 @@ func NewShell(port int, pid int, file string) (*Shell, error) {
   }
 
   fmt.Fprintf(s, "%d,%s\n", pid, file)
-  
+
   go func(){
     for {
       msg, err := bufio.NewReader(s).ReadString('\n')
@@ -65,7 +65,7 @@ func NewShell(port int, pid int, file string) (*Shell, error) {
 }
 
 func (s *Shell)List(file string) (string, []string){
-  fmt.Fprintf(s.Conn, "List,%s\n", file)
+  fmt.Fprintf(s.Conn, "List;%s\n", file)
 
   list := <- s.ListChan
   return list.host, list.peers
