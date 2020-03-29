@@ -7,7 +7,6 @@ import (
   "errors"
   "strings"
 
-  "github.com/jolatechno/ipfs-mpi/core/api"
   "github.com/jolatechno/ipfs-mpi/core/messagestore"
 )
 
@@ -45,7 +44,7 @@ func NewShell(port int, pid int) (*Shell, error) {
       }
 
       if splitted_msg[0] == "List" {
-        host, peers := api.ListFromString(splitted_msg[1])
+        host, peers := message.ListFromString(splitted_msg[1])
         listChan <- list{ host:host, peers:peers }
       } else if splitted_msg[0] == "Msg" {
         m, err := message.FromString(splitted_msg[1])
