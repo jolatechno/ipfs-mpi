@@ -29,7 +29,7 @@ func (s *Store)Load(f file.File, ctx context.Context) error {
 
   Protocol := protocol.ID(f.String() + "//" + string(s.Protocol))
   hostId := peer.IDB58Encode((*s.Host).ID())
-  err := p.SetStreamHandler(Protocol, func(stream network.Stream) {
+  err := p.SetStreamHandler(s.Protocol, func(stream network.Stream) {
 		// Create a buffer stream for non blocking read and write.
 		rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
 

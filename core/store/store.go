@@ -61,14 +61,14 @@ func NewStore(ctx context.Context, host host.Host, config Config) (*Store, error
 
     fmt.Println("list 0") //------------------------------------------------------------------------
 
-    e, ok := store[str]
+    s, ok := store[str]
     if !ok {
       return hostId, []string{}, errors.New("no such interpreter")
     }
 
     fmt.Println("list 1") //------------------------------------------------------------------------
 
-    peers := e.Store
+    peers := s.Store
 
     keys := make([]string, len(peers))
     i := 0
