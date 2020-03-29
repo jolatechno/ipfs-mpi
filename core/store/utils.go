@@ -35,15 +35,22 @@ func (s *Store)Load(f file.File, ctx context.Context) error {
 
 		go func(){
       for {
+
+        fmt.Println("Load go 0") //------------------------------------------------------------------------
+
         str, err := rw.ReadString('\n')
     		if err != nil {
     			continue
     		}
 
+        fmt.Println("Load go 1, msg : ", str) //------------------------------------------------------------------------
+
         msg, err := message.FromString(str[:len(str) - 1])
         if err != nil {
     			continue
     		}
+
+        fmt.Println("Load go 2") //------------------------------------------------------------------------
 
         if msg.Origin == hostId {
           (*s.Api).Push(*msg)
