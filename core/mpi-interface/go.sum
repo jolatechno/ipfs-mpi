@@ -5,3 +5,5 @@ github.com/jolatechno/ipfs-mpi/core/messagestore v0.0.0-20200329095655-c9229dd33
 github.com/jolatechno/ipfs-mpi/core/messagestore v0.0.0-20200329095655-c9229dd334e7/go.mod h1:MBIq3l2ylheQidf4tdEpCUwiAyaK+Qw2j530+TfC72M=
 github.com/jolatechno/ipfs-mpi/core/messagestore v0.0.0-20200329110245-70dd99d56ef9 h1:yOctn5FqOSOfmsZwaa+sIamhHeJRk/gi8RS1jSd35HI=
 github.com/jolatechno/ipfs-mpi/core/messagestore v0.0.0-20200329110245-70dd99d56ef9/go.mod h1:MBIq3l2ylheQidf4tdEpCUwiAyaK+Qw2j530+TfC72M=
+github.com/jolatechno/ipfs-mpi/core/messagestore v0.0.0-20200329145751-64277e247de5 h1:Bi0HEWyY+8YHVSWNZTwU6ioTh3UDn9vYMasfx50X/AY=
+github.com/jolatechno/ipfs-mpi/core/messagestore v0.0.0-20200329145751-64277e247de5/go.mod h1:MBIq3l2ylheQidf4tdEpCUwiAyaK+Qw2j530+TfC72M=
