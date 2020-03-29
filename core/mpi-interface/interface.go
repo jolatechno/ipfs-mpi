@@ -16,14 +16,15 @@ type Key struct {
 }
 
 type DaemonStore struct {
-  Store map[Key] *message.MessageStore
+  Store *map[Key] *message.MessageStore
   Handler *message.Handler
   Path string
 }
 
 func NewDaemonStore(path string, handler *message.Handler) DaemonStore {
+  store := make(map[Key] *message.MessageStore)
   return DaemonStore{
-    Store: make(map[Key] *message.MessageStore),
+    Store: &store,
     Handler:handler,
     Path:path,
   }
@@ -31,13 +32,13 @@ func NewDaemonStore(path string, handler *message.Handler) DaemonStore {
 
 func (d *DaemonStore)Push(msg message.Message) error {
   k := Key{ Origin:msg.Origin, Pid:msg.Pid }
-  if _, ok := d.Store[k]; !ok {
+  if _, ok := (*d.Store)[k]; !ok {
     if err := d.Load(k); err != nil {
       return err
     }
   }
 
-  d.Store[k].Add(msg)
+  (*d.Store)[k].Add(msg)
   return nil
 }
 
@@ -62,7 +63,7 @@ func (d *DaemonStore)Load(k Key) error {
 
   reader := bufio.NewReader(stdout)
 
-  d.Store[k] = d.Handler.MessageStore(func(str string) error{
+  (*d.Store)[k] = d.Handler.MessageStore(func(str string) error{
     io.WriteString(stdin, str + "\n")
     return nil
   })
@@ -71,13 +72,13 @@ func (d *DaemonStore)Load(k Key) error {
     for {
       msg, err := reader.ReadString('\n')
       if err != nil {
-        delete(d.Store, k)
+        delete(*d.Store, k)
         return
       }
 
-      err = d.Store[k].Manage(msg[:len(msg) - 1])
+      err = (*d.Store)[k].Manage(msg[:len(msg) - 1])
       if err != nil {
-        delete(d.Store, k)
+        delete(*d.Store, k)
         return
       }
     }
@@ -85,7 +86,7 @@ func (d *DaemonStore)Load(k Key) error {
 
   go func(){
     cmd.Wait()
-    delete(d.Store, k)
+    delete(*d.Store, k)
   }()
 
   return nil

@@ -18,11 +18,13 @@ type Key struct {
 
 type Api struct {
   Port int
-  Store map[Key] *message.MessageStore
+  Store *map[Key] *message.MessageStore
   Handler *message.Handler
 }
 
 func NewApi(port int, handler *message.Handler) (*Api, error) {
+  store := make(map[Key] *message.MessageStore)
+
   l, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
   if err != nil {
     return nil, err
@@ -31,7 +33,7 @@ func NewApi(port int, handler *message.Handler) (*Api, error) {
   a := Api{
     Port:l.Addr().(*net.TCPAddr).Port,
     Handler:handler,
-    Store:make(map[Key] *message.MessageStore),
+    Store:&store,
   }
 
   go func(){
@@ -47,7 +49,7 @@ func NewApi(port int, handler *message.Handler) (*Api, error) {
         continue
       }
 
-      splitted := strings.Split(str, ",")
+      splitted := strings.Split(str[:len(str) - 1], ",")
       if len(splitted) != 2 {
         continue
       }
@@ -58,7 +60,7 @@ func NewApi(port int, handler *message.Handler) (*Api, error) {
       }
 
       k := Key{ File:splitted[1], Pid:pid }
-      a.Store[k] = a.Handler.MessageStore(func(str string) error {
+      store[k] = a.Handler.MessageStore(func(str string) error {
         fmt.Fprintf(c, str + "\n")
         return nil
       })
@@ -67,13 +69,13 @@ func NewApi(port int, handler *message.Handler) (*Api, error) {
         for {
           msg, err := reader.ReadString('\n')
           if err != nil {
-            delete(a.Store, k)
+            delete(store, k)
             return
           }
 
-          err = a.Store[k].Manage(msg[:len(msg) - 1])
+          err = store[k].Manage(msg[:len(msg) - 1])
           if err != nil {
-            delete(a.Store, k)
+            delete(store, k)
             return
           }
         }
@@ -85,7 +87,7 @@ func NewApi(port int, handler *message.Handler) (*Api, error) {
 }
 
 func (a *Api)Push(msg message.Message) error {
-  f, ok := a.Store[Key{ File:msg.File, Pid:msg.Pid }]
+  f, ok := (*a.Store)[Key{ File:msg.File, Pid:msg.Pid }]
   if !ok {
     return errors.New("no such pid")
   }

@@ -21,7 +21,7 @@ type Shell struct {
   MessageChan chan message.Message
 }
 
-func NewShell(port int, pid int) (*Shell, error) {
+func NewShell(port int, pid int, file string) (*Shell, error) {
   messageChan := make(chan message.Message)
   listChan := make(chan list)
 
@@ -30,7 +30,8 @@ func NewShell(port int, pid int) (*Shell, error) {
     return nil, err
   }
 
-  fmt.Fprintf(s, "%d\n", pid)
+  fmt.Fprintf(s, "%d,%s\n", pid, file)
+  
   go func(){
     for {
       msg, err := bufio.NewReader(s).ReadString('\n')
