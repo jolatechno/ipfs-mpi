@@ -71,7 +71,7 @@ func NewApi(port int, handler *message.Handler) (*Api, error) {
             return
           }
 
-          err = a.Store[k].Manage(msg)
+          err = a.Store[k].Manage(msg[:len(msg) - 1])
           if err != nil {
             delete(a.Store, k)
             return
