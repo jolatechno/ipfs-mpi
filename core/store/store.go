@@ -38,7 +38,7 @@ type Store struct {
 
 func NewStore(ctx context.Context, host host.Host, config Config) (*Store, error) {
   store := make(map[string] *peerstore.Peerstore)
-  proto := protocol.ID(config.Ipfs_store + config.ProtocolID)
+  proto := protocol.ID(config.Ipfs_store + "//" + config.ProtocolID)
 
   routingDiscovery, err := utils.NewKadmeliaDHT(ctx, host, config.BootstrapPeers)
   if err != nil {

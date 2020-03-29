@@ -27,7 +27,6 @@ func (s *Store)Add(f file.File, ctx context.Context) error {
 func (s *Store)Load(f file.File, ctx context.Context) error {
   p := peerstore.NewPeerstore(s.Host, s.RoutingDiscovery, f.String())
 
-  Protocol := protocol.ID(f.String() + "//" + string(s.Protocol))
   hostId := peer.IDB58Encode((*s.Host).ID())
   err := p.SetStreamHandler(s.Protocol, func(stream network.Stream) {
 		// Create a buffer stream for non blocking read and write.
@@ -64,7 +63,7 @@ func (s *Store)Load(f file.File, ctx context.Context) error {
     return err
   }
 
-
+  Protocol := protocol.ID(f.String() + "//" + string(s.Protocol))
   p.Listen(ctx, func (p *peerstore.Peerstore, id peer.ID) {
 
     fmt.Println("Stream 0") //------------------------------------------------------------------------
