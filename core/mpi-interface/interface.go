@@ -42,7 +42,7 @@ func (d *DaemonStore)Push(msg message.Message) error {
 }
 
 func (d *DaemonStore)Load(k Key) error {
-  cmd := exec.Command("python3", d.Path + "/run.py")
+  cmd := exec.Command("python3", d.Path + "/run.py", k.Origin, fmt.Sprint(k.Pid))
   stdin, err := cmd.StdinPipe()
 	if err != nil {
 		return err
@@ -61,8 +61,6 @@ func (d *DaemonStore)Load(k Key) error {
   defer stdout.Close()
 
   reader := bufio.NewReader(stdout)
-
-  fmt.Fprintf(stdin, "%s,%s,%s", k.Origin, k.File, k.Pid)
 
   d.Store[k] = d.Handler.MessageStore(func(str string) error{
     io.WriteString(stdin, str)
