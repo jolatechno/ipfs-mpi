@@ -48,11 +48,11 @@ func (m *MessageStore)Manage(msg string) error {
   }
 
   if splitted_msg[0] == "List" {
-    (*m).Sender(fmt.Sprintf("List;%q\n", ListToString((*m.Handler.List)(splitted_msg[1]))))
+    (*m).Sender(fmt.Sprintf("List;%s\n", ListToString((*m.Handler.List)(splitted_msg[1]))))
     return nil
 
   } else if splitted_msg[0] == "Req" {
-    (*m).Sender(fmt.Sprintf("Msg;%q\n", m.Read(splitted_msg[1])))
+    (*m).Sender(fmt.Sprintf("Msg;%s\n", m.Read(splitted_msg[1])))
     return nil
 
   } else if splitted_msg[0] == "Send" {
