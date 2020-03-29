@@ -14,7 +14,7 @@ To create a new shell use `Shell, err := shell.NewShell(port, pid)` where `port`
 
 `Shell.Send(msg)` will send `msg` to `msg.To` to be interpreted by `file` (see the Message type of [ipfs-mpi/core/mpi-interface](../core/mpi-interface) for more information).
 
-`Shell.Req(From)` will return the oldest message received from `From`.
+`Shell.Request(From)` will return the oldest message received from `From`.
 
 ### WARNING : Development in progress, might contain bug
 
