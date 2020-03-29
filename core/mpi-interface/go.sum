@@ -1,1 +1,3 @@
 github.com/jolatechno/ipfs-mpi v0.0.0-20200328220822-ca848059deb9 h1:4bDkB3H0hFPUnYc4kVC7ZdP6/34oij6WsGW+wA6TNJQ=
+github.com/jolatechno/ipfs-mpi/core/messagestore v0.0.0-20200329081926-e9fbcd86cf4e h1:AVBfTTJtJWg/0f9ii1S2L+/MMSuj9IDl9SU/s/7Wlp0=
+github.com/jolatechno/ipfs-mpi/core/messagestore v0.0.0-20200329081926-e9fbcd86cf4e/go.mod h1:MBIq3l2ylheQidf4tdEpCUwiAyaK+Qw2j530+TfC72M=

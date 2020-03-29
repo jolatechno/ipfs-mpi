@@ -6,16 +6,9 @@
 
 ## Info
 
-Interface with mpi.
+Stores incoming messages and handle message request.
 
 ### WARNING : Development in progress, might contain bug
-
-## ToDo
-
-__main changes:__
-
-- [x] manage mpi function loading
-- [x] handle mpi message
 
 ## License
 

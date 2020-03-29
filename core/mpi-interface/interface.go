@@ -3,7 +3,7 @@ package mpi
 import (
   "os/exec"
 
-  "github.com/jolatechno/ipfs-mpi/messagestore"
+  "github.com/jolatechno/ipfs-mpi/core/messagestore"
 )
 
 type Key struct {
@@ -14,13 +14,13 @@ type Key struct {
 
 type DaemonStore struct {
   Store map[Key] *message.MessageStore
-  Handler *messagehandler
+  Handler *message.Handler
   Path string
 }
 
 func NewDaemonStore(path string, handler *message.Handler) DaemonStore {
   return DaemonStore{
-    Store: make(map[Key] *MessageStore),
+    Store: make(map[Key] *message.MessageStore),
     Handler:handler,
     Path:path,
   }
@@ -29,7 +29,7 @@ func NewDaemonStore(path string, handler *message.Handler) DaemonStore {
 func (d *DaemonStore)Push(msg message.Message) error {
   k := Key{ Origin:msg.Origin, Pid:msg.Pid }
   if _, ok := d.Store[k]; !ok {
-    if err := d.load(k); err != nil {
+    if err := d.Load(k); err != nil {
       return err
     }
   }
@@ -38,7 +38,7 @@ func (d *DaemonStore)Push(msg message.Message) error {
   return nil
 }
 
-func (d *DaemonStore)load(k Key) error {
+func (d *DaemonStore)Load(k Key) error {
   d.Store[k] = d.Handler.MessageStore(func(string) error{
     //Prgm
     return nil
