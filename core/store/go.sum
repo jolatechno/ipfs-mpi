@@ -245,6 +245,8 @@ github.com/jolatechno/mpi-peerstore v0.0.0-20200330090244-146b458fe1df h1:ShEb/h
 github.com/jolatechno/mpi-peerstore v0.0.0-20200330090244-146b458fe1df/go.mod h1:y91UEFWa5fKGXLF2EZDuuicnAlksa3lht/zypW7V5J8=
 github.com/jolatechno/mpi-peerstore v0.0.0-20200330090744-fc4b0ea05236 h1:3HEajWZGJcSuG4155UM7UvqIAyDpxdOP9fEx3yoMEOk=
 github.com/jolatechno/mpi-peerstore v0.0.0-20200330090744-fc4b0ea05236/go.mod h1:y91UEFWa5fKGXLF2EZDuuicnAlksa3lht/zypW7V5J8=
+github.com/jolatechno/mpi-peerstore v0.0.0-20200330095003-a9afe4e27cc9 h1:gXnVWnw+rg43MBr/hszsCTEZ/6+SbI6+OPa9+gRmN5g=
+github.com/jolatechno/mpi-peerstore v0.0.0-20200330095003-a9afe4e27cc9/go.mod h1:y91UEFWa5fKGXLF2EZDuuicnAlksa3lht/zypW7V5J8=
 github.com/jolatechno/mpi-peerstore/utils v0.0.0-20200324175431-bce8d0c3e565 h1:2oSDcLAauw3WjOu8sIUeMmKmuLsB6PFPBM7KR5LJT2M=
 github.com/jolatechno/mpi-peerstore/utils v0.0.0-20200324175431-bce8d0c3e565/go.mod h1:y6K/3EYaMNlvtFZ8RPeGMaeLEof85TCtQr098joggcc=
 github.com/jolatechno/mpi-peerstore/utils v0.0.0-20200326184140-6e3bae7ce25d h1:rtB4Feqo8aub8PQlVxbFGvJ87dSP+Rykv9V0uS+S5fk=
@@ -263,6 +265,8 @@ github.com/jolatechno/mpi-peerstore/utils v0.0.0-20200330090244-146b458fe1df h1:
 github.com/jolatechno/mpi-peerstore/utils v0.0.0-20200330090244-146b458fe1df/go.mod h1:y6K/3EYaMNlvtFZ8RPeGMaeLEof85TCtQr098joggcc=
 github.com/jolatechno/mpi-peerstore/utils v0.0.0-20200330090744-fc4b0ea05236 h1:XkM2BKFyUPjw0nhRxl3gabvcjQ/EqybkAbO0XyTnMk8=
 github.com/jolatechno/mpi-peerstore/utils v0.0.0-20200330090744-fc4b0ea05236/go.mod h1:y6K/3EYaMNlvtFZ8RPeGMaeLEof85TCtQr098joggcc=
+github.com/jolatechno/mpi-peerstore/utils v0.0.0-20200330095003-a9afe4e27cc9 h1:7oSS2tm6xxdcimBj5XORazi4xhZT4eqLrc8y1mCKBvg=
+github.com/jolatechno/mpi-peerstore/utils v0.0.0-20200330095003-a9afe4e27cc9/go.mod h1:y6K/3EYaMNlvtFZ8RPeGMaeLEof85TCtQr098joggcc=
 github.com/jrick/logrotate v1.0.0/go.mod h1:LNinyqDIJnpAur+b8yyulnQw/wDuN1+BYKlTRt3OuAQ=
 github.com/kami-zh/go-capturer v0.0.0-20171211120116-e492ea43421d/go.mod h1:P2viExyCEfeWGU259JnaQ34Inuec4R38JCyBx2edgD0=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=
