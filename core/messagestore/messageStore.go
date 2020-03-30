@@ -31,7 +31,10 @@ func (m *MessageStore)Add(msg Message) {
   if _, ok := (*m.Store)[msg.From]; !ok {
     (*m.Store)[msg.From] = make(chan []byte)
   }
-  (*m.Store)[msg.From] <- msg.Data
+
+  go func(){
+    (*m.Store)[msg.From] <- msg.Data
+  }()
 }
 
 func (m *MessageStore)Read(From string) []byte {

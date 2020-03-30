@@ -59,7 +59,7 @@ func ParseFlags() (store.Config, error) {
 	}
 
 	config.ListenAddresses = addrs
-	config.ProtocolID = "ipfs-mpi-v2/1.0.0" //set to the ipfs-mpi version
+	config.ProtocolID = "ipfs-mpi2" //set to the ipfs-mpi version
 
 	flag.StringVar(&config.Url, "ipfs-api", "/ip4/127.0.0.1/tcp/5001", "Local ipfs daemon url")
 	flag.StringVar(&config.Path, "path", "interpreter/", "path to the interpretor directory")
