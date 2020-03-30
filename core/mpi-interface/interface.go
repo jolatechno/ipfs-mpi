@@ -61,9 +61,6 @@ func (d *DaemonStore)Load(k Key) error {
     return err
   }
 
-  defer stdin.Close()
-  defer stdout.Close()
-
   reader := bufio.NewReader(stdout)
 
   (*d.Store)[k] = d.Handler.MessageStore(func(str string) error {
