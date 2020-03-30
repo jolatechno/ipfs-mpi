@@ -5,8 +5,6 @@ import (
   "os"
   "errors"
 
-  "fmt"
-
   "github.com/jolatechno/mpi-peerstore/utils"
   "github.com/jolatechno/ipfs-mpi/core/ipfs-interface"
   "github.com/jolatechno/ipfs-mpi/core/mpi-interface"
@@ -76,15 +74,10 @@ func NewStore(ctx context.Context, host host.Host, config Config) (*Store, error
   }
 
   send := func(msg message.Message) error {
-
-    fmt.Println("send 0") //------------------------------------------------------------------------
-
     s, ok := store[msg.File]
     if !ok {
       return errors.New("no such interpreter")
     }
-
-    fmt.Println("send 1") //------------------------------------------------------------------------
 
     if (*s).Has(msg.To){
       (*s).Write(msg.To, msg.String()) // pass on the responces
@@ -96,7 +89,7 @@ func NewStore(ctx context.Context, host host.Host, config Config) (*Store, error
       return err
     }
 
-    (*s.AddPeer)(s, ID)
+    (*s.AddPeer)(ID)
     (*s).Write(msg.To, msg.String()) // pass on the responces
 
     return nil

@@ -65,15 +65,10 @@ func (s *Store)Load(f file.File, ctx context.Context) error {
 
   Protocol := protocol.ID(f.String() + "//" + string(s.Protocol))
   p.Listen(ctx, func (p *peerstore.Peerstore, id peer.ID) {
-
-    fmt.Println("Stream 0") //------------------------------------------------------------------------
-
     stream, err := (*s.Host).NewStream(ctx, id, Protocol)
     if err != nil {
       return
     }
-
-    fmt.Println("Stream 1") //------------------------------------------------------------------------
 
     rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
 
@@ -89,9 +84,6 @@ func (s *Store)Load(f file.File, ctx context.Context) error {
 
       return nil
     })
-
-    fmt.Println("Stream 2") //------------------------------------------------------------------------
-
   })
   p.Annonce(ctx)
 
