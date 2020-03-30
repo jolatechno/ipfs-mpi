@@ -52,8 +52,14 @@ func (s *Store)Load(f file.File, ctx context.Context) error {
         fmt.Println("Load go 2") //------------------------------------------------------------------------
 
         if msg.Origin == hostId {
+
+          fmt.Println("load go 3 push back") //------------------------------------------------------------------------
+
           (*s.Api).Push(*msg)
         } else {
+
+          fmt.Println("load go 3 exec") //------------------------------------------------------------------------
+
           (*s.DaemonStore).Push(*msg)
         }
       }

@@ -291,6 +291,8 @@ github.com/jolatechno/ipfs-mpi/core/store v0.0.0-20200329213429-2bda101c35db h1:
 github.com/jolatechno/ipfs-mpi/core/store v0.0.0-20200329213429-2bda101c35db/go.mod h1:FaeQA/5xhdE7YyE5Atg5wJLQQh1Ez3pQC/qf465N5j4=
 github.com/jolatechno/ipfs-mpi/core/store v0.0.0-20200329214455-9f2be73d68a6 h1:q6Vxw1+XVg2kDO9f8SqWz+nZEb7CwFRAP6MiWSQgeJo=
 github.com/jolatechno/ipfs-mpi/core/store v0.0.0-20200329214455-9f2be73d68a6/go.mod h1:FaeQA/5xhdE7YyE5Atg5wJLQQh1Ez3pQC/qf465N5j4=
+github.com/jolatechno/ipfs-mpi/core/store v0.0.0-20200330073350-fcceaeb52b4a h1:g9TE86Seqqu6nuJ1ERwoyrYllWI5NaWPjmfPPE/QDho=
+github.com/jolatechno/ipfs-mpi/core/store v0.0.0-20200330073350-fcceaeb52b4a/go.mod h1:euoEO1seYWoiOANC6DY1xoQZ6wsPYlgXrxqxqCh8xBY=
 github.com/jolatechno/mpi-peerstore v0.0.0-20200324175431-bce8d0c3e565 h1:xnKJhzcvjVK4bxFAV5fHlXR6O5neGTNs4CW6fg+c9Wg=
 github.com/jolatechno/mpi-peerstore v0.0.0-20200324175431-bce8d0c3e565/go.mod h1:d8aptYapVb/5Z/QddGgjMlhylImf97RdZrMqyt7ZVjY=
 github.com/jolatechno/mpi-peerstore v0.0.0-20200326184411-b8c22303be58 h1:blPo2H0HAkT6H0m2TE8k1W/32i8c9QmYPBL48GGdMIo=
@@ -301,6 +303,8 @@ github.com/jolatechno/mpi-peerstore v0.0.0-20200329131548-8b723735a88f h1:JVxzGm
 github.com/jolatechno/mpi-peerstore v0.0.0-20200329131548-8b723735a88f/go.mod h1:y91UEFWa5fKGXLF2EZDuuicnAlksa3lht/zypW7V5J8=
 github.com/jolatechno/mpi-peerstore v0.0.0-20200329213240-4b887bfebc89 h1:i+BdmmQt/obE3uQGA2pYt7eWdsc8oeDLX7z5cIYRe7o=
 github.com/jolatechno/mpi-peerstore v0.0.0-20200329213240-4b887bfebc89/go.mod h1:y91UEFWa5fKGXLF2EZDuuicnAlksa3lht/zypW7V5J8=
+github.com/jolatechno/mpi-peerstore v0.0.0-20200330061631-565f79e67459 h1:z4Y48cs4TFFZ6z4Xs9o7A0qxdm1S7IorZ60chzlbA8U=
+github.com/jolatechno/mpi-peerstore v0.0.0-20200330061631-565f79e67459/go.mod h1:y91UEFWa5fKGXLF2EZDuuicnAlksa3lht/zypW7V5J8=
 github.com/jolatechno/mpi-peerstore/utils v0.0.0-20200324175431-bce8d0c3e565 h1:2oSDcLAauw3WjOu8sIUeMmKmuLsB6PFPBM7KR5LJT2M=
 github.com/jolatechno/mpi-peerstore/utils v0.0.0-20200324175431-bce8d0c3e565/go.mod h1:y6K/3EYaMNlvtFZ8RPeGMaeLEof85TCtQr098joggcc=
 github.com/jolatechno/mpi-peerstore/utils v0.0.0-20200326184411-b8c22303be58 h1:XZ/5BY6Mwts4SZQWtux7rvoDEIN5aonS3BtnfrZG3og=
@@ -311,6 +315,8 @@ github.com/jolatechno/mpi-peerstore/utils v0.0.0-20200329131548-8b723735a88f h1:
 github.com/jolatechno/mpi-peerstore/utils v0.0.0-20200329131548-8b723735a88f/go.mod h1:y6K/3EYaMNlvtFZ8RPeGMaeLEof85TCtQr098joggcc=
 github.com/jolatechno/mpi-peerstore/utils v0.0.0-20200329213240-4b887bfebc89 h1:uiz/tU2qbbq9KofqxtNglA+3ZOFlaohqbr+2uzgo8T0=
 github.com/jolatechno/mpi-peerstore/utils v0.0.0-20200329213240-4b887bfebc89/go.mod h1:y6K/3EYaMNlvtFZ8RPeGMaeLEof85TCtQr098joggcc=
+github.com/jolatechno/mpi-peerstore/utils v0.0.0-20200330061631-565f79e67459 h1:HnlOr7Cvpkl15H1UvhqDgGz1yFCrm6+URK6hB/Szd/0=
+github.com/jolatechno/mpi-peerstore/utils v0.0.0-20200330061631-565f79e67459/go.mod h1:y6K/3EYaMNlvtFZ8RPeGMaeLEof85TCtQr098joggcc=
 github.com/jrick/logrotate v1.0.0/go.mod h1:LNinyqDIJnpAur+b8yyulnQw/wDuN1+BYKlTRt3OuAQ=
 github.com/kami-zh/go-capturer v0.0.0-20171211120116-e492ea43421d/go.mod h1:P2viExyCEfeWGU259JnaQ34Inuec4R38JCyBx2edgD0=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=
