@@ -4,7 +4,7 @@ require (
 	github.com/jolatechno/ipfs-mpi/core/api v0.0.0-20200330083009-a876942a2862
 	github.com/jolatechno/ipfs-mpi/core/ipfs-interface v0.0.0-20200329145527-b53dbf47fbdc
 	github.com/jolatechno/ipfs-mpi/core/messagestore v0.0.0-20200330082832-04807137b0ce
-	github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200330100557-42cc06c20052
+	github.com/jolatechno/ipfs-mpi/core/mpi-interface v0.0.0-20200330101841-b7458b61986c
 	github.com/jolatechno/mpi-peerstore v0.0.0-20200330095003-a9afe4e27cc9
 	github.com/jolatechno/mpi-peerstore/utils v0.0.0-20200330095003-a9afe4e27cc9
 	github.com/libp2p/go-libp2p-core v0.3.0
