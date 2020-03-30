@@ -31,6 +31,9 @@ func NewDaemonStore(path string, handler *message.Handler) DaemonStore {
 }
 
 func (d *DaemonStore)Push(msg message.Message) error {
+
+  fmt.Println("Pushing : ", msg.String) //------------------------------------------------------------------------
+
   k := Key{ Origin:msg.Origin, Pid:msg.Pid }
   if _, ok := (*d.Store)[k]; !ok {
     if err := d.Load(k); err != nil {
@@ -70,11 +73,16 @@ func (d *DaemonStore)Load(k Key) error {
 
   go func(){
     for {
+
+      fmt.Println("go Load 0") //------------------------------------------------------------------------
+
       msg, err := reader.ReadString('\n')
       if err != nil {
         delete(*d.Store, k)
         return
       }
+
+      fmt.Println("go Load 1, msg : ", msg) //------------------------------------------------------------------------
 
       err = (*d.Store)[k].Manage(msg[:len(msg) - 1])
       if err != nil {

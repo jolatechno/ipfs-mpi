@@ -29,38 +29,32 @@ func (s *Store)Load(f file.File, ctx context.Context) error {
 
   hostId := peer.IDB58Encode((*s.Host).ID())
   err := p.SetStreamHandler(s.Protocol, func(stream network.Stream) {
-
-    fmt.Println("StreamHandler 0") //------------------------------------------------------------------------
 		// Create a buffer stream for non blocking read and write.
 		rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
 
 		go func(){
       for {
-
-        fmt.Println("Load go 0") //------------------------------------------------------------------------
-
         str, err := rw.ReadString('\n')
     		if err != nil {
+
+          fmt.Println("load go err : ", err) //------------------------------------------------------------------------
+
     			continue
     		}
-
-        fmt.Println("Load go 1, msg : ", str) //------------------------------------------------------------------------
 
         msg, err := message.FromString(str[:len(str) - 1])
         if err != nil {
     			continue
     		}
 
-        fmt.Println("Load go 2") //------------------------------------------------------------------------
-
         if msg.Origin == hostId {
 
-          fmt.Println("load go 3 push back") //------------------------------------------------------------------------
+          fmt.Println("load go 3 push back, msg : ", str) //------------------------------------------------------------------------
 
           (*s.Api).Push(*msg)
         } else {
 
-          fmt.Println("load go 3 exec") //------------------------------------------------------------------------
+          fmt.Println("load go 3 exec, msg : ", str) //------------------------------------------------------------------------
 
           (*s.DaemonStore).Push(*msg)
         }
