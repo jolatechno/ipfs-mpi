@@ -32,7 +32,7 @@ func NewDaemonStore(path string, handler *message.Handler) DaemonStore {
 
 func (d *DaemonStore)Push(msg message.Message) error {
 
-  fmt.Println("Pushing : ", msg.String) //------------------------------------------------------------------------
+  fmt.Println("Pushing : ", msg.String()) //------------------------------------------------------------------------
 
   k := Key{ Origin:msg.Origin, Pid:msg.Pid }
   if _, ok := (*d.Store)[k]; !ok {
@@ -66,7 +66,10 @@ func (d *DaemonStore)Load(k Key) error {
 
   reader := bufio.NewReader(stdout)
 
-  (*d.Store)[k] = d.Handler.MessageStore(func(str string) error{
+  (*d.Store)[k] = d.Handler.MessageStore(func(str string) error {
+
+    fmt.Println("mpi writer, msg : ", str) //------------------------------------------------------------------------
+
     io.WriteString(stdin, str + "\n")
     return nil
   })
@@ -74,7 +77,7 @@ func (d *DaemonStore)Load(k Key) error {
   go func(){
     for {
 
-      fmt.Println("go Load 0") //------------------------------------------------------------------------
+      fmt.Println("mpi go Load 0") //------------------------------------------------------------------------
 
       msg, err := reader.ReadString('\n')
       if err != nil {
@@ -82,7 +85,7 @@ func (d *DaemonStore)Load(k Key) error {
         return
       }
 
-      fmt.Println("go Load 1, msg : ", msg) //------------------------------------------------------------------------
+      fmt.Println("mpi go Load 1, msg : ", msg) //------------------------------------------------------------------------
 
       err = (*d.Store)[k].Manage(msg[:len(msg) - 1])
       if err != nil {
