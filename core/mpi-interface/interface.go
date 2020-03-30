@@ -81,6 +81,9 @@ func (d *DaemonStore)Load(k Key) error {
 
       msg, err := reader.ReadString('\n')
       if err != nil {
+
+        fmt.Println("mpi go Load err : ", err) //------------------------------------------------------------------------
+
         delete(*d.Store, k)
         return
       }

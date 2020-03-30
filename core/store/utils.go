@@ -36,10 +36,7 @@ func (s *Store)Load(f file.File, ctx context.Context) error {
       for {
         str, err := rw.ReadString('\n')
     		if err != nil {
-
-          fmt.Println("load go err : ", err) //------------------------------------------------------------------------
-
-    			continue
+          return // error on read should just disconnect the peer
     		}
 
         msg, err := message.FromString(str[:len(str) - 1])
