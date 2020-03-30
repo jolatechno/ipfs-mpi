@@ -71,7 +71,7 @@ func (s *Store)Load(f file.File, ctx context.Context) error {
 
   Protocol := protocol.ID(f.String() + "//" + string(s.Protocol))
 
-  fmt.Print(Protocol)
+  fmt.Println(Protocol) //------------------------------------------------------------------------
 
   p.Listen(ctx, func (p *peerstore.Peerstore, id peer.ID) {
     stream, err := (*s.Host).NewStream(ctx, id, Protocol)
