@@ -5,6 +5,8 @@ import (
   "os"
   "errors"
 
+  "fmt"
+
   "github.com/jolatechno/mpi-peerstore/utils"
   "github.com/jolatechno/ipfs-mpi/core/ipfs-interface"
   "github.com/jolatechno/ipfs-mpi/core/mpi-interface"
@@ -80,6 +82,9 @@ func NewStore(ctx context.Context, host host.Host, config Config) (*Store, error
     }
 
     if (*s).Has(msg.To){
+
+      fmt.Println("Writing") //------------------------------------------------------------------------
+
       (*s).Write(msg.To, msg.String()) // pass on the responces
       return nil
     }

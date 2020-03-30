@@ -29,6 +29,8 @@ func (s *Store)Load(f file.File, ctx context.Context) error {
 
   hostId := peer.IDB58Encode((*s.Host).ID())
   err := p.SetStreamHandler(s.Protocol, func(stream network.Stream) {
+
+    fmt.Println("StreamHandler 0") //------------------------------------------------------------------------
 		// Create a buffer stream for non blocking read and write.
 		rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
 
@@ -70,9 +72,6 @@ func (s *Store)Load(f file.File, ctx context.Context) error {
   }
 
   Protocol := protocol.ID(f.String() + "//" + string(s.Protocol))
-
-  fmt.Println(Protocol) //------------------------------------------------------------------------
-
   p.Listen(ctx, func (p *peerstore.Peerstore, id peer.ID) {
     stream, err := (*s.Host).NewStream(ctx, id, Protocol)
     if err != nil {
