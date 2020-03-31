@@ -1,4 +1,4 @@
-package file
+package ipfs
 
 import (
   "io/ioutil"

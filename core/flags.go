@@ -51,7 +51,7 @@ func ListIpAdresses() ([]maddr.Multiaddr, error) {
 	return returnAddr, nil
 }
 
-func ParseFlags() (store.Config, error) {
+func ParseFlags() (store.Config, error) {/*
 	config := store.Config{}
 	addrs, err := ListIpAdresses()
 	if err != nil {
@@ -70,5 +70,5 @@ func ParseFlags() (store.Config, error) {
 	flag.IntVar(&config.Api_port, "p", 0, "Set the api port")
 	flag.Parse()
 
-	return config, nil
+	return config, nil*/
 }
