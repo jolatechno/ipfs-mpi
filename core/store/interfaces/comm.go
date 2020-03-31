@@ -51,30 +51,39 @@ func (r *Remote)Get() string {
   readChan := make(chan string)
 	errChan := make(chan error)
 
-	go func() {
-		str, err := r.Stream.ReadString('\n')
-		if err != nil {
-			errChan <- err
-		} else {
-			readChan <- str
-		}
-	}()
-
   for {
+    go func() {
+  		str, err := r.Stream.ReadString('\n')
+  		if err != nil {
+  			errChan <- err
+  		} else {
+  			readChan <- str
+  		}
+  	}()
+
     select {
     case res := <- readChan:
-      if r.Offset == 0 {
+      if r.Offset > 0 {
+        r.Offset --
+      } else {
+        close(readChan)
+        close(errChan)
+
         r.Received ++
         return res
-      } else {
-        r.Offset --
       }
 
     case <- errChan:
+      close(readChan)
+      close(errChan)
+
       r.Reset()
       return r.Get()
 
     case <- time.After(r.Timeout):
+      close(readChan)
+      close(errChan)
+
       r.Reset()
       return r.Get()
     }
