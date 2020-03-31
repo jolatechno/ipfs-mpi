@@ -3,91 +3,101 @@ package interfaces
 import (
   "errors"
   "time"
+  "bufio"
 )
 
 type Remote struct {
   Timeout time.Duration
   NewAdrress *func() string
-  NewSender *func(string, func(string)) *func(string) error
+  NewSender *func(string) *bufio.ReadWriter
   NotifyReset *func(string)
-  Sender *func(string) error
+  Stream *bufio.ReadWriter
   Sent []string
   InChannel chan string
   Offset int
   Received int
 }
 
-func NewRemote(newAdrress *func() string, newSender *func(string, func(string)) *func(string) error, notifyReset *func(string), timeout time.Duration) *Remote {
+func NewRemote(newAdrress *func() string, newSender *func(string) *bufio.ReadWriter, notifyReset *func(string), timeout time.Duration) *Remote {
   return &Remote{
     Timeout:timeout,
     NewAdrress: newAdrress,
     NewSender:newSender,
     NotifyReset:notifyReset,
-    Sender:nil,
+    Stream:nil,
     Sent:[]string{},
     InChannel:make(chan string),
     Offset:0,
     Received:0,
   }
-
-}
-
-func (r *Remote)Push(msg string) {
-  if r.Offset == 0 {
-    r.Received++
-    go func(){
-      r.InChannel <- msg
-    }()
-  } else {
-    r.Offset--
-  }
 }
 
 func (r *Remote)Send(msg string) {
   r.Sent = append(r.Sent, msg)
-  err := (*r.Sender)(msg)
+  _, err := r.Stream.WriteString(msg)
   if err != nil {
     r.Reset()
+    return
+  }
+
+  err = r.Stream.Flush()
+  if err != nil {
+    r.Reset()
+    return
   }
 }
 
 func (r *Remote)Get() string {
-  select {
-    case res := <- r.InChannel:
-      return res
+  readChan := make(chan string)
+	errChan := make(chan error)
+
+	go func() {
+		str, err := r.Stream.ReadString('\n')
+		if err != nil {
+			errChan <- err
+		} else {
+			readChan <- str
+		}
+	}()
+
+  for {
+    select {
+    case res := <- readChan:
+      if r.Offset == 0 {
+        r.Received ++
+        return res
+      } else {
+        r.Offset --
+      }
+
+    case <- errChan:
+      r.Reset()
+      return r.Get()
 
     case <- time.After(r.Timeout):
       r.Reset()
       return r.Get()
+    }
   }
 }
 
 func (r *Remote)Reset() {
   addr := (*r.NewAdrress)()
   r.Offset = r.Received
-  r.Sender = (*r.NewSender)(addr, r.Push)
+  r.Stream = (*r.NewSender)(addr)
+  (*r.NotifyReset)(addr)
 
   for _, msg := range r.Sent {
-    err := (*r.Sender)(msg)
-    if err != nil {
-      r.Reset()
-      return
-    }
+    r.Send(msg)
   }
-
-  (*r.NotifyReset)(addr)
 }
 
 func (r *Remote)Replace(addr string) {
   r.Offset = r.Received
-  r.Sender = (*r.NewSender)(addr, r.Push)
+  r.Stream = (*r.NewSender)(addr)
 
   for _, msg := range r.Sent {
-    err := (*r.Sender)(msg)
-    if err != nil {
-      r.Reset()
-      return
-    }
+    r.Send(msg)
   }
 }
 
@@ -96,49 +106,38 @@ type Comm struct {
   Kill *func()
 }
 
-func NewComm(n int, kill *func(), newAdrress *func() string, newSender *func(string, func(string)) *func(string) error, notifyReset *func(int, string), timeout time.Duration) Comm {
+func NewComm(n int, kill *func(), newAdrress *func() string, newSender *func(string) *bufio.ReadWriter, encodeNotify *func(int, string) string, timeout time.Duration) Comm {
   addrs := make([]string, n)
   for i := range addrs {
     addrs[i] = ""
   }
-  return LoadComm(0, addrs, kill, newAdrress, newSender, notifyReset, timeout)
+  return LoadComm(0, addrs, kill, newAdrress, newSender, encodeNotify, timeout)
 }
 
-func LoadComm(idx int, addrs []string, kill *func(), newAdrress *func() string, newSender *func(string, func(string)) *func(string) error, notifyReset *func(int, string), timeout time.Duration) Comm {
+func LoadComm(idx int, addrs []string, kill *func(), newAdrress *func() string, newSender *func(string) *bufio.ReadWriter, encodeNotify *func(int, string) string, timeout time.Duration) Comm {
   c := Comm{
     Remotes:make([]*Remote, len(addrs)),
     Kill:kill,
   }
 
+  notifyResetIdx := func(i int) *func(string) {
+    notify := func(str string) {
+      for _, r := range c.Remotes {
+        (*r).Send((*encodeNotify)(i, str))
+      }
+    }
+
+    return &notify
+  }
+
   for i, addr := range addrs {
     if i != idx {
-      c.Remotes[i] = NewRemote(newAdrress, newSender, notifyResetIdx(i, notifyReset), timeout)
+      c.Remotes[i] = NewRemote(newAdrress, newSender, notifyResetIdx(i), timeout)
       if addr == "" {
         (*c.Remotes[i]).Reset()
       } else {
         (*c.Remotes[i]).Replace(addr)
       }
-    } else {
-      newAddressSelf := func() string {
-        (*c.Kill)()
-        return ""
-      }
-
-      notifyResetSelf := func(_ string) {
-        (*c.Kill)()
-      }
-
-      newSenderSelf := func(_ string, push func(string)) *func(string) error{
-        send := func(str string) error {
-          push(str)
-          return nil
-        }
-
-        return &send
-      }
-
-      c.Remotes[i] = NewRemote(&newAddressSelf, &newSenderSelf, &notifyResetSelf, timeout)
-      (*c.Remotes[i]).Replace("")
     }
   }
 
@@ -169,12 +168,4 @@ func (c *Comm)Replace(i int, addr string) error {
 
   (*c.Remotes[i]).Replace(addr)
   return nil
-}
-
-func notifyResetIdx(i int, notifyReset *func(int, string)) *func(string) {
-  notify := func(addr string) {
-    (*notifyReset)(i, addr)
-  }
-
-  return &notify
 }
