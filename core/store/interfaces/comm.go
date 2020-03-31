@@ -110,10 +110,7 @@ func (r *Remote)Replace(addr string) {
   }
 }
 
-type Comm struct {
-  Remotes []*Remote
-  Kill *func()
-}
+type Comm []*Remote
 
 func NewComm(n int, kill *func(), newAdrress *func() string, newSender *func(string) *bufio.ReadWriter, encodeNotify *func(int, string) string, timeout time.Duration) Comm {
   addrs := make([]string, n)
@@ -124,14 +121,12 @@ func NewComm(n int, kill *func(), newAdrress *func() string, newSender *func(str
 }
 
 func LoadComm(idx int, addrs []string, kill *func(), newAdrress *func() string, newSender *func(string) *bufio.ReadWriter, encodeNotify *func(int, string) string, timeout time.Duration) Comm {
-  c := Comm{
-    Remotes:make([]*Remote, len(addrs)),
-    Kill:kill,
-  }
+  c := make([]*Remote, len(addrs))
+  c[idx] = nil
 
   notifyResetIdx := func(i int) *func(string) {
     notify := func(str string) {
-      for _, r := range c.Remotes {
+      for _, r := range c {
         (*r).Send((*encodeNotify)(i, str))
       }
     }
@@ -141,11 +136,11 @@ func LoadComm(idx int, addrs []string, kill *func(), newAdrress *func() string, 
 
   for i, addr := range addrs {
     if i != idx {
-      c.Remotes[i] = NewRemote(newAdrress, newSender, notifyResetIdx(i), timeout)
+      c[i] = NewRemote(newAdrress, newSender, notifyResetIdx(i), timeout)
       if addr == "" {
-        (*c.Remotes[i]).Reset()
+        (*c[i]).Reset()
       } else {
-        (*c.Remotes[i]).Replace(addr)
+        (*c[i]).Replace(addr)
       }
     }
   }
@@ -154,27 +149,27 @@ func LoadComm(idx int, addrs []string, kill *func(), newAdrress *func() string, 
 }
 
 func (c *Comm)Send(i int, msg string) error {
-  if len(c.Remotes) <= i {
+  if len(*c) <= i {
     return errors.New("Comm index out of range")
   }
 
-  (*c.Remotes[i]).Send(msg)
+  (*(*c)[i]).Send(msg)
   return nil
 }
 
 func (c *Comm)Get(i int) (string, error) {
-  if len(c.Remotes) <= i {
+  if len(*c) <= i {
     return "", errors.New("Comm index out of range")
   }
 
-  return (*c.Remotes[i]).Get(), nil
+  return (*(*c)[i]).Get(), nil
 }
 
 func (c *Comm)Replace(i int, addr string) error {
-  if len(c.Remotes) <= i {
+  if len(*c) <= i {
     return errors.New("Comm index out of range")
   }
 
-  (*c.Remotes[i]).Replace(addr)
+  (*(*c)[i]).Replace(addr)
   return nil
 }
