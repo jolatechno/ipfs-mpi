@@ -25,13 +25,13 @@ func main() {
     panic(err)
   }
 
-  host, peers := Shell.List("echo/0.0.0")
+  host, peers := Shell.List("echo")
   fmt.Println(host, peers)
 
   if len(peers) != 0 {
     for _, peer := range peers {
       msg := mpi.Message{ Pid:-1, To:peer, From:host, Data:[]byte(fmt.Sprint(pid))}
-      Shell.Send("echo/0.0.0", msg)
+      Shell.Send("echo", msg)
       fmt.Println(<- c)
     }
   } else {
