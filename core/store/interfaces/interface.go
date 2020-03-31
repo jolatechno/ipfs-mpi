@@ -4,7 +4,7 @@ import (
 )
 
 type Remote struct {
-  NewSender *func() *func(string) error
+  NewSender *func(func(string)) *func(string) error
   Sender *func(string) error
   Sent []string
   InChannel chan string
@@ -37,7 +37,7 @@ func (r *Remote)Get() string {
 
 func (r *Remote)Replace() {
   r.Offset = r.Received
-  r.Sender = (*r.NewSender)()
+  r.Sender = (*r.NewSender)(r.Push)
 
   for _, msg := range r.Sent {
     err := (*r.Sender)(msg)
