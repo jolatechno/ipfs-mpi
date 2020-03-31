@@ -112,15 +112,15 @@ func (r *Remote)Replace(addr string) {
 
 type Comm []*Remote
 
-func NewComm(n int, kill *func(), newAdrress *func() string, newSender *func(string) *bufio.ReadWriter, encodeNotify *func(int, string) string, timeout time.Duration) Comm {
+func NewComm(n int, newAdrress *func() string, newSender *func(string) *bufio.ReadWriter, encodeNotify *func(int, string) string, timeout time.Duration) Comm {
   addrs := make([]string, n)
   for i := range addrs {
     addrs[i] = ""
   }
-  return LoadComm(0, addrs, kill, newAdrress, newSender, encodeNotify, timeout)
+  return LoadComm(0, addrs, newAdrress, newSender, encodeNotify, timeout)
 }
 
-func LoadComm(idx int, addrs []string, kill *func(), newAdrress *func() string, newSender *func(string) *bufio.ReadWriter, encodeNotify *func(int, string) string, timeout time.Duration) Comm {
+func LoadComm(idx int, addrs []string, newAdrress *func() string, newSender *func(string) *bufio.ReadWriter, encodeNotify *func(int, string) string, timeout time.Duration) Comm {
   c := make([]*Remote, len(addrs))
   c[idx] = nil
 
