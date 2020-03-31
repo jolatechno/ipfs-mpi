@@ -17,8 +17,8 @@ type Remote struct {
   Received int
 }
 
-func NewRemote(newAdrress *func() string, newSender *func(string, func(string)) *func(string) error, notifyReset *func(string), timeout time.Duration) Remote {
-  return Remote{
+func NewRemote(newAdrress *func() string, newSender *func(string, func(string)) *func(string) error, notifyReset *func(string), timeout time.Duration) *Remote {
+  return &Remote{
     Timeout:timeout,
     NewAdrress: newAdrress,
     NewSender:newSender,
@@ -91,43 +91,84 @@ func (r *Remote)Replace(addr string) {
   }
 }
 
-type Comm []Remote
+type Comm struct {
+  Remotes []*Remote
+  Kill *func()
+}
+
+func NewComm(n int, kill *func(), newAdrress *func() string, newSender *func(string, func(string)) *func(string) error, notifyReset *func(int, string), timeout time.Duration) Comm {
+  addrs := make([]string, n)
+  for i := range addrs {
+    addrs[i] = ""
+  }
+  return LoadComm(0, addrs, kill, newAdrress, newSender, notifyReset, timeout)
+}
+
+func LoadComm(idx int, addrs []string, kill *func(), newAdrress *func() string, newSender *func(string, func(string)) *func(string) error, notifyReset *func(int, string), timeout time.Duration) Comm {
+  c := Comm{
+    Remotes:make([]*Remote, len(addrs)),
+    Kill:kill,
+  }
+
+  for i, addr := range addrs {
+    if i != idx {
+      c.Remotes[i] = NewRemote(newAdrress, newSender, notifyResetIdx(i, notifyReset), timeout)
+      if addr == "" {
+        (*c.Remotes[i]).Reset()
+      } else {
+        (*c.Remotes[i]).Replace(addr)
+      }
+    } else {
+      newAddressSelf := func() string {
+        (*c.Kill)()
+        return ""
+      }
+
+      notifyResetSelf := func(_ string) {
+        (*c.Kill)()
+      }
+
+      newSenderSelf := func(_ string, push func(string)) *func(string) error{
+        send := func(str string) error {
+          push(str)
+          return nil
+        }
+
+        return &send
+      }
+
+      c.Remotes[i] = NewRemote(&newAddressSelf, &newSenderSelf, &notifyResetSelf, timeout)
+      (*c.Remotes[i]).Replace("")
+    }
+  }
+
+  return c
+}
 
 func (c *Comm)Send(i int, msg string) error {
-  if len(*c) <= i {
+  if len(c.Remotes) <= i {
     return errors.New("Comm index out of range")
   }
 
-  (*c)[i].Send(msg)
+  (*c.Remotes[i]).Send(msg)
   return nil
 }
 
 func (c *Comm)Get(i int) (string, error) {
-  if len(*c) <= i {
+  if len(c.Remotes) <= i {
     return "", errors.New("Comm index out of range")
   }
 
-  return (*c)[i].Get(), nil
+  return (*c.Remotes[i]).Get(), nil
 }
 
-func NewComm(n int, newAdrress *func() string, newSender *func(string, func(string)) *func(string) error, notifyReset *func(int, string), timeout time.Duration) Comm {
-  c := make([]Remote, n)
-  for i, _ := range c {
-    c[i] = NewRemote(newAdrress, newSender, notifyResetIdx(i, notifyReset), timeout)
-    c[i].Reset()
+func (c *Comm)Replace(i int, addr string) error {
+  if len(c.Remotes) <= i {
+    return errors.New("Comm index out of range")
   }
 
-  return c
-}
-
-func LoadComm(addrs []string, newAdrress *func() string, newSender *func(string, func(string)) *func(string) error, notifyReset *func(int, string), timeout time.Duration) Comm {
-  c := make([]Remote, len(addrs))
-  for i, addr := range addrs {
-    c[i] = NewRemote(newAdrress, newSender, notifyResetIdx(i, notifyReset), timeout)
-    c[i].Replace(addr)
-  }
-
-  return c
+  (*c.Remotes[i]).Replace(addr)
+  return nil
 }
 
 func notifyResetIdx(i int, notifyReset *func(int, string)) *func(string) {
