@@ -10,3 +10,6 @@
 [submodule "core/mpi-peerstore"]
 	path = core/mpi-peerstore
 	url = https://github.com/jolatechno/mpi-peerstore.git
+[submodule "core/store/peerstore"]
+	path = core/store/peerstore
+	url = https://github.com/jolatechno/mpi-peerstore
