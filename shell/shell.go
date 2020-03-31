@@ -5,9 +5,9 @@ import (
   "fmt"
   "net"
   "errors"
-  "strings"
 
-  "github.com/jolatechno/ipfs-mpi/core/messagestore"
+  "github.com/jolatechno/ipfs-mpi/core/api"
+  "github.com/jolatechno/ipfs-mpi/core/mpi-interface"
 )
 
 type list struct {
@@ -16,22 +16,20 @@ type list struct {
 }
 
 type Shell struct {
-  Conn net.Conn
-  ListChan chan list
-  MessageChan chan message.Message
+  conn net.Conn
+  listChan chan list
 }
 
-func NewShell(port int, pid int, file string) (*Shell, error) {
-  messageChan := make(chan message.Message)
+func NewShell(port int, pid int) (*Shell, chan mpi.Message, error) {
+  c := make(chan mpi.Message)
   listChan := make(chan list)
 
   s, err := net.Dial("tcp", fmt.Sprintf(":%d", port))
   if err != nil {
-    return nil, err
+    return nil, c, err
   }
 
-  fmt.Fprintf(s, "%d,%s\n", pid, file)
-
+  fmt.Fprintf(s, "%d\n", pid)
   go func(){
     for {
       msg, err := bufio.NewReader(s).ReadString('\n')
@@ -39,21 +37,19 @@ func NewShell(port int, pid int, file string) (*Shell, error) {
         panic(err)
       }
 
-      splitted_msg := strings.Split(msg[:len(msg) - 1], ";")
-      if len(splitted_msg) != 2 {
-        panic(errors.New("Message dosen't have a clearly defined header and content"))
-      }
+      var header, content string
+      fmt.Sscanf(msg, "%q;%q\n", &header, &content)
 
-      if splitted_msg[0] == "List" {
-        host, peers := message.ListFromString(splitted_msg[1])
+      if header == "List" {
+        host, peers := api.ListFromString(content)
         listChan <- list{ host:host, peers:peers }
-      } else if splitted_msg[0] == "Msg" {
-        m, err := message.FromString(splitted_msg[1])
+      } else if header == "Msg" {
+        m, err := mpi.FromString(content)
         if err != nil {
           panic(err)
         }
 
-        messageChan <- *m
+        c <- *m
       } else {
         panic(errors.New("Header not understood"))
       }
@@ -61,22 +57,16 @@ func NewShell(port int, pid int, file string) (*Shell, error) {
     }
   }()
 
-  return &Shell{ Conn:s, ListChan:listChan, MessageChan:messageChan }, nil
+  return &Shell{ conn:s, listChan:listChan }, c, nil
 }
 
 func (s *Shell)List(file string) (string, []string){
-  fmt.Fprintf(s.Conn, "List;%s\n", file)
+  fmt.Fprintf(s.conn, "%q;\"List\"\n", file)
 
-  list := <- s.ListChan
+  list := <- s.listChan
   return list.host, list.peers
 }
 
-func (s *Shell)Send(msg message.Message) {
-  fmt.Fprintf(s.Conn, "Send;%s\n", msg.String())
-}
-
-func (s *Shell)Request(From string) message.Message {
-  fmt.Fprintf(s.Conn, "Req;%s\n", From)
-
-  return <- s.MessageChan
+func (s *Shell)Send(file string, msg mpi.Message) {
+  fmt.Fprintf(s.conn, "%q;%q\n", file, msg.String())
 }

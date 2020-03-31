@@ -4,26 +4,25 @@ import (
   "bufio"
   "net"
   "errors"
-  "strings"
   "fmt"
-  "strconv"
 
-  "github.com/jolatechno/ipfs-mpi/core/messagestore"
+  "github.com/jolatechno/ipfs-mpi/core/mpi-interface"
 )
 
-type Key struct {
-  File string
-  Pid int
+type handler struct {
+  handler *func(mpi.Message) error
+  list *func() (string, []string)
 }
 
 type Api struct {
   Port int
-  Store *map[Key] *message.MessageStore
-  Handler *message.Handler
+  handlers *map[string] handler
+  resp *map[int] func(mpi.Message)
 }
 
-func NewApi(port int, handler *message.Handler) (*Api, error) {
-  store := make(map[Key] *message.MessageStore)
+func NewApi(port int) (*Api, error) {
+  handlers := make(map[string] handler)
+  resp := make(map[int] func(mpi.Message))
 
   l, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
   if err != nil {
@@ -32,8 +31,8 @@ func NewApi(port int, handler *message.Handler) (*Api, error) {
 
   a := Api{
     Port:l.Addr().(*net.TCPAddr).Port,
-    Handler:handler,
-    Store:&store,
+    handlers:&handlers,
+    resp:&resp,
   }
 
   go func(){
@@ -43,61 +42,60 @@ func NewApi(port int, handler *message.Handler) (*Api, error) {
         continue
       }
 
-      fmt.Println("api new 0") //------------------------------------------------------------------------
-
       reader := bufio.NewReader(c)
       str, err := reader.ReadString('\n')
       if err != nil {
         continue
       }
 
-      fmt.Println("api new 1") //------------------------------------------------------------------------
-
-      splitted := strings.Split(str[:len(str) - 1], ",")
-      if len(splitted) != 2 {
+      var pid int
+      n, err := fmt.Sscanf(str, "%d\n", &pid)
+      if err != nil || n != 1 {
         continue
       }
 
-      fmt.Println("api new 2") //------------------------------------------------------------------------
-
-      pid, err := strconv.Atoi(splitted[0])
-      if err != nil {
-        continue
+      (*a.resp)[pid] = func(msg mpi.Message) {
+        fmt.Fprintf(c, "\"Msg\";%q\n", msg.String())
       }
-
-      fmt.Println("api new 3") //------------------------------------------------------------------------
-
-      k := Key{ File:splitted[1], Pid:pid }
-      store[k] = a.Handler.MessageStore(func(str string) error {
-        fmt.Fprintf(c, str + "\n")
-        return nil
-      })
-
-      fmt.Println("api new 4") //------------------------------------------------------------------------
 
       go func(){
         for {
-
-          fmt.Println("api go 0") //------------------------------------------------------------------------
-
           msg, err := reader.ReadString('\n')
           if err != nil {
-            delete(store, k)
+            delete(*a.resp, pid)
             return
           }
 
-          fmt.Println("api go 1") //------------------------------------------------------------------------
+          var File, content string
+          n, err := fmt.Sscanf(msg, "%q;%q\n", &File, &content)
 
-          err = store[k].Manage(msg[:len(msg) - 1])
-          if err != nil {
-
-            fmt.Println("api go 1 msg, ", msg[:len(msg) - 1], ", err : ", err) //------------------------------------------------------------------------
-
-            delete(store, k)
+          if err != nil || n != 2 {
+            delete(*a.resp, pid)
             return
           }
 
-          fmt.Println("api go 2") //------------------------------------------------------------------------
+          handler, ok := (*a.handlers)[File]
+          if !ok {
+            delete(*a.resp, pid)
+            return
+          }
+
+          if content == "List" {
+            fmt.Fprintf(c, "\"List\";%q\n", ListToString((*handler.list)()))
+            continue
+          } else {
+            m, err := mpi.FromString(content)
+            if err != nil {
+              delete(*a.resp, pid)
+              return
+            }
+
+            err = (*handler.handler)(*m)
+            if err != nil {
+              delete(*a.resp, pid)
+              return
+            }
+          }
         }
       }()
     }
@@ -106,12 +104,16 @@ func NewApi(port int, handler *message.Handler) (*Api, error) {
   return &a, nil
 }
 
-func (a *Api)Push(msg message.Message) error {
-  f, ok := (*a.Store)[Key{ File:msg.File, Pid:msg.Pid }]
+func (a *Api)AddHandler(key string, handle *func(mpi.Message) error, list *func() (string, []string)) {
+  (*a.handlers)[key] = handler{ handler:handle, list:list }
+}
+
+func (a *Api)Push(msg mpi.Message) error{
+  f, ok := (*a.resp)[msg.Pid]
   if !ok {
     return errors.New("no such pid")
   }
 
-  f.Add(msg)
+  f(msg)
   return nil
 }

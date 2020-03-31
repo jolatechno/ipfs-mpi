@@ -1,106 +1,76 @@
 package mpi
 
 import (
+  b64 "encoding/base64"
+  "strconv"
+  "strings"
+  "errors"
   "os/exec"
-  "io"
-  "bufio"
   "fmt"
-
-  "github.com/jolatechno/ipfs-mpi/core/messagestore"
 )
 
-type Key struct {
-  Origin string
-  File string
+type Message struct {
   Pid int
+  From string
+  To string
+  Data []byte
 }
 
-type DaemonStore struct {
-  Store *map[Key] *message.MessageStore
-  Handler *message.Handler
-  Path string
+type Handler func(Message) ([]Message, error)
+
+func (m *Message)String() string {
+  return fmt.Sprintf("%d,%s,%s,%s", m.Pid, m.From, m.To, b64.StdEncoding.EncodeToString(m.Data))
 }
 
-func NewDaemonStore(path string, handler *message.Handler) DaemonStore {
-  store := make(map[Key] *message.MessageStore)
-  return DaemonStore{
-    Store: &store,
-    Handler:handler,
-    Path:path,
+func FromString(msg string) (*Message, error) {
+  splitted := strings.Split(msg, ",")
+  if len(splitted) != 4 {
+    return nil, errors.New("message dosen't have the write number of field")
   }
+
+  pid, err := strconv.Atoi(splitted[0])
+  if err != nil {
+    return nil, err
+  }
+
+  Data, err := b64.StdEncoding.DecodeString(splitted[3])
+  if err != nil {
+    return nil, err
+  }
+
+  return &Message{ Pid:pid, From:splitted[1], To:splitted[2], Data:Data }, nil
 }
 
-func (d *DaemonStore)Push(msg message.Message) error {
+func Load(path string, responder func(Message) error) Handler {
+  return Handler(func(msg Message) ([]Message, error){
+    msgs := []Message{}
 
-  fmt.Println("Pushing : ", msg.String()) //------------------------------------------------------------------------
+    if msg.Pid == -1 {
+      out, err := exec.Command("python3", path + "/run.py", msg.String()).Output()
+      if err != nil{
+        return msgs, nil
+      }
 
-  k := Key{ Origin:msg.Origin, Pid:msg.Pid }
-  if _, ok := (*d.Store)[k]; !ok {
-    if err := d.Load(k); err != nil {
-      return err
+      out_str := string(out)
+      if out_str[len(out_str) - 1:] == "\n" {
+        out_str = out_str[:len(out_str) - 1]
+      }
+
+      strs := strings.Split(out_str, ";")
+
+      for _, str := range strs {
+        m, err := FromString(str)
+        if err != nil {
+          return msgs, err
+        }
+        msgs = append(msgs, *m)
+      }
+
+      return msgs, nil
     }
-  }
 
-  (*d.Store)[k].Add(msg)
-  return nil
-}
-
-func (d *DaemonStore)Load(k Key) error {
-  cmd := exec.Command("python3", d.Path + "/run.py", k.Origin, fmt.Sprint(k.Pid))
-  stdin, err := cmd.StdinPipe()
-	if err != nil {
-		return err
-	}
-
-  stdout, err := cmd.StdoutPipe()
-	if err != nil {
-		return err
-	}
-
-  if err = cmd.Start(); err != nil {
-    return err
-  }
-
-  reader := bufio.NewReader(stdout)
-
-  (*d.Store)[k] = d.Handler.MessageStore(func(str string) error {
-
-    fmt.Println("mpi writer, msg : ", str) //------------------------------------------------------------------------
-
-    io.WriteString(stdin, str + "\n")
-    return nil
+    return msgs, responder(msg)
   })
-
-  go func(){
-    for {
-
-      fmt.Println("mpi go Load 0") //------------------------------------------------------------------------
-
-      msg, err := reader.ReadString('\n')
-      if err != nil {
-
-        fmt.Println("mpi go Load err : ", err) //------------------------------------------------------------------------
-
-        delete(*d.Store, k)
-        return
-      }
-
-      fmt.Println("mpi go Load 1, msg : ", msg) //------------------------------------------------------------------------
-
-      err = (*d.Store)[k].Manage(msg[:len(msg) - 1])
-      if err != nil {
-        delete(*d.Store, k)
-        return
-      }
-    }
-  }()
-
-  go func(){
-    cmd.Wait()
-    delete(*d.Store, k)
-  }()
-
-  return nil
 }
 
 func Install(path string) error {

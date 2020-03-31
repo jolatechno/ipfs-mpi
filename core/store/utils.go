@@ -5,30 +5,106 @@ import (
   "bufio"
   "fmt"
 
-  "github.com/jolatechno/ipfs-mpi/core/ipfs-interface"
-  "github.com/jolatechno/ipfs-mpi/core/messagestore"
-  "github.com/jolatechno/mpi-peerstore"
-
   "github.com/libp2p/go-libp2p-core/protocol"
-  "github.com/libp2p/go-libp2p-core/peer"
+  "github.com/libp2p/go-libp2p-discovery"
+  "github.com/libp2p/go-libp2p-core/host"
   "github.com/libp2p/go-libp2p-core/network"
+  "github.com/libp2p/go-libp2p-core/peer"
+
+  "github.com/jolatechno/mpi-peerstore"
+  "github.com/jolatechno/ipfs-mpi/core/ipfs-interface"
+  "github.com/jolatechno/ipfs-mpi/core/mpi-interface"
+  "github.com/jolatechno/ipfs-mpi/core/api"
 )
 
-func (s *Store)Add(f file.File, ctx context.Context) error {
-  s.Shell.Dowload(f)
-  err := message.Install(s.Path + f.String())
+type Entry struct {
+  Store *peerstore.Peerstore
+  file file.File
+  shell *file.IpfsShell
+  api *api.Api
+  path string
+}
+
+func NewEntry(host *host.Host, routingDiscovery *discovery.RoutingDiscovery, f file.File, shell *file.IpfsShell, api *api.Api, path string) *Entry {
+  rdv := f.String()
+  p := peerstore.NewPeerstore(host, routingDiscovery, rdv)
+
+  return &Entry{ Store:p, file:f, shell:shell, api:api, path:path }
+}
+
+func (e *Entry)InitEntry() error {
+  err := e.shell.Dowload(e.file)
   if err != nil {
     return err
   }
 
-  return s.Load(f, ctx)
+  return mpi.Install(e.path + e.file.String())
 }
 
-func (s *Store)Load(f file.File, ctx context.Context) error {
-  p := peerstore.NewPeerstore(s.Host, s.RoutingDiscovery, f.String())
+func (e *Entry)LoadEntry(ctx context.Context, base protocol.ID) error {
+  handler := mpi.Load(e.path + e.file.String(),
+  func(msg mpi.Message) error {
+    return (*e.api).Push(msg)
+  })
 
-  hostId := peer.IDB58Encode((*s.Host).ID())
-  err := p.SetStreamHandler(s.Protocol, func(stream network.Stream) {
+  discoveryHandler := func (p *peerstore.Peerstore, id peer.ID) {
+		Protocol := protocol.ID(e.file.String() + "//" + string(base))
+
+		stream, err := (*e.Store.Host).NewStream(ctx, id, Protocol)
+		if err != nil {
+			return
+		}
+
+		rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
+
+		(*e.Store).Add(peer.IDB58Encode(id), func(str string) error{
+    	_, err := rw.WriteString(fmt.Sprintf("%s\n", str))
+    	if err != nil {
+    		return err
+    	}
+    	err = rw.Flush()
+    	if err != nil {
+    		return err
+    	}
+
+    	return nil
+    })
+	}
+
+  messageHandler := func(msg mpi.Message) error {
+    if (*e.Store).Has(msg.To){
+      (*e.Store).Write(msg.To, msg.String()) // pass on the responces
+      return nil
+    }
+
+    ID, err := peer.IDB58Decode(msg.To)
+    if err != nil {
+      return err
+    }
+
+    discoveryHandler(e.Store, ID)
+    (*e.Store).Write(msg.To, msg.String()) // pass on the responces
+
+    return nil
+  }
+
+  hostId := peer.IDB58Encode((*e.Store.Host).ID())
+  list := func() (string, []string) {
+    peers := (*e.Store).Store
+
+    keys := make([]string, len(peers))
+    i := 0
+    for addr := range peers {
+      keys[i] = addr
+      i++
+    }
+
+    return hostId, keys
+  }
+
+  (*e.api).AddHandler(e.file.String(), &messageHandler, &list)
+
+  StreamHandler := func(stream network.Stream) {
 		// Create a buffer stream for non blocking read and write.
 		rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
 
@@ -36,98 +112,39 @@ func (s *Store)Load(f file.File, ctx context.Context) error {
       for {
         str, err := rw.ReadString('\n')
     		if err != nil {
-          return // error on read should just disconnect the peer
+    			continue
     		}
 
-        msg, err := message.FromString(str[:len(str) - 1])
+        if str[len(str) - 1:] == "\n" {
+          str = str[:len(str) - 1]
+        }
+
+        msg, err := mpi.FromString(str)
         if err != nil {
     			continue
     		}
 
-        if msg.Origin == hostId {
+        reps, err := handler(*msg)
+        if err != nil {
+          continue
+        }
 
-          fmt.Println("load go 3 push back, msg : ", str) //------------------------------------------------------------------------
-
-          (*s.Api).Push(*msg)
-        } else {
-
-          fmt.Println("load go 3 exec, msg : ", str) //------------------------------------------------------------------------
-
-          (*s.DaemonStore).Push(*msg)
+        for _, rep := range reps {
+          err := messageHandler(rep)
+          if err != nil {
+            continue
+          }
         }
       }
     }()
-  })
+  }
+
+  err := e.Store.SetStreamHandler(base, StreamHandler)
   if err != nil {
     return err
   }
 
-  Protocol := protocol.ID(f.String() + "//" + string(s.Protocol))
-  p.Listen(ctx, func (p *peerstore.Peerstore, id peer.ID) {
-    stream, err := (*s.Host).NewStream(ctx, id, Protocol)
-    if err != nil {
-      return
-    }
-
-    rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
-
-    p.Add(peer.IDB58Encode(id), func(str string) error{
-      _, err := rw.WriteString(fmt.Sprintf("%s\n", str))
-      if err != nil {
-        return err
-      }
-      err = rw.Flush()
-      if err != nil {
-        return err
-      }
-
-      return nil
-    })
-  })
-  p.Annonce(ctx)
-
-  (*s.Store)[f.String()] = p
-
+  e.Store.Listen(ctx, discoveryHandler)
+  e.Store.Annonce(ctx)
   return nil
-}
-
-func (s *Store)Init(ctx context.Context) error {
-  files := (*s.Shell).List()
-
-  for _, f := range files {
-    err := s.Load(f, ctx)
-
-    if err != nil {
-      return err
-    }
-  }
-
-  go func(){
-    for{
-      err := s.Get(ctx)
-      if err != nil { //No new file to add
-        return
-      }
-    }
-  }()
-
-  return nil
-}
-
-func (s *Store)Del(f file.File) error {
-  return s.Shell.Del(f)
-}
-
-func (s *Store)Get(ctx context.Context) error {
-  used, err := s.Shell.Occupied()
-  if err != nil {
-    return err
-  }
-
-  f, err := s.Shell.Get(s.Maxsize - used)
-  if err != nil {
-    return err
-  }
-
-  return s.Add(*f, ctx)
 }
