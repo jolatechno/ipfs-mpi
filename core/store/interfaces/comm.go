@@ -9,7 +9,7 @@ import (
 type Remote struct {
   Timeout time.Duration
   NewAdrress *func() string
-  NewSender *func(string) *bufio.ReadWriter
+  NewSender *func(string) (chan *bufio.ReadWriter, chan error)
   NotifyReset *func(string)
   Stream *bufio.ReadWriter
   Sent []string
@@ -18,7 +18,7 @@ type Remote struct {
   Received int
 }
 
-func NewRemote(newAdrress *func() string, newSender *func(string) *bufio.ReadWriter, notifyReset *func(string), timeout time.Duration) *Remote {
+func NewRemote(newAdrress *func() string, newSender *func(string) (chan *bufio.ReadWriter, chan error), notifyReset *func(string), timeout time.Duration) *Remote {
   return &Remote{
     Timeout:timeout,
     NewAdrress: newAdrress,
@@ -93,26 +93,57 @@ func (r *Remote)Get() string {
 func (r *Remote)Reset() {
   addr := (*r.NewAdrress)()
   r.Offset = r.Received
-  r.Stream = (*r.NewSender)(addr)
-  (*r.NotifyReset)(addr)
 
-  for _, msg := range r.Sent {
-    r.Send(msg)
+  readerChan, errChan := (*r.NewSender)(addr)
+  switch {
+  case <- errChan || <- time.After(r.Timeout):
+    close(readChan)
+    close(errChan)
+
+    r.Reset()
+    return
+
+  case reader := <- readerChan:
+    close(readChan)
+    close(errChan)
+
+    r.Stream := reader
+    (*r.NotifyReset)(addr)
+
+    for _, msg := range r.Sent {
+      r.Send(msg)
+    }
+    return
   }
 }
 
 func (r *Remote)Replace(addr string) {
-  r.Offset = r.Received
-  r.Stream = (*r.NewSender)(addr)
+  readerChan, errChan := (*r.NewSender)(addr)
+  switch {
+  case <- errChan || <- time.After(r.Timeout):
+    close(readChan)
+    close(errChan)
 
-  for _, msg := range r.Sent {
-    r.Send(msg)
+    r.Reset()
+    return
+
+  case reader := <- readerChan:
+    close(readChan)
+    close(errChan)
+
+    r.Stream := reader
+    (*r.NotifyReset)(addr)
+
+    for _, msg := range r.Sent {
+      r.Send(msg)
+    }
+    return
   }
 }
 
 type Comm []*Remote
 
-func NewComm(n int, newAdrress *func() string, newSender *func(string) *bufio.ReadWriter, encodeNotify *func(int, string) string, timeout time.Duration) Comm {
+func NewComm(n int, newAdrress *func() string, newSender *func(string) (chan *bufio.ReadWriter, chan error), encodeNotify *func(int, string) string, timeout time.Duration) Comm {
   addrs := make([]string, n)
   for i := range addrs {
     addrs[i] = ""
@@ -120,7 +151,7 @@ func NewComm(n int, newAdrress *func() string, newSender *func(string) *bufio.Re
   return LoadComm(0, addrs, newAdrress, newSender, encodeNotify, timeout)
 }
 
-func LoadComm(idx int, addrs []string, newAdrress *func() string, newSender *func(string) *bufio.ReadWriter, encodeNotify *func(int, string) string, timeout time.Duration) Comm {
+func LoadComm(idx int, addrs []string, newAdrress *func() string, newSender *func(string) (chan *bufio.ReadWriter, chan error), encodeNotify *func(int, string) string, timeout time.Duration) Comm {
   c := make([]*Remote, len(addrs))
   c[idx] = nil
 
