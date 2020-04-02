@@ -90,11 +90,5 @@ func NewHost(ctx context.Context) (host.Host, error) {
   		400,         // HighWater,
   		time.Minute, // GracePeriod
   	)),
-  	// Attempt to open ports using uPNP for NATed hosts.
-  	libp2p.NATPortMap(),
-  	// Let this host use relays and advertise itself on relays if
-  	// it finds it is behind NAT. Use libp2p.Relay(options...) to
-  	// enable active relays and more.
-  	libp2p.EnableAutoRelay(),
   )
 }
