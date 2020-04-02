@@ -3,6 +3,8 @@ package core
 import (
   "context"
 
+  "fmt"
+
   "github.com/libp2p/go-libp2p-core/host"
 )
 
@@ -13,7 +15,10 @@ func StartDiscovery(ctx context.Context, host host.Host, rendezvous string) {
     for {
       peer := <- peerChan
       go func(){
-        host.Connect(ctx, peer)
+        err := host.Connect(ctx, peer)
+        if err != nil {
+          fmt.Println(err)
+        }
       }()
     }
   }()
