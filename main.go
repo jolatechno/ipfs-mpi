@@ -5,7 +5,7 @@ import (
   "context"
 
   //"github.com/jolatechno/go-timeout"
-  "github.com/jolatechno/ipfs-mpi/core"
+  "github.com/jolatechno/libp2p-mpi/core"
 )
 
 func main(){

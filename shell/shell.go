@@ -6,8 +6,8 @@ import (
   "net"
   "errors"
 
-  "github.com/jolatechno/ipfs-mpi/core/api"
-  "github.com/jolatechno/ipfs-mpi/core/mpi-interface"
+  "github.com/jolatechno/libp2p-mpi/core/api"
+  "github.com/jolatechno/libp2p-mpi/core/mpi-interface"
 )
 
 type list struct {
