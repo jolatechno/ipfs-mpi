@@ -9,7 +9,7 @@ Message Passing Interface computing using libp2p as a back-bone to build computa
 ## How to build ?
 
 ```
-go build
+go build -o main
 ```
 
 ## Getting started
@@ -22,16 +22,16 @@ API server listening on /ip4/127.0.0.1/tcp/5001
 
 Where `/ip4/127.0.0.1/tcp/5001` is the url of the ipfs daemon.
 
-You can then run ipfs-mpi using :
+You can then run the libp2p-mpi dameon using :
 
 ```
-./ipfs-mpi -ipfs-api  /ip4/127.0.0.1/tcp/5001 -ipfs-store SomeIpfsDirectory/
+./main -ipfs-api  /ip4/127.0.0.1/tcp/5001 -ipfs-store SomeIpfsDirectory/
 ```
 
 For example :
 
 ```
-./ipfs-mpi -ipfs-api  /ip4/127.0.0.1/tcp/5001 -ipfs-store QmRfk8DdfrPQUxxThhgRxpPYvoa9qpjwV1veqXaSYgrrWf/
+./main -ipfs-api  /ip4/127.0.0.1/tcp/5001 -ipfs-store QmRfk8DdfrPQUxxThhgRxpPYvoa9qpjwV1veqXaSYgrrWf/
 ```
 
 ## Usage
