@@ -6,11 +6,37 @@
 
 Message Passing Interface computing using ipfs as a back-bone to build computational pool.
 
-# Getting started
+## How to build ?
 
-Refer to the Gide in the [core](./core) directory readme.
+```
+go build
+```
 
-See [ipfs-mpi/shell](../shell) for a Gide on designing software that use ipfs-mpi and [ipfs-mpi/example](../example) to design an interpretor for ipfs-mpi.
+## Getting started
+
+You should first launch the ipfs daemon with `ipfs daemon` wich will output :
+
+```
+API server listening on /ip4/127.0.0.1/tcp/5001
+```
+
+Where `/ip4/127.0.0.1/tcp/5001` is the url of the ipfs daemon.
+
+You can then run ipfs-mpi using :
+
+```
+./ipfs-mpi -ipfs-api  /ip4/127.0.0.1/tcp/5001 -ipfs-store SomeIpfsDirectory/
+```
+
+For example :
+
+```
+./ipfs-mpi -ipfs-api  /ip4/127.0.0.1/tcp/5001 -ipfs-store QmRfk8DdfrPQUxxThhgRxpPYvoa9qpjwV1veqXaSYgrrWf/
+```
+
+## Usage
+
+See [shell](./shell) for a Gide on designing software that use ipfs-mpi and [example](./example) to design an interpretor for ipfs-mpi.
 
 ### WARNING : Development in progress, might contain bug
 

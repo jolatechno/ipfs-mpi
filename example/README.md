@@ -25,7 +25,7 @@ Where the line corresponding to the whole directory is `added Qmb9mhSA2Zdh8MDDUt
 
 ## How to interact with an interpreter ?
 
-Using [ipfs-mpi/shell](../shell) as demonstrated in the [client.go](./) file (which demonstrate the [echo](./test_interpreters/echo) interpreter), you can send and receive messages and list connected peers.
+Using [ipfs-mpi/shell](../shell) as demonstrated in the [client.go](./client.go) file (which demonstrate the [echo](./test_interpreters/echo) interpreter), you can send and receive messages and list connected peers.
 
 The [client.go](./) file can be built using `go build -o client` and used as follow :
 
