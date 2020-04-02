@@ -14,7 +14,7 @@ const (
 func StartDiscovery(ctx context.Context, host host.Host, rendezvous string) {
   go func() {
     for {
-      peerChan := initMDNS(ctx, host, rendezvous, scanDuration)
+      peerChan := initMDNS(ctx, host, rendezvous)
       timeoutChan := time.After(scanDuration)
       for {
         select {
