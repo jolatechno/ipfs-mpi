@@ -6,6 +6,10 @@
 
 > mpi plugin using go-ipfs and go-libp2p
 
+## Info
+
+The [mdns.go](./mdns.go) file was directly copied from the [go-libp2p-examples/chat-with-mdns](http://github.com/libp2p/go-libp2p-examples/tree/master/chat-with-mdns) example.
+
 ### WARNING : Development in progress, might contain bug
 
 ## License

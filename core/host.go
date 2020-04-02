@@ -10,10 +10,8 @@ import (
 
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/crypto"
-  "github.com/libp2p/go-libp2p-host"
-  dht "github.com/libp2p/go-libp2p-kad-dht"
+  "github.com/libp2p/go-libp2p-core/host"
   libp2ptls "github.com/libp2p/go-libp2p-tls"
-  routing "github.com/libp2p/go-libp2p-routing"
   secio "github.com/libp2p/go-libp2p-secio"
   connmgr "github.com/libp2p/go-libp2p-connmgr"
 
@@ -94,10 +92,6 @@ func NewHost(ctx context.Context) (host.Host, error) {
   	)),
   	// Attempt to open ports using uPNP for NATed hosts.
   	libp2p.NATPortMap(),
-  	// Let this host use the DHT to find other hosts
-  	libp2p.Routing(func(h host.Host) (routing.PeerRouting, error) {
-  		return dht.New(ctx, h)
-  	}),
   	// Let this host use relays and advertise itself on relays if
   	// it finds it is behind NAT. Use libp2p.Relay(options...) to
   	// enable active relays and more.
