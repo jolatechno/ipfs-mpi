@@ -7,14 +7,10 @@ import (
   "github.com/libp2p/go-libp2p-core/host"
 )
 
-const (
-  scanDuration = time.Second
-)
-
-func StartDiscovery(ctx context.Context, host host.Host, rendezvous string) {
+func StartDiscovery(ctx context.Context, host host.Host, rendezvous string, scanDuration time.Duration) {
   go func() {
     for {
-      peerChan := initMDNS(ctx, host, rendezvous)
+      peerChan := initMDNS(ctx, host, rendezvous, scanDuration)
       timeoutChan := time.After(scanDuration)
       for {
         select {

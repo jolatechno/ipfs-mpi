@@ -78,7 +78,7 @@ func main(){
 
   h.SetStreamHandler(protocol.ID("protocol/1.0.0"), handleStream)
 
-  core.StartDiscovery(ctx, h, "rendezvous")
+  core.StartDiscovery(ctx, h, "rendezvous", time.Second)
 
   fmt.Println("Our adress is: ", h.ID())
   for _, addr := range h.Addrs() {
@@ -87,7 +87,6 @@ func main(){
 
   l := 0
   for {
-    fmt.Println(h.ConnManager().ConnCount)
     time.Sleep(time.Millisecond)
     if len(h.Peerstore().Peers()) > l {
       fmt.Println("New peer ", h.Peerstore().Peers())
