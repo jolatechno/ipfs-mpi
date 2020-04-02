@@ -87,7 +87,8 @@ func main(){
 
   l := 0
   for {
-    time.Sleep(time.Milliecond)
+    fmt.Println(h.ConnManager().ConnCount)
+    time.Sleep(time.Millisecond)
     if len(h.Peerstore().Peers()) > l {
       fmt.Println("New peer ", h.Peerstore().Peers())
       l++
