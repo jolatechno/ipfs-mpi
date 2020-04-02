@@ -6,14 +6,10 @@ import (
   "errors"
   "context"
 	"fmt"
-  "time"
 
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/crypto"
   "github.com/libp2p/go-libp2p-core/host"
-  libp2ptls "github.com/libp2p/go-libp2p-tls"
-  secio "github.com/libp2p/go-libp2p-secio"
-  connmgr "github.com/libp2p/go-libp2p-connmgr"
 
   maddr "github.com/multiformats/go-multiaddr"
 )
@@ -80,15 +76,5 @@ func NewHost(ctx context.Context) (host.Host, error) {
   	libp2p.ListenAddrs(
       listenAddresses...
   	),
-
-  	libp2p.Security(libp2ptls.ID, libp2ptls.New),
-  	libp2p.Security(secio.ID, secio.New),
-  	// Let's prevent our peer from having too many
-  	// connections by attaching a connection manager.
-  	libp2p.ConnectionManager(connmgr.NewConnManager(
-  		100,         // Lowwater
-  		400,         // HighWater,
-  		time.Minute, // GracePeriod
-  	)),
   )
 }
