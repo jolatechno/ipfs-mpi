@@ -13,9 +13,10 @@ import (
   "github.com/libp2p/go-libp2p-core/peer"
 )
 
-type MasterComm struct {
+type BasicMasterComm struct {
   Pinger *ping.PingService
-  Comm Comm
+  Ended bool
+  Comm BasicSlaveComm
 }
 
 func NewMasterComm(ctx context.Context, host host.Host, n int, base protocol.ID, id string) (MasterComm, error) {
@@ -24,9 +25,10 @@ func NewMasterComm(ctx context.Context, host host.Host, n int, base protocol.ID,
     Addrs[i] = newPeer(base)
   }
 
-  comm := MasterComm{
+  comm := BasicMasterComm{
     Pinger: ping.NewPingService(host),
-    Comm: Comm{
+    Ended: false,
+    Comm: BasicSlaveComm{
       Id: id,
       Idx: 0,
       Host: host,
@@ -50,8 +52,8 @@ func NewMasterComm(ctx context.Context, host host.Host, n int, base protocol.ID,
 
       streamHandler, err := comm.Comm.Remotes[i].StreamHandler()
       if err != nil {
-
-        return comm, err
+        comm.Stop()
+        return &comm, err
       }
 
       host.SetStreamHandler(protocol.ID(fmt.Sprintf("%d/%s", i, string(comm.Comm.Pid))), streamHandler)
@@ -60,22 +62,47 @@ func NewMasterComm(ctx context.Context, host host.Host, n int, base protocol.ID,
 
   go func() {
     for {
-      for i, addr := range comm.Comm.Addrs {
-        select {
-        case <- comm.Pinger.Ping(ctx, addr):
-          continue
-        case <- time.After(time.Second):
+      for i := range comm.Comm.Addrs {
+        if comm.Ended {
+          return
+        }
+        if !comm.Present(ctx, i) {
           comm.Reset(ctx, i)
-          continue
         }
       }
     }
   }()
 
-  return comm, nil
+  return &comm, nil
 }
 
-func (c *MasterComm)Connect(ctx context.Context, i int, addr peer.ID) {
+func (c *BasicMasterComm)Stop() {
+  c.Ended = true
+  c.Comm.Stop()
+}
+
+func (c *BasicMasterComm)Present(ctx context.Context, idx int) bool {
+  select {
+  case res := <- c.Pinger.Ping(ctx, c.Comm.Addrs[idx]):
+    if res.Error != nil {
+      return false
+    }
+    return true
+
+  case <- time.After(time.Second):
+    return false
+  }
+}
+
+func (c *BasicMasterComm)Send(idx int, msg string) {
+  c.Comm.Send(idx, msg)
+}
+
+func (c *BasicMasterComm)Get(idx int) string {
+  return c.Comm.Get(idx)
+}
+
+func (c *BasicMasterComm)Connect(ctx context.Context, i int, addr peer.ID) {
   stream, err := c.Comm.Host.NewStream(ctx, addr, c.Comm.Base)
   if err != nil {
     c.Reset(ctx, i)
@@ -88,7 +115,7 @@ func (c *MasterComm)Connect(ctx context.Context, i int, addr peer.ID) {
   c.Comm.Remotes[i].Reset(rw)
 }
 
-func (c *MasterComm)Reset(ctx context.Context, i int) {
+func (c *BasicMasterComm)Reset(ctx context.Context, i int) {
   addr := newPeer(c.Comm.Base)
   c.Connect(ctx, i, addr)
 }
