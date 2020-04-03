@@ -49,7 +49,7 @@ func NewMasterComm(ctx context.Context, host host.Host, n int, base protocol.ID,
         ResetChan: make(chan bool),
       }
 
-      comm.Connect(ctx, i, addr)
+      comm.Connect(i, addr)
 
 
       streamHandler, err := comm.Comm.Remotes[i].StreamHandler()
@@ -68,8 +68,8 @@ func NewMasterComm(ctx context.Context, host host.Host, n int, base protocol.ID,
         if comm.Ended {
           return
         }
-        if !comm.Present(ctx, i) {
-          comm.Reset(ctx, i)
+        if !comm.Present(i) {
+          comm.Reset(i)
         }
       }
     }
@@ -107,7 +107,7 @@ func (c *BasicMasterComm)Get(idx int) string {
 func (c *BasicMasterComm)Connect(i int, addr peer.ID) {
   stream, err := c.Comm.Host.NewStream(c.Ctx, addr, c.Comm.Base)
   if err != nil {
-    c.Reset(ctx, i)
+    c.Reset(i)
     return
   }
 
@@ -119,7 +119,7 @@ func (c *BasicMasterComm)Connect(i int, addr peer.ID) {
 
 func (c *BasicMasterComm)Reset(i int) {
   addr := newPeer(c.Comm.Base)
-  c.Connect(c.Ctx, i, addr)
+  c.Connect(i, addr)
 }
 
 func AddrsToString(addrs []peer.ID) []string {
