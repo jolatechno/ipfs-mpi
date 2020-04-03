@@ -26,7 +26,7 @@ type MasterComm interface {
   Stop()
   Send(int, string)
   Get(int) string
-  Present(context.Context, int) bool
-  Reset(context.Context, int)
-  Connect(context.Context, int, peer.ID)
+  Present(int) bool
+  Reset(int)
+  Connect(int, peer.ID)
 }

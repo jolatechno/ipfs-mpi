@@ -14,6 +14,7 @@ import (
 )
 
 type BasicMasterComm struct {
+  Ctx context.Context
   Pinger *ping.PingService
   Ended bool
   Comm BasicSlaveComm
@@ -26,6 +27,7 @@ func NewMasterComm(ctx context.Context, host host.Host, n int, base protocol.ID,
   }
 
   comm := BasicMasterComm{
+    Ctx:ctx,
     Pinger: ping.NewPingService(host),
     Ended: false,
     Comm: BasicSlaveComm{
@@ -81,9 +83,9 @@ func (c *BasicMasterComm)Stop() {
   c.Comm.Stop()
 }
 
-func (c *BasicMasterComm)Present(ctx context.Context, idx int) bool {
+func (c *BasicMasterComm)Present(idx int) bool {
   select {
-  case res := <- c.Pinger.Ping(ctx, c.Comm.Addrs[idx]):
+  case res := <- c.Pinger.Ping(c.Ctx, c.Comm.Addrs[idx]):
     if res.Error != nil {
       return false
     }
@@ -102,8 +104,8 @@ func (c *BasicMasterComm)Get(idx int) string {
   return c.Comm.Get(idx)
 }
 
-func (c *BasicMasterComm)Connect(ctx context.Context, i int, addr peer.ID) {
-  stream, err := c.Comm.Host.NewStream(ctx, addr, c.Comm.Base)
+func (c *BasicMasterComm)Connect(i int, addr peer.ID) {
+  stream, err := c.Comm.Host.NewStream(c.Ctx, addr, c.Comm.Base)
   if err != nil {
     c.Reset(ctx, i)
     return
@@ -115,9 +117,9 @@ func (c *BasicMasterComm)Connect(ctx context.Context, i int, addr peer.ID) {
   c.Comm.Remotes[i].Reset(rw)
 }
 
-func (c *BasicMasterComm)Reset(ctx context.Context, i int) {
+func (c *BasicMasterComm)Reset(i int) {
   addr := newPeer(c.Comm.Base)
-  c.Connect(ctx, i, addr)
+  c.Connect(c.Ctx, i, addr)
 }
 
 func AddrsToString(addrs []peer.ID) []string {
