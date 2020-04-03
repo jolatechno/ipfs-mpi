@@ -3,7 +3,11 @@ package core
 import (
   "bufio"
   "fmt"
+  "errors"
   "context"
+  "strings"
+  "strconv"
+  "time"
 
   "github.com/libp2p/go-libp2p/p2p/protocol/ping"
   "github.com/libp2p/go-libp2p-core/network"
@@ -12,46 +16,175 @@ import (
   "github.com/libp2p/go-libp2p-core/peer"
 )
 
-func NewComm(ctx context.Context, addr []string, idx int, pid protocol.ID, host host.Host, init bool) (*Comm, error) {
-  comm := Comm{
-    Idx: idx,
-    Host: host,
-    Pid: pid,
-    Pinger: ping.NewPingService(host),
-    Remotes: make([]Remote, len(addr)),
+type Param struct {
+  Init bool
+  Idx int
+  Id string
+  Addrs []string
+}
+
+func ParamFromString(msg string) (Param, error) {
+  param := Param{}
+  splitted := strings.Split(msg, ",")
+  if len(splitted) != 4 {
+    return param, errors.New("Param dosen't have the right number fields")
   }
 
-  for i := range comm.Remotes {
-    if i != idx && (i > idx || !init) {
-      proto := protocol.ID(fmt.Sprintf("%d/%s", i, string(pid)))
-      stream, err := host.NewStream(ctx, peer.ID(addr[i]), proto)
+  if splitted[0] == "0" {
+    param.Init = false
+  } else if splitted[0] == "1" {
+    param.Init = true
+  } else {
+    return param, errors.New("bool header not understood")
+  }
+
+  idx, err := strconv.Atoi(splitted[1])
+  if err != nil {
+    return param, err
+  }
+
+  param.Idx = idx
+  param.Id = splitted[2]
+  param.Addrs = strings.Split(splitted[3], ";")
+
+  return param, err
+}
+
+func AddrsToString(addrs []peer.ID) []string {
+  list := make([]string, len(addrs))
+  for i, addr := range addrs {
+    list[i] = string(addr)
+  }
+
+  return list
+}
+
+func NewMasterComm(ctx context.Context, host host.Host, n int, base protocol.ID, id string, newPeer func() peer.ID) (Comm, error) {
+  Addrs := make([]peer.ID, n)
+  for i, _ := range Addrs {
+    Addrs[i] = newPeer()
+  }
+
+  comm := Comm{
+    Id: id,
+    Idx: 0,
+    Host: host,
+    Addrs: Addrs,
+    Base: base,
+    Pid: protocol.ID(fmt.Sprintf("%s/%s", id, string(base))),
+    Pinger: ping.NewPingService(host),
+    Remotes: make([]Remote, n),
+  }
+
+  for i, addr := range comm.Addrs {
+    if i > 0 {
+      comm.Remotes[i] = Remote{
+        Sent: []string{},
+        Stream: nil,
+        ResetChan: make(chan bool),
+      }
+
+      comm.Connect(ctx, i, addr)
+
+
+      streamHandler, err := comm.Remotes[i].StreamHandler()
+      if err != nil {
+
+        return comm, err
+      }
+
+      host.SetStreamHandler(protocol.ID(fmt.Sprintf("%d/%s", i, string(comm.Pid))), streamHandler)
+    }
+  }
+
+  go func() {
+    for {
+      for i, addr := range comm.Addrs {
+        select {
+        case <- comm.Pinger.Ping(ctx, addr):
+          continue
+        case <- time.After(time.Second):
+          comm.Reset(ctx, i)
+          continue
+        }
+      }
+    }
+  }()
+
+  return comm, nil
+}
+
+func (c *Comm)Connect(ctx context.Context, i int, addr peer.ID) {
+  stream, err := c.Host.NewStream(ctx, addr, c.Base)
+  if err != nil {
+    c.Reset(ctx, i)
+    return
+  }
+
+  rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
+  fmt.Fprintf(rw, "1,%d,%s,%s\n", i, c.Id, strings.Join(AddrsToString(c.Addrs), ";"))
+
+  c.Remotes[i].Reset(rw)
+}
+
+func (c *Comm)Reset(ctx context.Context, i int) {
+  addr := peer.ID("") //generate a random Peer.ID
+  c.Connect(ctx, i, addr)
+}
+
+func NewSlaveComm(ctx context.Context, host host.Host, base protocol.ID, param Param) (Comm, error) {
+  Addrs := make([]peer.ID, len(param.Addrs))
+  for i, addr := range param.Addrs {
+    Addrs[i] = peer.ID(addr)
+  }
+
+  comm := Comm{
+    Id: param.Id,
+    Idx: param.Idx,
+    Host: host,
+    Addrs: Addrs,
+    Pid: protocol.ID(fmt.Sprintf("%s/%s", param.Id, string(base))),
+    Pinger: ping.NewPingService(host),
+    Remotes: make([]Remote, len(param.Addrs)),
+  }
+
+  for i, addr := range comm.Addrs {
+    if i != param.Idx && (i > param.Idx || !param.Init) {
+      proto := protocol.ID(fmt.Sprintf("%d/%s", i, string(comm.Pid)))
+
+      stream, err := host.NewStream(ctx, addr, proto)
       if err != nil {
         comm.Stop()
-        return nil, err
+        return comm, err
       }
+
+      rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
 
       comm.Remotes[i] = Remote{
         Sent: []string{},
-        Stream: bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream)),
+        Stream: rw,
         ResetChan: make(chan bool),
       }
 
       streamHandler, err := comm.Remotes[i].StreamHandler()
       if err != nil {
         comm.Stop()
-        return nil, err
+        return comm, err
       }
 
       host.SetStreamHandler(proto, streamHandler)
     }
   }
 
-  return &comm, nil
+  return comm, nil
 }
 
 type Comm struct {
+  Id string
   Idx int
   Host host.Host
+  Addrs []peer.ID
+  Base protocol.ID
   Pid protocol.ID
   Pinger *ping.PingService
   Remotes []Remote
@@ -72,10 +205,6 @@ func (c *Comm)Send(idx int, msg string) {
 
 func (c *Comm)Get(idx int) string {
   return c.Remotes[idx].Get()
-}
-
-func (c *Comm)Reset(idx int, stream *bufio.ReadWriter) {
-  c.Remotes[idx].Reset(stream)
 }
 
 type Remote struct {
