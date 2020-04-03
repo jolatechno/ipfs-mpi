@@ -10,6 +10,8 @@ import (
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/crypto"
   "github.com/libp2p/go-libp2p-core/host"
+  "github.com/libp2p/go-libp2p-core/protocol"
+  "github.com/libp2p/go-libp2p-core/peer"
 
   maddr "github.com/multiformats/go-multiaddr"
 )
@@ -77,4 +79,8 @@ func NewHost(ctx context.Context) (host.Host, error) {
       listenAddresses...
   	),
   )
+}
+
+func newPeer(base protocol.ID) peer.ID {
+  return peer.ID("") //TODO
 }
