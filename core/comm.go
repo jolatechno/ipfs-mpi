@@ -59,7 +59,7 @@ func AddrsToString(addrs []peer.ID) []string {
   return list
 }
 
-func NewMasterComm(ctx context.Context, host host.Host, n int, base protocol.ID, id string, newPeer func() peer.ID) (Comm, error) {
+func NewMasterComm(ctx context.Context, host host.Host, n int, base protocol.ID, id string) (Comm, error) {
   Addrs := make([]peer.ID, n)
   for i, _ := range Addrs {
     Addrs[i] = newPeer()
