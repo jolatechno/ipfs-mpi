@@ -89,9 +89,7 @@ func main(){
   for {
     time.Sleep(time.Millisecond)
     if len(h.Peerstore().Peers()) > l {
-      for _, p := range h.Peerstore().Peers() {
-        fmt.Println(h.Peerstore().SupportsProtocols(p))
-      }
+      fmt.Println("New peer ", h.Peerstore().Peers())
       l++
     }
   }
