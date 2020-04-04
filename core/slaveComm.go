@@ -103,7 +103,7 @@ type BasicSlaveComm struct {
   Remotes []Remote
 }
 
-func (c *BasicSlaveComm)Stop() {
+func (c *BasicSlaveComm)Close() {
   for i := range c.Remotes {
     if i != c.Idx {
       proto := protocol.ID(fmt.Sprintf("%d/%s", i, string(c.Pid)))

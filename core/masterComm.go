@@ -13,10 +13,11 @@ import (
 )
 
 type BasicMasterComm struct {
+  BasicSlaveComm
+
   Ctx context.Context
   Pinger *ping.PingService
   Ended bool
-  Comm BasicSlaveComm
 }
 
 func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, id string) (MasterComm, error) {
@@ -26,10 +27,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   }
 
   comm := BasicMasterComm{
-    Ctx:ctx,
-    Pinger: ping.NewPingService(host),
-    Ended: false,
-    Comm: BasicSlaveComm{
+    BasicSlaveComm{
       Id: id,
       Idx: 0,
       Host: host,
@@ -38,6 +36,10 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
       Pid: protocol.ID(fmt.Sprintf("%s/%s", id, string(base))),
       Remotes: make([]Remote, n),
     },
+
+    Ctx:ctx,
+    Pinger: ping.NewPingService(host),
+    Ended: false,
   }
 
   for i, addr := range comm.Comm.Addrs {
@@ -61,9 +63,9 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     }
   }
 
-  go func() {
-    for {
-      for i := range comm.Comm.Addrs {
+  for i := range comm.Comm.Addrs {
+    go func() {
+      for {
         if comm.Ended {
           return
         }
@@ -71,8 +73,8 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
           comm.Reset(i)
         }
       }
-    }
-  }()
+    }()
+  }
 
   return &comm, nil
 }
@@ -93,14 +95,6 @@ func (c *BasicMasterComm)Present(idx int) bool {
   case <- time.After(time.Second):
     return false
   }
-}
-
-func (c *BasicMasterComm)Send(idx int, msg string) {
-  c.Comm.Send(idx, msg)
-}
-
-func (c *BasicMasterComm)Get(idx int) string {
-  return c.Comm.Get(idx)
 }
 
 func (c *BasicMasterComm)Connect(i int, addr peer.ID) {

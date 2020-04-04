@@ -8,7 +8,7 @@ import (
 
 type ExtHost interface {
   host.Host
-  
+
   NewPeer(protocol.ID) peer.ID
 }
 
@@ -23,15 +23,14 @@ type Store interface {
 }
 
 type SlaveComm interface {
-  Stop()
+  Close()
   Send(int, string)
   Get(int) string
 }
 
 type MasterComm interface {
-  Stop()
-  Send(int, string)
-  Get(int) string
+  SlaveComm
+  
   Present(int) bool
   Reset(int)
   Connect(int, peer.ID)
