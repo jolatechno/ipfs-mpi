@@ -47,13 +47,14 @@ func ParamFromString(msg string) (Param, error) {
   return param, err
 }
 
-func NewSlaveComm(ctx context.Context, host ExtHost, base protocol.ID, param Param) (SlaveComm, error) {
+func NewSlaveComm(ctx context.Context, host ExtHost, base protocol.ID, inter Interface, param Param) (SlaveComm, error) {
   Addrs := make([]peer.ID, len(param.Addrs))
   for i, addr := range param.Addrs {
     Addrs[i] = peer.ID(addr)
   }
 
   comm := BasicSlaveComm{
+    Inter: inter,
     Id: param.Id,
     Idx: param.Idx,
     Host: host,
@@ -94,6 +95,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, base protocol.ID, param Par
 }
 
 type BasicSlaveComm struct {
+  Inter Interface
   Id string
   Idx int
   Host ExtHost
@@ -101,6 +103,10 @@ type BasicSlaveComm struct {
   Base protocol.ID
   Pid protocol.ID
   Remotes []Remote
+}
+
+func (c *BasicSlaveComm)Interface() Interface {
+  return c.Inter
 }
 
 func (c *BasicSlaveComm)Close() {

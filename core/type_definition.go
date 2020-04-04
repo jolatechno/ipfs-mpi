@@ -6,6 +6,13 @@ import (
   "github.com/libp2p/go-libp2p-core/protocol"
 )
 
+type Mpi interface {
+  Close()
+  Host() ExtHost
+  Store() Store
+  Get(uint64) error
+}
+
 type ExtHost interface {
   host.Host
 
@@ -22,12 +29,6 @@ type Store interface {
   Get(uint64) (string, error)
 }
 
-type SlaveComm interface {
-  Close()
-  Send(int, string)
-  Get(int) string
-}
-
 type MasterComm interface {
   SlaveComm
 
@@ -36,9 +37,20 @@ type MasterComm interface {
   Connect(int, peer.ID)
 }
 
-type Mpi interface {
+type SlaveComm interface {
+  Interface() Interface
   Close()
-  Host() ExtHost
-  Store() Store
-  Get(uint64) error
+  Send(int, string)
+  Get(int) string
+}
+
+type Interface interface {
+  Message() chan Message
+  Request() chan int
+  Push(string)
+}
+
+type Message struct {
+  To int
+  Content string
 }

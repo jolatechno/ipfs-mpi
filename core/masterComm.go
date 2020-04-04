@@ -19,7 +19,7 @@ type BasicMasterComm struct {
   Comm BasicSlaveComm
 }
 
-func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, id string) (MasterComm, error) {
+func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, inter Interface, id string) (MasterComm, error) {
   Addrs := make([]peer.ID, n)
   for i, _ := range Addrs {
     Addrs[i] = host.NewPeer(base)
@@ -30,6 +30,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     Pinger: ping.NewPingService(host),
     Ended: false,
     Comm: BasicSlaveComm{
+      Inter: inter,
       Id: id,
       Idx: 0,
       Host: host,
@@ -75,6 +76,10 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   }
 
   return &comm, nil
+}
+
+func (c *BasicMasterComm)Interface() Interface {
+  return c.Comm.Interface()
 }
 
 func (c *BasicMasterComm)Close() {
