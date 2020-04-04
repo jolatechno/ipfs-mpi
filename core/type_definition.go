@@ -47,7 +47,7 @@ type SlaveComm interface {
 type Interface interface {
   Message() chan Message
   Request() chan int
-  Push(string)
+  Push(string) error
 }
 
 type Message struct {
