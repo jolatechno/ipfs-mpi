@@ -54,6 +54,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, base protocol.ID, inter Int
   }
 
   comm := BasicSlaveComm{
+    Ended: false,
     Inter: inter,
     Id: param.Id,
     Idx: param.Idx,
@@ -97,7 +98,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, base protocol.ID, inter Int
       msg := <- outChan
       comm.Send(msg.To, msg.Content)
     }
-  }
+  }()
 
   go func(){
     requestChan := comm.Inter.Request()
@@ -105,12 +106,13 @@ func NewSlaveComm(ctx context.Context, host ExtHost, base protocol.ID, inter Int
       req := <- requestChan
       comm.Inter.Push(comm.Get(req))
     }
-  }
+  }()
 
   return &comm, nil
 }
 
 type BasicSlaveComm struct {
+  Ended bool
   Inter Interface
   Id string
   Idx int
@@ -126,6 +128,7 @@ func (c *BasicSlaveComm)Interface() Interface {
 }
 
 func (c *BasicSlaveComm)Close() {
+  c.Ended = true
   for i := range c.Remotes {
     if i != c.Idx {
       proto := protocol.ID(fmt.Sprintf("%d/%s", i, string(c.Pid)))

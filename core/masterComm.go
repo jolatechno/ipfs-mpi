@@ -15,7 +15,6 @@ import (
 type BasicMasterComm struct {
   Ctx context.Context
   Pinger *ping.PingService
-  Ended bool
   Comm BasicSlaveComm
 }
 
@@ -28,8 +27,8 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   comm := BasicMasterComm{
     Ctx:ctx,
     Pinger: ping.NewPingService(host),
-    Ended: false,
     Comm: BasicSlaveComm{
+      Ended: false,
       Inter: inter,
       Id: id,
       Idx: 0,
@@ -64,7 +63,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
   for i := range comm.Comm.Addrs {
     go func() {
-      for !comm.Ended {
+      for !comm.Comm.Ended {
         if !comm.Present(i) {
           comm.Reset(i)
         }
@@ -80,7 +79,6 @@ func (c *BasicMasterComm)Interface() Interface {
 }
 
 func (c *BasicMasterComm)Close() {
-  c.Ended = true
   c.Comm.Close()
 }
 
