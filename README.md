@@ -36,7 +36,7 @@ For example :
 
 ## Usage
 
-See [shell](./shell) for a Gide on designing software that use ipfs-mpi and [example](./example) to design an interpretor for ipfs-mpi.
+See [example](./example) for info on how to design an interpretor for ipfs-mpi.
 
 ### WARNING : Development in progress, might contain bug
 
