@@ -68,7 +68,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, base protocol.ID, param Par
 
       stream, err := host.NewStream(ctx, addr, proto)
       if err != nil {
-        comm.Stop()
+        comm.Close()
         return &comm, err
       }
 
@@ -82,7 +82,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, base protocol.ID, param Par
 
       streamHandler, err := comm.Remotes[i].StreamHandler()
       if err != nil {
-        comm.Stop()
+        comm.Close()
         return &comm, err
       }
 

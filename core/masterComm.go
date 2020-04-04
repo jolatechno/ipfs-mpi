@@ -13,11 +13,10 @@ import (
 )
 
 type BasicMasterComm struct {
-  BasicSlaveComm
-
   Ctx context.Context
   Pinger *ping.PingService
   Ended bool
+  Comm BasicSlaveComm
 }
 
 func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, id string) (MasterComm, error) {
@@ -27,7 +26,10 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   }
 
   comm := BasicMasterComm{
-    BasicSlaveComm{
+    Ctx:ctx,
+    Pinger: ping.NewPingService(host),
+    Ended: false,
+    Comm: BasicSlaveComm{
       Id: id,
       Idx: 0,
       Host: host,
@@ -36,10 +38,6 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
       Pid: protocol.ID(fmt.Sprintf("%s/%s", id, string(base))),
       Remotes: make([]Remote, n),
     },
-
-    Ctx:ctx,
-    Pinger: ping.NewPingService(host),
-    Ended: false,
   }
 
   for i, addr := range comm.Comm.Addrs {
@@ -55,7 +53,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
       streamHandler, err := comm.Comm.Remotes[i].StreamHandler()
       if err != nil {
-        comm.Stop()
+        comm.Close()
         return &comm, err
       }
 
@@ -79,9 +77,17 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   return &comm, nil
 }
 
-func (c *BasicMasterComm)Stop() {
+func (c *BasicMasterComm)Close() {
   c.Ended = true
-  c.Comm.Stop()
+  c.Comm.Close()
+}
+
+func (c *BasicMasterComm)Send(idx int, msg string) {
+  c.Comm.Send(idx, msg)
+}
+
+func (c *BasicMasterComm)Get(idx int) string {
+  return c.Comm.Get(idx)
 }
 
 func (c *BasicMasterComm)Present(idx int) bool {
