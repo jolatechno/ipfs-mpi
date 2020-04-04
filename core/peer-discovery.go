@@ -5,10 +5,10 @@ import (
   "time"
 )
 
-func StartDiscovery(ctx context.Context, host ExtHost, rendezvous string, scanDuration time.Duration) {
+func StartDiscovery(ctx context.Context, host ExtHost, rendezvous string) {
   go func() {
     for {
-      peerChan := initMDNS(ctx, host, rendezvous, scanDuration)
+      peerChan := initMDNS(ctx, host, rendezvous)
       timeoutChan := time.After(scanDuration)
       for {
         select {

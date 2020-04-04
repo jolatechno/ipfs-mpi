@@ -34,7 +34,7 @@ type Store interface {
 type MasterComm interface {
   SlaveComm
 
-  Present(int) bool
+  Check(int) bool
   Reset(int)
   Connect(int, peer.ID)
 }
@@ -47,6 +47,8 @@ type SlaveComm interface {
 }
 
 type Interface interface {
+  Close()
+  Check() bool
   Message() chan Message
   Request() chan int
   Push(string) error

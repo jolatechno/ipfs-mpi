@@ -6,6 +6,7 @@ import (
   "path/filepath"
   "errors"
   "math/rand"
+  "os/exec"
 
   shell "github.com/ipfs/go-ipfs-api"
 )
@@ -20,19 +21,19 @@ const (
 type IpfsShell struct {
   Shell *shell.Shell
   Store []string
-  path string
-  ipfs_store string
+  Path string
+  Ipfs_store string
 }
 
 func (s *IpfsShell)Close() {
-  
+
 }
 
 func (s *IpfsShell)Add(f string) {
   s.Store = append(s.Store, f)
 }
 
-func NewShell(url string, path string, ipfs_store string) (Store, error) {
+func NewStore(url string, path string, ipfs_store string) (Store, error) {
   Shell := shell.NewShell(url)
   list, err := ioutil.ReadDir(path)
   if err != nil {
@@ -44,7 +45,7 @@ func NewShell(url string, path string, ipfs_store string) (Store, error) {
     store[i] = file.Name()
   }
 
-  return &IpfsShell{ Shell:Shell, Store:store, path:path, ipfs_store:ipfs_store }, nil
+  return &IpfsShell{ Shell:Shell, Store:store, Path:path, Ipfs_store:ipfs_store }, nil
 }
 
 func (s *IpfsShell)List() []string {
@@ -65,7 +66,7 @@ func (s *IpfsShell)Del(f string) error {
     return errors.New("No file to delete")
   }
 
-  err := os.Remove(s.path + f)
+  err := os.Remove(s.Path + f)
   if err != nil {
     return nil
   }
@@ -81,7 +82,12 @@ func (s *IpfsShell)Del(f string) error {
 }
 
 func (s *IpfsShell)Dowload(f string) error {
-  err := s.Shell.Get(s.ipfs_store + f, s.path + f)
+  err := s.Shell.Get(s.Ipfs_store + f, s.Path + f)
+  if err != nil {
+    return err
+  }
+
+  err = exec.Command("python3", s.Path + f + "/init.py").Start()
   if err != nil {
     return err
   }
@@ -92,7 +98,7 @@ func (s *IpfsShell)Dowload(f string) error {
 
 func (s *IpfsShell)Occupied() (uint64, error) {
   var size uint64
-  err := filepath.Walk(s.path, func(_ string, info os.FileInfo, err error) error {
+  err := filepath.Walk(s.Path, func(_ string, info os.FileInfo, err error) error {
       if err != nil {
           return err
       }
@@ -105,7 +111,7 @@ func (s *IpfsShell)Occupied() (uint64, error) {
 }
 
 func (s *IpfsShell)Get(maxSize uint64) (string, error) {
-  List, err := s.Shell.List(s.ipfs_store)
+  List, err := s.Shell.List(s.Ipfs_store)
   if err != nil {
     return "", err
   }

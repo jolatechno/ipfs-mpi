@@ -4,16 +4,43 @@ import (
   "errors"
   "context"
   "fmt"
-  
+
   "github.com/libp2p/go-libp2p-core/protocol"
 )
 
-func NewMpi(ctx context.Context) (Mpi, error) {
-  return &BasicMpi{Ctx:ctx}, errors.New("not yet implemented")
+func NewMpi(ctx context.Context, url string, path string, ipfs_store string, maxsize uint64, base protocol.ID) (Mpi, error) {
+  var nilMpi *BasicMpi
+
+  host, err := NewHost(ctx)
+  if err != nil {
+    return nilMpi, err
+  }
+
+  store, err := NewStore(url, path, ipfs_store)
+  if err != nil {
+    return nilMpi, err
+  }
+
+  mpi := BasicMpi{
+    Ctx:ctx,
+    Maxsize: maxsize,
+    Path: path,
+    Ipfs_store: ipfs_store,
+    MpiHost: host,
+    MpiStore: store,
+    MasterComms: []MasterComm{},
+    SlaveComms: []SlaveComm{},
+    Id: 0,
+  }
+
+  return &mpi, nil
 }
 
 type BasicMpi struct {
   Ctx context.Context
+  Maxsize uint64
+  Path string
+  Ipfs_store string
   MpiHost ExtHost
   MpiStore Store
   MasterComms []MasterComm
@@ -56,7 +83,7 @@ func (m *BasicMpi)Start(file string, n int) error {
     return errors.New("no such file")
   }
 
-  inter, err := NewInterface(file)
+  inter, err := NewInterface(m.Path + file, n)
   if err != nil {
     return err
   }

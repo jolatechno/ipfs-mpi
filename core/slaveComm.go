@@ -7,6 +7,7 @@ import (
   "context"
   "strings"
   "strconv"
+  "time"
 
   "github.com/libp2p/go-libp2p-core/network"
   "github.com/libp2p/go-libp2p-core/protocol"
@@ -113,6 +114,15 @@ func (c *BasicSlaveComm)start() {
       c.Inter.Push(c.Get(req))
     }
   }()
+
+  go func(){
+    for c.Inter.Check() {
+      time.Sleep(time.Second)
+    }
+    if !c.Ended {
+      c.Close()
+    }
+  }()
 }
 
 type BasicSlaveComm struct {
@@ -133,6 +143,7 @@ func (c *BasicSlaveComm)Interface() Interface {
 
 func (c *BasicSlaveComm)Close() {
   c.Ended = true
+  c.Inter.Close()
   for i := range c.Remotes {
     if i != c.Idx {
       proto := protocol.ID(fmt.Sprintf("%d/%s", i, string(c.Pid)))
