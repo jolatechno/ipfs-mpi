@@ -30,8 +30,15 @@ type SlaveComm interface {
 
 type MasterComm interface {
   SlaveComm
-  
+
   Present(int) bool
   Reset(int)
   Connect(int, peer.ID)
+}
+
+type Mpi interface {
+  Close()
+  Host() ExtHost
+  Store() Store
+  Get(uint64) error
 }
