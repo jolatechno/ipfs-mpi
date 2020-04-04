@@ -34,14 +34,15 @@ type Store interface {
 type MasterComm interface {
   SlaveComm
 
-  Check(int) bool
+  CheckPeer(int) bool
   Reset(int)
   Connect(int, peer.ID)
 }
 
 type SlaveComm interface {
-  Interface() Interface
   Close()
+  Check() bool
+  Interface() Interface
   Send(int, string)
   Get(int) string
 }

@@ -63,9 +63,9 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
   for i := range comm.Comm.Addrs {
     go func() {
-      for !comm.Comm.Ended {
+      for comm.Check() {
         time.Sleep(scanDuration)
-        if !comm.Check(i) {
+        if !comm.CheckPeer(i) {
           comm.Reset(i)
         }
       }
@@ -85,6 +85,10 @@ func (c *BasicMasterComm)Close() {
   c.Comm.Close()
 }
 
+func (c *BasicMasterComm)Check() bool {
+  return !c.Comm.Check()
+}
+
 func (c *BasicMasterComm)Send(idx int, msg string) {
   c.Comm.Send(idx, msg)
 }
@@ -93,7 +97,7 @@ func (c *BasicMasterComm)Get(idx int) string {
   return c.Comm.Get(idx)
 }
 
-func (c *BasicMasterComm)Check(idx int) bool {
+func (c *BasicMasterComm)CheckPeer(idx int) bool {
   select {
   case res := <- c.Pinger.Ping(c.Ctx, c.Comm.Addrs[idx]):
     if res.Error != nil {

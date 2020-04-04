@@ -95,5 +95,6 @@ func (m *BasicMpi)Start(file string, n int) error {
 
   m.Id++
   m.MasterComms = append(m.MasterComms, comm)
+
   return nil
 }

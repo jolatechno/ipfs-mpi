@@ -101,7 +101,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, base protocol.ID, inter Int
 func (c *BasicSlaveComm)start() {
   go func(){
     outChan := c.Inter.Message()
-    for !c.Ended{
+    for c.Check() {
       msg := <- outChan
       c.Send(msg.To, msg.Content)
     }
@@ -109,7 +109,7 @@ func (c *BasicSlaveComm)start() {
 
   go func(){
     requestChan := c.Inter.Request()
-    for !c.Ended{
+    for c.Check() {
       req := <- requestChan
       c.Inter.Push(c.Get(req))
     }
@@ -119,7 +119,7 @@ func (c *BasicSlaveComm)start() {
     for c.Inter.Check() {
       time.Sleep(time.Second)
     }
-    if !c.Ended {
+    if c.Check() {
       c.Close()
     }
   }()
@@ -150,6 +150,10 @@ func (c *BasicSlaveComm)Close() {
       c.Host.RemoveStreamHandler(proto)
     }
   }
+}
+
+func (c *BasicSlaveComm)Check() bool {
+  return !c.Ended
 }
 
 func (c *BasicSlaveComm)Send(idx int, msg string) {
