@@ -1,15 +1,13 @@
 package core
 
 import (
-  //"io/ioutil"
+  "io/ioutil"
   "os"
-  /*"path/filepath"
+  "path/filepath"
   "errors"
   "math/rand"
 
-  "github.com/coreos/go-semver/semver"
-
-  shell "github.com/ipfs/go-ipfs-api"*/
+  shell "github.com/ipfs/go-ipfs-api"
 )
 
 const (
@@ -19,7 +17,6 @@ const (
 
 //straight from version 1.0.1
 
-/*
 type IpfsShell struct {
   Shell *shell.Shell
   Store []string
@@ -31,33 +28,16 @@ func (s *IpfsShell)Add(f string) {
   s.Store = append(s.Store, f)
 }
 
-func NewShell(url string, path string, ipfs_store string) (*IpfsShell, error) {
+func NewShell(url string, path string, ipfs_store string) (Store, error) {
   Shell := shell.NewShell(url)
-
-  store := make(map[string][] *semver.Version)
-
-  files, err := ioutil.ReadDir(path)
+  list, err := ioutil.ReadDir(path)
   if err != nil {
       return nil, err
   }
 
-  for _, f := range files {
-    f_name := f.Name()
-    versions, err := ioutil.ReadDir(path + f_name)
-    if err != nil {
-      continue
-    }
-
-    store[f_name] = [] *semver.Version{}
-
-    for _, v := range versions {
-      version, err := semver.NewVersion(v.Name())
-      if err != nil{
-        continue
-      }
-
-      store[f_name] = append(store[f_name], version)
-    }
+  store := make([]string, len(list))
+  for i, file := range list {
+    store[i] = file.Name()
   }
 
   return &IpfsShell{ Shell:Shell, Store:store, path:path, ipfs_store:ipfs_store }, nil
@@ -68,13 +48,8 @@ func (s *IpfsShell)List() []string {
 }
 
 func (s *IpfsShell)Has(f string) bool {
-  versions, ok := s.Store[f.Name]
-  if !ok {
-    return false
-  }
-
-  for _, vers := range versions {
-    if vers.Major == f.Version.Major && vers.Minor >= f.Version.Minor {
+  for _, name := range s.Store {
+    if name == f {
       return true
     }
   }
@@ -86,36 +61,23 @@ func (s *IpfsShell)Del(f string) error {
     return errors.New("No file to delete")
   }
 
-  err := os.Remove(s.path + f.String())
+  err := os.Remove(s.path + f)
   if err != nil {
     return nil
   }
 
-  for idx, vers := range s.Store[f.Name] {
-    if vers == f.Version {
-      s.Store[f.Name] = append(s.Store[f.Name][:idx], s.Store[f.Name][idx+1:]...)
-      break
+  for i, name := range s.Store {
+    if name == f {
+      s.Store = append(s.Store[:i], s.Store[i + 1:]...)
+      return nil
     }
   }
 
-  if len(s.Store[f.Name]) == 0 {
-    delete(s.Store, f.Name)
-  }
-
-  return nil
+  return errors.New("File not in store")
 }
 
 func (s *IpfsShell)Dowload(f string) error {
-  if _, err := os.Stat(s.path + f.Name); os.IsNotExist(err) {
-    new_err := os.MkdirAll(s.path + f.Name, ModePerm)
-    if new_err != nil{
-      return err
-    }
-  } else if err != nil {
-    return err
-  }
-
-  err := s.Shell.Get(s.ipfs_store + f.String(), s.path + f.String())
+  err := s.Shell.Get(s.ipfs_store + f, s.path + f)
   if err != nil {
     return err
   }
@@ -141,36 +103,23 @@ func (s *IpfsShell)Occupied() (uint64, error) {
 func (s *IpfsShell)Get(maxSize uint64) (string, error) {
   List, err := s.Shell.List(s.ipfs_store)
   if err != nil {
-    return nil, err
+    return "", err
   }
 
   for i := 0; i < max_draw ; i++ {
     n := rand.Intn(len(List))
     obj := List[n]
 
-    _, ok := s.Store[obj.Name]
-    if ok {
+    if s.Has(obj.Name) {
       continue
     }
 
-    list, err := s.Shell.List(s.ipfs_store + obj.Name)
-    if len(list) == 0 && err != nil {
+    if obj.Size > maxSize {
       continue
     }
 
-    f := list[len(list) - 1]
-    if f.Size > maxSize {
-      continue
-    }
-
-    vers, err := semver.NewVersion(f.Name)
-    if err != nil {
-      continue
-    }
-
-
+    return obj.Name, nil
   }
 
-  return nil, errors.New("exceded max draw")
+  return "", errors.New("exceded max draw")
 }
-*/
