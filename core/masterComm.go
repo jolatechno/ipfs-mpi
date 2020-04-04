@@ -29,6 +29,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     Pinger: ping.NewPingService(host),
     Comm: BasicSlaveComm{
       Ended: false,
+      EndChan: make(chan bool),
       Inter: inter,
       Id: id,
       Idx: 0,
@@ -81,8 +82,12 @@ func (c *BasicMasterComm)Interface() Interface {
   return c.Comm.Interface()
 }
 
-func (c *BasicMasterComm)Close() {
-  c.Comm.Close()
+func (c *BasicMasterComm)Close() error {
+  return c.Comm.Close()
+}
+
+func (c *BasicMasterComm)CloseChan() chan bool {
+  return c.Comm.CloseChan()
 }
 
 func (c *BasicMasterComm)Check() bool {

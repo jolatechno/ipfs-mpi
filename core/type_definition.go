@@ -7,7 +7,9 @@ import (
 )
 
 type Mpi interface {
-  Close()
+  Close() error
+  Add(string) error
+  CloseChan() chan bool
   Host() ExtHost
   Store() Store
   Get(uint64) error
@@ -16,12 +18,13 @@ type Mpi interface {
 
 type ExtHost interface {
   host.Host
-
+  CloseChan() chan bool
   NewPeer(protocol.ID) peer.ID
 }
 
 type Store interface {
-  Close()
+  Close() error
+  CloseChan() chan bool
   Add(string)
   List() []string
   Has(string) bool
@@ -40,7 +43,8 @@ type MasterComm interface {
 }
 
 type SlaveComm interface {
-  Close()
+  Close() error
+  CloseChan() chan bool
   Check() bool
   Interface() Interface
   Send(int, string)
@@ -48,7 +52,8 @@ type SlaveComm interface {
 }
 
 type Interface interface {
-  Close()
+  Close() error
+  CloseChan() chan bool
   Check() bool
   Message() chan Message
   Request() chan int

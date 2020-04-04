@@ -9,27 +9,26 @@ import (
 )
 
 func NewMpi(ctx context.Context, url string, path string, ipfs_store string, maxsize uint64, base protocol.ID) (Mpi, error) {
-  var nilMpi *BasicMpi
-
   host, err := NewHost(ctx)
   if err != nil {
-    return nilMpi, err
+    return nil, err
   }
 
   store, err := NewStore(url, path, ipfs_store)
   if err != nil {
-    return nilMpi, err
+    return nil, err
   }
 
   mpi := BasicMpi{
     Ctx:ctx,
     Maxsize: maxsize,
     Path: path,
+    EndChan: make(chan bool),
     Ipfs_store: ipfs_store,
     MpiHost: host,
     MpiStore: store,
-    MasterComms: []MasterComm{},
-    SlaveComms: []SlaveComm{},
+    MasterComms: make(map[int]MasterComm),
+    SlaveComms: make(map[string]SlaveComm),
     Id: 0,
   }
 
@@ -40,25 +39,50 @@ type BasicMpi struct {
   Ctx context.Context
   Maxsize uint64
   Path string
+  EndChan chan bool
   Ipfs_store string
   MpiHost ExtHost
   MpiStore Store
-  MasterComms []MasterComm
-  SlaveComms []SlaveComm
+  MasterComms map[int]MasterComm
+  SlaveComms map[string]SlaveComm
   Id int
 }
 
-func (m *BasicMpi)Close() {
-  m.Store().Close()
-  m.Host().Close()
+func (m *BasicMpi)Close() error {
+  m.EndChan <- true
+  err := m.Store().Close()
+  if err != nil {
+    return err
+  }
+
+  err = m.Host().Close()
+  if err != nil {
+    return err
+  }
 
   for _, comm := range m.SlaveComms {
-    comm.Close()
+    err = comm.Close()
+    if err != nil {
+      return err
+    }
   }
 
   for _, comm := range m.MasterComms {
-    comm.Close()
+    err = comm.Close()
+    if err != nil {
+      return err
+    }
   }
+
+  return nil
+}
+
+func (m *BasicMpi)CloseChan() chan bool {
+  return m.EndChan
+}
+
+func (m *BasicMpi)Add(f string) error {
+  return errors.New("not yet implemented")
 }
 
 func (m *BasicMpi)Host() ExtHost {
@@ -93,8 +117,14 @@ func (m *BasicMpi)Start(file string, n int) error {
     return err
   }
 
+  m.MasterComms[m.Id] = comm
+  go func(id int){
+    <- comm.CloseChan()
+    delete(m.MasterComms, id)
+  }(m.Id)
+
   m.Id++
-  m.MasterComms = append(m.MasterComms, comm)
+
 
   return nil
 }

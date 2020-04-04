@@ -7,7 +7,6 @@ import (
   "context"
   "strings"
   "strconv"
-  "time"
 
   "github.com/libp2p/go-libp2p-core/network"
   "github.com/libp2p/go-libp2p-core/protocol"
@@ -56,6 +55,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, base protocol.ID, inter Int
 
   comm := BasicSlaveComm{
     Ended: false,
+    EndChan: make(chan bool),
     Inter: inter,
     Id: param.Id,
     Idx: param.Idx,
@@ -116,9 +116,7 @@ func (c *BasicSlaveComm)start() {
   }()
 
   go func(){
-    for c.Inter.Check() {
-      time.Sleep(time.Second)
-    }
+    <- c.Inter.CloseChan()
     if c.Check() {
       c.Close()
     }
@@ -127,6 +125,7 @@ func (c *BasicSlaveComm)start() {
 
 type BasicSlaveComm struct {
   Ended bool
+  EndChan chan bool
   Inter Interface
   Id string
   Idx int
@@ -141,15 +140,25 @@ func (c *BasicSlaveComm)Interface() Interface {
   return c.Inter
 }
 
-func (c *BasicSlaveComm)Close() {
+func (c *BasicSlaveComm)Close() error {
+  c.EndChan <- true
   c.Ended = true
-  c.Inter.Close()
+  err := c.Inter.Close()
+  if err != nil {
+    return err
+  }
+  
   for i := range c.Remotes {
     if i != c.Idx {
       proto := protocol.ID(fmt.Sprintf("%d/%s", i, string(c.Pid)))
       c.Host.RemoveStreamHandler(proto)
     }
   }
+  return nil
+}
+
+func (c *BasicSlaveComm)CloseChan() chan bool {
+  return c.EndChan
 }
 
 func (c *BasicSlaveComm)Check() bool {

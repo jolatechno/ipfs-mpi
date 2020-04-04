@@ -12,6 +12,7 @@ import (
 func NewInterface(file string, n int) (Interface, error) {
   inter := StdInterface {
     Ended: false,
+    EndChan: make(chan bool),
     InChan: make(chan string),
     OutChan: make(chan Message),
     RequestChan: make(chan int),
@@ -37,7 +38,7 @@ func NewInterface(file string, n int) (Interface, error) {
   reader := bufio.NewReader(stdout)
 
   go func(){
-    for !inter.Ended {
+    for inter.Check() {
       str, err := reader.ReadString('\n')
       if err != nil {
         inter.Close()
@@ -75,13 +76,20 @@ func NewInterface(file string, n int) (Interface, error) {
 
 type StdInterface struct {
   Ended bool
+  EndChan chan bool
   InChan chan string
   OutChan chan Message
   RequestChan chan int
 }
 
-func (s *StdInterface)Close() {
+func (s *StdInterface)Close() error {
+  s.EndChan <- true
   s.Ended = true
+  return nil
+}
+
+func (s *StdInterface)CloseChan() chan bool {
+  return s.EndChan
 }
 
 func (s *StdInterface)Check() bool {

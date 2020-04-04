@@ -18,21 +18,6 @@ const (
 
 //straight from version 1.0.1
 
-type IpfsShell struct {
-  Shell *shell.Shell
-  Store []string
-  Path string
-  Ipfs_store string
-}
-
-func (s *IpfsShell)Close() {
-
-}
-
-func (s *IpfsShell)Add(f string) {
-  s.Store = append(s.Store, f)
-}
-
 func NewStore(url string, path string, ipfs_store string) (Store, error) {
   Shell := shell.NewShell(url)
   list, err := ioutil.ReadDir(path)
@@ -45,7 +30,35 @@ func NewStore(url string, path string, ipfs_store string) (Store, error) {
     store[i] = file.Name()
   }
 
-  return &IpfsShell{ Shell:Shell, Store:store, Path:path, Ipfs_store:ipfs_store }, nil
+  return &IpfsShell{
+    EndChan: make(chan bool),
+    Shell:Shell,
+    Store:store,
+    Path:path,
+    Ipfs_store:ipfs_store,
+  }, nil
+}
+
+
+type IpfsShell struct {
+  EndChan chan bool
+  Shell *shell.Shell
+  Store []string
+  Path string
+  Ipfs_store string
+}
+
+func (s *IpfsShell)Close() error {
+  s.EndChan <- true
+  return nil
+}
+
+func (s *IpfsShell)CloseChan() chan bool {
+  return s.EndChan
+}
+
+func (s *IpfsShell)Add(f string) {
+  s.Store = append(s.Store, f)
 }
 
 func (s *IpfsShell)List() []string {

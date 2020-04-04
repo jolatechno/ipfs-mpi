@@ -87,6 +87,10 @@ func NewHost(ctx context.Context) (ExtHost, error) {
   return &BasicExtHost{h}, err
 }
 
+func (h *BasicExtHost)CloseChan() chan bool {
+  return make(chan bool) //no yet implemented
+}
+
 func (h *BasicExtHost)NewPeer(base protocol.ID) peer.ID {
   return peer.ID("") //TODO
 }
