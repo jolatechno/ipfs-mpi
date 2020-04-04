@@ -92,23 +92,27 @@ func NewSlaveComm(ctx context.Context, host ExtHost, base protocol.ID, inter Int
     }
   }
 
-  go func(){
-    outChan := comm.Inter.Message()
-    for !comm.Ended{
-      msg := <- outChan
-      comm.Send(msg.To, msg.Content)
-    }
-  }()
-
-  go func(){
-    requestChan := comm.Inter.Request()
-    for !comm.Ended{
-      req := <- requestChan
-      comm.Inter.Push(comm.Get(req))
-    }
-  }()
+  comm.start()
 
   return &comm, nil
+}
+
+func (c *BasicSlaveComm)start() {
+  go func(){
+    outChan := c.Inter.Message()
+    for !c.Ended{
+      msg := <- outChan
+      c.Send(msg.To, msg.Content)
+    }
+  }()
+
+  go func(){
+    requestChan := c.Inter.Request()
+    for !c.Ended{
+      req := <- requestChan
+      c.Inter.Push(c.Get(req))
+    }
+  }()
 }
 
 type BasicSlaveComm struct {

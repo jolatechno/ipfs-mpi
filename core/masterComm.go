@@ -71,6 +71,8 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     }()
   }
 
+  comm.Comm.start()
+
   return &comm, nil
 }
 
