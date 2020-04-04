@@ -91,6 +91,22 @@ func NewSlaveComm(ctx context.Context, host ExtHost, base protocol.ID, inter Int
     }
   }
 
+  go func(){
+    outChan := comm.Inter.Message()
+    for !comm.Ended{
+      msg := <- outChan
+      comm.Send(msg.To, msg.Content)
+    }
+  }
+
+  go func(){
+    requestChan := comm.Inter.Request()
+    for !comm.Ended{
+      req := <- requestChan
+      comm.Inter.Push(comm.Get(req))
+    }
+  }
+
   return &comm, nil
 }
 

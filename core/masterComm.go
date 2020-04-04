@@ -64,10 +64,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
   for i := range comm.Comm.Addrs {
     go func() {
-      for {
-        if comm.Ended {
-          return
-        }
+      for !comm.Ended {
         if !comm.Present(i) {
           comm.Reset(i)
         }
