@@ -24,6 +24,10 @@ type IpfsShell struct {
   ipfs_store string
 }
 
+func (s *IpfsShell)Close() {
+  
+}
+
 func (s *IpfsShell)Add(f string) {
   s.Store = append(s.Store, f)
 }

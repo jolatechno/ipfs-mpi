@@ -11,6 +11,7 @@ type Mpi interface {
   Host() ExtHost
   Store() Store
   Get(uint64) error
+  Start(string) error
 }
 
 type ExtHost interface {
@@ -20,6 +21,7 @@ type ExtHost interface {
 }
 
 type Store interface {
+  Close()
   Add(string)
   List() []string
   Has(string) bool

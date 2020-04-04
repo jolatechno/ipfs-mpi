@@ -4,12 +4,6 @@ import (
   "errors"
 )
 
-type StdInterface struct {
-  InChan chan string
-  OutChan chan Message
-  RequestChan chan int
-}
-
 func NewInterface(file string) (Interface, error) {
   inter := StdInterface{
     InChan: make(chan string),
@@ -18,6 +12,12 @@ func NewInterface(file string) (Interface, error) {
   }
 
   return &inter, errors.New("Not yet implemented")
+}
+
+type StdInterface struct {
+  InChan chan string
+  OutChan chan Message
+  RequestChan chan int
 }
 
 func (s *StdInterface)Message() chan Message {
