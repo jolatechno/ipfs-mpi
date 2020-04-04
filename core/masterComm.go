@@ -9,7 +9,6 @@ import (
 
   "github.com/libp2p/go-libp2p/p2p/protocol/ping"
   "github.com/libp2p/go-libp2p-core/protocol"
-  "github.com/libp2p/go-libp2p-core/host"
   "github.com/libp2p/go-libp2p-core/peer"
 )
 
@@ -20,10 +19,10 @@ type BasicMasterComm struct {
   Comm BasicSlaveComm
 }
 
-func NewMasterComm(ctx context.Context, host host.Host, n int, base protocol.ID, id string) (MasterComm, error) {
+func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, id string) (MasterComm, error) {
   Addrs := make([]peer.ID, n)
   for i, _ := range Addrs {
-    Addrs[i] = newPeer(base)
+    Addrs[i] = host.NewPeer(base)
   }
 
   comm := BasicMasterComm{
@@ -118,7 +117,7 @@ func (c *BasicMasterComm)Connect(i int, addr peer.ID) {
 }
 
 func (c *BasicMasterComm)Reset(i int) {
-  addr := newPeer(c.Comm.Base)
+  addr := c.Comm.Host.NewPeer(c.Comm.Base)
   c.Connect(i, addr)
 }
 

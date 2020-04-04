@@ -10,7 +10,6 @@ import (
 
   "github.com/libp2p/go-libp2p-core/network"
   "github.com/libp2p/go-libp2p-core/protocol"
-  "github.com/libp2p/go-libp2p-core/host"
   "github.com/libp2p/go-libp2p-core/peer"
 )
 
@@ -48,7 +47,7 @@ func ParamFromString(msg string) (Param, error) {
   return param, err
 }
 
-func NewSlaveComm(ctx context.Context, host host.Host, base protocol.ID, param Param) (SlaveComm, error) {
+func NewSlaveComm(ctx context.Context, host ExtHost, base protocol.ID, param Param) (SlaveComm, error) {
   Addrs := make([]peer.ID, len(param.Addrs))
   for i, addr := range param.Addrs {
     Addrs[i] = peer.ID(addr)
@@ -97,7 +96,7 @@ func NewSlaveComm(ctx context.Context, host host.Host, base protocol.ID, param P
 type BasicSlaveComm struct {
   Id string
   Idx int
-  Host host.Host
+  Host ExtHost
   Addrs []peer.ID
   Base protocol.ID
   Pid protocol.ID

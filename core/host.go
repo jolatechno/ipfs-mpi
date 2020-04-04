@@ -56,8 +56,12 @@ func ListIpAdresses() ([]maddr.Multiaddr, error) {
 	return returnAddr, nil
 }
 
-func NewHost(ctx context.Context) (host.Host, error) {
-  var nilHost host.Host
+type BasicExtHost struct {
+  host.Host
+}
+
+func NewHost(ctx context.Context) (ExtHost, error) {
+  var nilHost *BasicExtHost
 
   listenAddresses, err := ListIpAdresses()
   if err != nil {
@@ -72,15 +76,17 @@ func NewHost(ctx context.Context) (host.Host, error) {
     return nilHost, err
   }
 
-  return libp2p.New(ctx,
+  h, err := libp2p.New(ctx,
   	libp2p.Identity(priv),
 
   	libp2p.ListenAddrs(
       listenAddresses...
   	),
   )
+
+  return &BasicExtHost{h}, err
 }
 
-func newPeer(base protocol.ID) peer.ID {
+func (h *BasicExtHost)NewPeer(base protocol.ID) peer.ID {
   return peer.ID("") //TODO
 }
