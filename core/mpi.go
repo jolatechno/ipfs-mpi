@@ -4,8 +4,10 @@ import (
   "errors"
   "context"
   "fmt"
+  "bufio"
 
   "github.com/libp2p/go-libp2p-core/protocol"
+  "github.com/libp2p/go-libp2p-core/network"
 )
 
 func NewMpi(ctx context.Context, url string, path string, ipfs_store string, maxsize uint64, base protocol.ID) (Mpi, error) {
@@ -21,6 +23,8 @@ func NewMpi(ctx context.Context, url string, path string, ipfs_store string, max
 
   mpi := BasicMpi{
     Ctx:ctx,
+    Pid: base,
+    Ended: false,
     Maxsize: maxsize,
     Path: path,
     EndChan: make(chan bool),
@@ -32,11 +36,27 @@ func NewMpi(ctx context.Context, url string, path string, ipfs_store string, max
     Id: 0,
   }
 
+  go func(){
+    <- store.CloseChan()
+    if mpi.Check() {
+      mpi.Close()
+    }
+  }()
+
+  go func(){
+    <- host.CloseChan()
+    if mpi.Check() {
+      mpi.Close()
+    }
+  }()
+
   return &mpi, nil
 }
 
 type BasicMpi struct {
   Ctx context.Context
+  Pid protocol.ID
+  Ended bool
   Maxsize uint64
   Path string
   EndChan chan bool
@@ -50,6 +70,7 @@ type BasicMpi struct {
 
 func (m *BasicMpi)Close() error {
   m.EndChan <- true
+  m.Ended = true
   err := m.Store().Close()
   if err != nil {
     return err
@@ -81,8 +102,59 @@ func (m *BasicMpi)CloseChan() chan bool {
   return m.EndChan
 }
 
+func (m *BasicMpi)Check() bool {
+  return !m.Ended
+}
+
 func (m *BasicMpi)Add(f string) error {
-  return errors.New("not yet implemented")
+  if !m.Store().Has(f) {
+    err := m.Store().Dowload(f)
+    if err != nil {
+      return err
+    }
+  }
+
+  proto := protocol.ID(f + string(m.Pid))
+  m.Host().SetStreamHandler(proto, func(stream network.Stream) {
+    rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
+    str, err := rw.ReadString('\n')
+    if err != nil {
+      return
+    }
+
+    param, err := ParamFromString(str[:len(str) - 1])
+    if err != nil {
+      return
+    }
+
+    inter, err := NewInterface(f, param.N, param.Idx)
+    if err != nil {
+      return
+    }
+
+    comm, err := NewSlaveComm(m.Ctx, m.Host(), rw, proto, inter, param)
+    if err != nil {
+      return
+    }
+
+    m.SlaveComms[param.Id] = comm
+    go func(id string){
+      <- comm.CloseChan()
+      delete(m.SlaveComms, id)
+    }(param.Id)
+  })
+  return nil
+}
+
+func (m *BasicMpi)Del(f string) error {
+  err := m.Store().Del(f)
+  if err != nil {
+    return err
+  }
+
+  proto := protocol.ID(f + string(m.Pid))
+  m.Host().RemoveStreamHandler(proto)
+  return nil
 }
 
 func (m *BasicMpi)Host() ExtHost {
@@ -99,7 +171,7 @@ func (m *BasicMpi)Get(maxsize uint64) error {
     return err
   }
 
-  return m.MpiStore.Dowload(f)
+  return m.Add(f)
 }
 
 func (m *BasicMpi)Start(file string, n int) error {
@@ -107,7 +179,7 @@ func (m *BasicMpi)Start(file string, n int) error {
     return errors.New("no such file")
   }
 
-  inter, err := NewInterface(m.Path + file, n)
+  inter, err := NewInterface(m.Path + file, n, 0)
   if err != nil {
     return err
   }

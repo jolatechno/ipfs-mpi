@@ -91,6 +91,10 @@ func (h *BasicExtHost)CloseChan() chan bool {
   return make(chan bool) //no yet implemented
 }
 
+func (h *BasicExtHost)Check() bool {
+  return true //no yet implemented
+}
+
 func (h *BasicExtHost)NewPeer(base protocol.ID) peer.ID {
   return peer.ID("") //TODO
 }

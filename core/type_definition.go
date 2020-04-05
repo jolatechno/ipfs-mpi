@@ -8,17 +8,23 @@ import (
 
 type Mpi interface {
   Close() error
-  Add(string) error
   CloseChan() chan bool
+  Check() bool
+
+  Add(string) error
+  Del(string) error
+  Get(uint64) error
+
   Host() ExtHost
   Store() Store
-  Get(uint64) error
   Start(string, int) error
 }
 
 type ExtHost interface {
   host.Host
+
   CloseChan() chan bool
+  Check() bool
   NewPeer(protocol.ID) peer.ID
 }
 

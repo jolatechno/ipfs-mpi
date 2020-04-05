@@ -16,6 +16,7 @@ import (
 type Param struct {
   Init bool
   Idx int
+  N int
   Id string
   Addrs []string
 }
@@ -23,7 +24,7 @@ type Param struct {
 func ParamFromString(msg string) (Param, error) {
   param := Param{}
   splitted := strings.Split(msg, ",")
-  if len(splitted) != 4 {
+  if len(splitted) != 5 {
     return param, errors.New("Param dosen't have the right number fields")
   }
 
@@ -40,14 +41,20 @@ func ParamFromString(msg string) (Param, error) {
     return param, err
   }
 
+  n, err := strconv.Atoi(splitted[2])
+  if err != nil {
+    return param, err
+  }
+
   param.Idx = idx
-  param.Id = splitted[2]
-  param.Addrs = strings.Split(splitted[3], ";")
+  param.N = n
+  param.Id = splitted[3]
+  param.Addrs = strings.Split(splitted[4], ";")
 
   return param, err
 }
 
-func NewSlaveComm(ctx context.Context, host ExtHost, base protocol.ID, inter Interface, param Param) (SlaveComm, error) {
+func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, base protocol.ID, inter Interface, param Param) (SlaveComm, error) {
   Addrs := make([]peer.ID, len(param.Addrs))
   for i, addr := range param.Addrs {
     Addrs[i] = peer.ID(addr)
@@ -65,10 +72,16 @@ func NewSlaveComm(ctx context.Context, host ExtHost, base protocol.ID, inter Int
     Remotes: make([]Remote, len(param.Addrs)),
   }
 
-  for i, addr := range comm.Addrs {
-    if i != param.Idx && (i > param.Idx || !param.Init) {
-      proto := protocol.ID(fmt.Sprintf("%d/%s", i, string(comm.Pid)))
+  comm.Remotes[0] = Remote{
+    Sent: []string{},
+    Stream: zeroRw,
+    ResetChan: make(chan bool),
+  }
 
+  for i, addr := range comm.Addrs {
+    proto := protocol.ID(fmt.Sprintf("%d/%s", i, string(comm.Pid)))
+    
+    if i != param.Idx && (i > param.Idx || !param.Init) {
       stream, err := host.NewStream(ctx, addr, proto)
       if err != nil {
         comm.Close()
@@ -82,7 +95,9 @@ func NewSlaveComm(ctx context.Context, host ExtHost, base protocol.ID, inter Int
         Stream: rw,
         ResetChan: make(chan bool),
       }
+    }
 
+    if i != param.Idx && i != 0 {
       streamHandler, err := comm.Remotes[i].StreamHandler()
       if err != nil {
         comm.Close()
@@ -147,7 +162,7 @@ func (c *BasicSlaveComm)Close() error {
   if err != nil {
     return err
   }
-  
+
   for i := range c.Remotes {
     if i != c.Idx {
       proto := protocol.ID(fmt.Sprintf("%d/%s", i, string(c.Pid)))
