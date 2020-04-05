@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	scanDuration = time.Second
+	ScanDuration = time.Second
 )
 
 type discoveryNotifee struct {
@@ -27,7 +27,7 @@ func (n *discoveryNotifee) HandlePeerFound(pi peer.AddrInfo) {
 //Initialize the MDNS service
 func initMDNS(ctx context.Context, peerhost host.Host, rendezvous string) chan peer.AddrInfo {
 	// An hour might be a long long period in practical applications. But this is fine for us
-	ser, err := discovery.NewMdnsService(ctx, peerhost, scanDuration, rendezvous)
+	ser, err := discovery.NewMdnsService(ctx, peerhost, ScanDuration, rendezvous)
 	if err != nil {
 		panic(err)
 	}

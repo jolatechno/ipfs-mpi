@@ -7,10 +7,12 @@ import (
   "context"
   "strings"
   "strconv"
+  "time"
 
   "github.com/libp2p/go-libp2p-core/network"
   "github.com/libp2p/go-libp2p-core/protocol"
   "github.com/libp2p/go-libp2p-core/peer"
+  "github.com/libp2p/go-libp2p/p2p/protocol/ping"
 )
 
 type Param struct {
@@ -80,7 +82,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
 
   for i, addr := range comm.Addrs {
     proto := protocol.ID(fmt.Sprintf("%d/%s", i, string(comm.Pid)))
-    
+
     if i != param.Idx && (i > param.Idx || !param.Init) {
       stream, err := host.NewStream(ctx, addr, proto)
       if err != nil {
@@ -107,6 +109,22 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
       host.SetStreamHandler(proto, streamHandler)
     }
   }
+
+  pinger := ping.NewPingService(host)
+
+  go func() {
+    for comm.Check() {
+      time.Sleep(ScanDuration)
+      select {
+      case <- pinger.Ping(ctx, comm.Addrs[0]):
+        continue
+
+      case <- time.After(ScanDuration):
+        comm.Close()
+        return
+      }
+    }
+  }()
 
   comm.start()
 

@@ -7,9 +7,9 @@ import (
 
 func StartDiscovery(ctx context.Context, host ExtHost, rendezvous string) {
   go func() {
-    for {
+    for host.Check() {
       peerChan := initMDNS(ctx, host, rendezvous)
-      timeoutChan := time.After(scanDuration)
+      timeoutChan := time.After(ScanDuration)
       for {
         select {
         case peer := <- peerChan:
