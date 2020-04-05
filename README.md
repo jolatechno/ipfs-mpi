@@ -1,6 +1,6 @@
 # libp2p-mpi
 
-### __WARNING : Development in progress, might contain bug, Please download releases to avoid bug__
+### ![#f03c15] __WARNING : Development in progress, might contain bug, Please download releases to avoid bug__
 
 [![](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.io/)
 [![](https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23ipfs)
