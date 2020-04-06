@@ -21,9 +21,10 @@ func NewMpi(ctx context.Context, url string, path string, ipfs_store string, max
     return nil, err
   }
 
+  proto := protocol.ID(ipfs_store + string(base))
   mpi := BasicMpi{
     Ctx:ctx,
-    Pid: base,
+    Pid: proto,
     Ended: false,
     Maxsize: maxsize,
     Path: path,
@@ -114,9 +115,8 @@ func (m *BasicMpi)Add(f string) error {
     }
   }
 
-  
-
   proto := protocol.ID(f + string(m.Pid))
+  m.Host().Listen(proto, f + m.Ipfs_store)
   m.Host().SetStreamHandler(proto, func(stream network.Stream) {
     rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
     str, err := rw.ReadString('\n')

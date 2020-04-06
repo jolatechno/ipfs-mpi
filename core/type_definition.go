@@ -25,7 +25,8 @@ type ExtHost interface {
 
   CloseChan() chan bool
   Check() bool
-  NewPeer(protocol.ID) peer.ID
+  NewPeer(protocol.ID) (peer.ID, error)
+  Listen(protocol.ID, string)
 }
 
 type Store interface {

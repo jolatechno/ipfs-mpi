@@ -5,6 +5,7 @@ import (
   "strings"
   "errors"
   "context"
+  "time"
 	"fmt"
   "math/rand"
 
@@ -17,6 +18,7 @@ import (
   "github.com/libp2p/go-libp2p-core/peer"
   "github.com/libp2p/go-libp2p-core/network"
   "github.com/libp2p/go-libp2p-core/connmgr"
+  "github.com/libp2p/go-libp2p-peerstore/pstoremem"
 
   maddr "github.com/multiformats/go-multiaddr"
 )
@@ -86,6 +88,7 @@ func NewHost(ctx context.Context) (ExtHost, error) {
   )
 
   return &BasicExtHost{
+    Ctx: ctx,
     Host: h,
     EndChan: make(chan bool),
     Ended: false,
@@ -94,6 +97,7 @@ func NewHost(ctx context.Context) (ExtHost, error) {
 }
 
 type BasicExtHost struct {
+  Ctx context.Context
   Host host.Host
   EndChan chan bool
   Ended bool
@@ -114,15 +118,36 @@ func (h *BasicExtHost) Check() bool {
   return !h.Ended
 }
 
-func (h *BasicExtHost)NewPeer(base protocol.ID) peer.ID {
+func (h *BasicExtHost)NewPeer(base protocol.ID) (peer.ID, error) {
+  var nilPeer peer.ID
+
   pstore, ok := h.PeerStores[base]
   if !ok {
-    //h.PeerStores[base] := peerstore.Peerstore
-    return h.Host.ID()
+    return nilPeer, errors.New("no such protocol")
   }
   peers := pstore.Peers()
   n := rand.Intn(len(peers))
-  return peers[n]
+  return peers[n], nil
+}
+
+func (h *BasicExtHost)Listen(pid protocol.ID, rendezvous string) {
+  h.PeerStores[pid] = pstoremem.NewPeerstore()
+  go func() {
+    for h.Check() {
+      peerChan := initMDNS(h.Ctx, h.Host, rendezvous)
+      for {
+        select {
+        case peer := <- peerChan:
+          h.PeerStores[pid].AddAddrs(peer.ID, peer.Addrs, peerstore.TempAddrTTL)
+          go func(){
+            h.Connect(h.Ctx, peer)
+          }()
+        case <- time.After(ScanDuration):
+          continue
+        }
+      }
+    }
+  }()
 }
 
 func (h *BasicExtHost)ID() peer.ID {
