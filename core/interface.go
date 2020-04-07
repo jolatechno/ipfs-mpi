@@ -1,7 +1,6 @@
 package core
 
 import (
-  "errors"
   "fmt"
   "os/exec"
   "bufio"
@@ -71,7 +70,7 @@ func NewInterface(file string, n int, i int) (Interface, error) {
     }
   }()
 
-  return &inter, errors.New("Not yet implemented")
+  return &inter, nil
 }
 
 type StdInterface struct {
