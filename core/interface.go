@@ -67,7 +67,8 @@ func NewInterface(file string, n int, i int) (Interface, error) {
         }
 
         inter.RequestChan <- idx
-        fmt.Fprint(stdin, <- inter.InChan)
+        fmt.Fprintln(stdin, <- inter.InChan)
+        fmt.Println("sent") //---------------------------------------------------
       } else {
         idx, err := strconv.Atoi(splitted[0])
         if err != nil {
