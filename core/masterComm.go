@@ -19,14 +19,13 @@ type BasicMasterComm struct {
 }
 
 func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, inter Interface, id string) (MasterComm, error) {
-  var nilComm MasterComm
   var err error
 
   Addrs := make([]peer.ID, n)
   for i, _ := range Addrs {
     Addrs[i], err = host.NewPeer(base)
     if err != nil {
-      return nilComm, err
+      return nil, err
     }
   }
 

@@ -37,6 +37,34 @@ func NewMpi(ctx context.Context, url string, path string, ipfs_store string, max
     Id: 0,
   }
 
+  for _, f := range store.List() {
+    mpi.Add(f)
+  }
+
+  go func() {
+    for mpi.Check() {
+      occupied, err := store.Occupied()
+      if err != nil {
+        return
+      }
+      
+      left := maxsize - occupied
+      if left <= 0 {
+        return
+      }
+
+      f, err := store.Get(left)
+      if err != nil {
+        return
+      }
+
+      err = mpi.Add(f)
+      if err != nil {
+        return
+      }
+    }
+  }()
+
   go func() {
     <- store.CloseChan()
     if mpi.Check() {

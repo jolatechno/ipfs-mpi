@@ -20,6 +20,16 @@ const (
 
 func NewStore(url string, path string, ipfs_store string) (Store, error) {
   Shell := shell.NewShell(url)
+
+  if _, err := os.Stat(path); os.IsNotExist(err) {
+    new_err := os.MkdirAll(path, ModePerm)
+    if new_err != nil{
+      return nil, err
+    }
+  } else if err != nil {
+    return nil, err
+  }
+
   list, err := ioutil.ReadDir(path)
   if err != nil {
       return nil, err

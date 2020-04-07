@@ -87,7 +87,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
       stream, err := host.NewStream(ctx, addr, proto)
       if err != nil {
         comm.Close()
-        return &comm, err
+        return nil, err
       }
 
       rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
@@ -103,7 +103,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
       streamHandler, err := comm.Remotes[i].StreamHandler()
       if err != nil {
         comm.Close()
-        return &comm, err
+        return nil, err
       }
 
       host.SetStreamHandler(proto, streamHandler)

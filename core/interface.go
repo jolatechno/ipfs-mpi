@@ -21,17 +21,17 @@ func NewInterface(file string, n int, i int) (Interface, error) {
 
   stdin, err := cmd.StdinPipe()
 	if err != nil {
-		return &inter, err
+		return nil, err
 	}
 
   stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		return &inter, err
+		return nil, err
 	}
 
   err = cmd.Start()
   if err != nil {
-    return &inter, err
+    return nil, err
   }
 
   reader := bufio.NewReader(stdout)

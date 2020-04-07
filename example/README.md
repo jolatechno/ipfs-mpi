@@ -20,11 +20,11 @@ Wich will give an output ressembling :
 added QmYjH4sibLpCSNCVbHXhfCZY78Ckj2aDDMWFwup7NGJ3JD test_interpreters/dummy/init.py
 added Qmb5jKmyFQFDceBXLCkjdfQbJrJ5fQ6KLGJHESTJ8E5mZo test_interpreters/dummy/run.py
 added QmYjH4sibLpCSNCVbHXhfCZY78Ckj2aDDMWFwup7NGJ3JD test_interpreters/echo/init.py
-added QmQXxoEsJSnN4BYuAXscbRLcwUP9U566YWkTtERF8MqVbq test_interpreters/echo/run.py
+added QmWQnPUBXxTqwFFFUQjymnYnYJanRdkm7m9BdEBfdAG5Pk test_interpreters/echo/run.py
 added QmUQT4c4btHFZGgcrSzzxXTstFWSe3eS32YhVCJYGqtut7 test_interpreters/dummy
-added QmPCFULBU5tXMiJ3BnqFHWHA6w5UCA1u5WUbDD5gRP4r5s test_interpreters/echo
-added Qmb9mhSA2Zdh8MDDUtii1n7Ycfnu6DoaD56onv6jYfHwc7 test_interpreters
- 518 B / 518 B [==============================================================================================================================] 100.00%
+added QmYo6nXpq4H497UVLgoTQRuAMNGGZasGT145HJJFf3o5Gw test_interpreters/echo
+added Qmb5pxxiBDKiX9zZT3uPHeXYdAQ2keyNyk7QjzvbuAPkSe test_interpreters
+ 267 B / 267 B [===================================================================================================================] 100.00%
  ```
 
-Where the line corresponding to the whole directory is `added Qmb9mhSA2Zdh8MDDUtii1n7Ycfnu6DoaD56onv6jYfHwc7 test_interpreters`, so the ipfs-store that you should use will be `Qmb9mhSA2Zdh8MDDUtii1n7Ycfnu6DoaD56onv6jYfHwc7/`
+Where the line corresponding to the whole directory is `added Qmb5pxxiBDKiX9zZT3uPHeXYdAQ2keyNyk7QjzvbuAPkSe test_interpreters`, so the ipfs-store that you should use will be `Qmb5pxxiBDKiX9zZT3uPHeXYdAQ2keyNyk7QjzvbuAPkSe/`

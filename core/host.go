@@ -64,11 +64,9 @@ func ListIpAdresses() ([]maddr.Multiaddr, error) {
 }
 
 func NewHost(ctx context.Context) (ExtHost, error) {
-  var nilHost *BasicExtHost
-
   listenAddresses, err := ListIpAdresses()
   if err != nil {
-    return nilHost, err
+    return nil, err
   }
 
   priv, _, err := crypto.GenerateKeyPair(
@@ -76,7 +74,7 @@ func NewHost(ctx context.Context) (ExtHost, error) {
 	    -1,             // Select key length when possible (i.e. RSA).
   )
   if err != nil {
-    return nilHost, err
+    return nil, err
   }
 
   h, err := libp2p.New(ctx,

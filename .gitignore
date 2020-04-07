@@ -3,5 +3,4 @@
 !*.*
 !**/LICENSE
 
-/core/interpreter/
-/core/interpreter/**
+**/interpreter/**
