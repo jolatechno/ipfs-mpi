@@ -44,7 +44,7 @@ func NewInterface(file string, n int, i int) (Interface, error) {
 
       if err != nil {
 
-        fmt.Print("close 0") //---------------------------------------------------
+        fmt.Println("close 0") //---------------------------------------------------
 
         inter.Close()
       }
@@ -52,16 +52,16 @@ func NewInterface(file string, n int, i int) (Interface, error) {
       splitted := strings.Split(str, ",")
       if len(splitted) != 2 {
 
-        fmt.Print("close 1") //---------------------------------------------------
+        fmt.Println("close 1") //---------------------------------------------------
 
         inter.Close()
       }
 
       if splitted[0] == "Req" {
-        idx, err := strconv.Atoi(splitted[1])
+        idx, err := strconv.Atoi(splitted[1][:len(splitted[1]) - 1])
         if err != nil {
 
-          fmt.Print("close 2.0") //---------------------------------------------------
+          fmt.Println("close 2.0") //---------------------------------------------------
 
           inter.Close()
         }
@@ -72,7 +72,7 @@ func NewInterface(file string, n int, i int) (Interface, error) {
         idx, err := strconv.Atoi(splitted[0])
         if err != nil {
 
-          fmt.Print("close 2.1") //---------------------------------------------------
+          fmt.Println("close 2.1") //---------------------------------------------------
 
           inter.Close()
         }
