@@ -10,26 +10,34 @@ import (
   "github.com/libp2p/go-libp2p-core/network"
 )
 
-func NewMpi(ctx context.Context, url string, path string, ipfs_store string, maxsize uint64, base protocol.ID) (Mpi, error) {
+type Config struct {
+  Url string
+  Path string
+  Ipfs_store string
+  Maxsize uint64
+  Base string
+}
+
+func NewMpi(ctx context.Context, config Config) (Mpi, error) {
   host, err := NewHost(ctx)
   if err != nil {
     return nil, err
   }
 
-  store, err := NewStore(url, path, ipfs_store)
+  store, err := NewStore(config.Url, config.Path, config.Ipfs_store)
   if err != nil {
     return nil, err
   }
 
-  proto := protocol.ID(ipfs_store + string(base))
+  proto := protocol.ID(config.Ipfs_store + config.Base)
   mpi := BasicMpi {
     Ctx:ctx,
     Pid: proto,
     Ended: false,
-    Maxsize: maxsize,
-    Path: path,
+    Maxsize: config.Maxsize,
+    Path: config.Path,
     EndChan: make(chan bool),
-    Ipfs_store: ipfs_store,
+    Ipfs_store: config.Ipfs_store,
     MpiHost: host,
     MpiStore: store,
     MasterComms: make(map[int]MasterComm),
@@ -47,8 +55,8 @@ func NewMpi(ctx context.Context, url string, path string, ipfs_store string, max
       if err != nil {
         return
       }
-      
-      left := maxsize - occupied
+
+      left := config.Maxsize - occupied
       if left <= 0 {
         return
       }
