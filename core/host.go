@@ -118,18 +118,6 @@ func (h *BasicExtHost) Check() bool {
   return !h.Ended
 }
 
-func (h *BasicExtHost)NewPeer(base protocol.ID) (peer.ID, error) {
-  var nilPeer peer.ID
-
-  pstore, ok := h.PeerStores[base]
-  if !ok {
-    return nilPeer, errors.New("no such protocol")
-  }
-  peers := pstore.Peers()
-  n := rand.Intn(len(peers))
-  return peers[n], nil
-}
-
 func (h *BasicExtHost)Listen(pid protocol.ID, rendezvous string) {
   h.PeerStores[pid] = pstoremem.NewPeerstore()
   go func() {
@@ -148,6 +136,32 @@ func (h *BasicExtHost)Listen(pid protocol.ID, rendezvous string) {
       }
     }
   }()
+}
+
+func (h *BasicExtHost)PeerstoreProtocol(base protocol.ID) (peerstore.Peerstore, error) {
+  pstore, ok := h.PeerStores[base]
+  if !ok {
+    return pstore, errors.New("no such protocol")
+  }
+
+  return pstore, nil
+}
+
+func (h *BasicExtHost)NewPeer(base protocol.ID) (peer.ID, error) {
+  var nilPeerId peer.ID
+
+  pstore, err := h.PeerstoreProtocol(base)
+  if err != nil {
+    return nilPeerId, err
+  }
+
+  peers := pstore.Peers()
+  if len(peers) == 0 {
+    return nilPeerId, errors.New("no peers supporting this protocol")
+  }
+
+  n := rand.Intn(len(peers))
+  return peers[n], nil
 }
 
 func (h *BasicExtHost)ID() peer.ID {
