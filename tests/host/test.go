@@ -26,7 +26,7 @@ func main() {
   host.Listen(proto, string)
 
   go func() {
-    l := 0
+    l := -1
     for {
       time.Sleep(time.Second)
 
