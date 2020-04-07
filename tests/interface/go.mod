@@ -1,5 +1,5 @@
 module test
 
-require github.com/jolatechno/ipfs-mpi/core v0.0.0-20200407145548-3f2970662d68
+require github.com/jolatechno/ipfs-mpi/core v0.0.0-20200407164100-b2be0a623836
 
 go 1.13
