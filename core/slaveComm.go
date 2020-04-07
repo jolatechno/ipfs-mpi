@@ -74,32 +74,33 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
     Remotes: make([]Remote, len(param.Addrs)),
   }
 
-  comm.Remotes[0] = Remote {
-    Sent: []string{},
-    Stream: zeroRw,
-    ResetChan: make(chan bool),
-  }
-
   for i, addr := range comm.Addrs {
-    proto := protocol.ID(fmt.Sprintf("%d/%s", i, string(comm.Pid)))
+    if i != param.Idx {
+      proto := protocol.ID(fmt.Sprintf("%d/%s", i, string(comm.Pid)))
 
-    if i != param.Idx && (i > param.Idx || !param.Init) {
-      stream, err := host.NewStream(ctx, addr, proto)
-      if err != nil {
-        comm.Close()
-        return nil, err
+      if i == 0 {
+        comm.Remotes[i] = Remote {
+          Sent: []string{},
+          Stream: zeroRw,
+          ResetChan: make(chan bool),
+        }
+
+      } else if i > param.Idx || !param.Init {
+        stream, err := host.NewStream(ctx, addr, proto)
+        if err != nil {
+          comm.Close()
+          return nil, err
+        }
+
+        rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
+
+        comm.Remotes[i] = Remote {
+          Sent: []string{},
+          Stream: rw,
+          ResetChan: make(chan bool),
+        }
       }
 
-      rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
-
-      comm.Remotes[i] = Remote {
-        Sent: []string{},
-        Stream: rw,
-        ResetChan: make(chan bool),
-      }
-    }
-
-    if i != param.Idx && i != 0 {
       streamHandler, err := comm.Remotes[i].StreamHandler()
       if err != nil {
         comm.Close()

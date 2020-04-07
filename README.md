@@ -47,7 +47,7 @@ See [example](./example) for info on how to design an interpretor for ipfs-mpi.
 __main changes:__
 
 - [x] implement basic message passing using libp2p
-- [ ] handle fault (like unexpected peer hangup)
+- [x] handle fault (like unexpected peer hangup)
 - [ ] automatically delete unused file
 
 __'cosmetic' changes:__
