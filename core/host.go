@@ -120,6 +120,8 @@ func (h *BasicExtHost) Check() bool {
 
 func (h *BasicExtHost)Listen(pid protocol.ID, rendezvous string) {
   h.PeerStores[pid] = pstoremem.NewPeerstore()
+  h.PeerStores[pid].AddAddrs(h.ID(), h.Addrs(), peerstore.TempAddrTTL)
+
   go func() {
     for h.Check() {
       peerChan := initMDNS(h.Ctx, h.Host, rendezvous)
