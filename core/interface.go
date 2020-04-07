@@ -39,42 +39,27 @@ func NewInterface(file string, n int, i int) (Interface, error) {
   go func(){
     for inter.Check() {
       str, err := reader.ReadString('\n')
-
-      fmt.Print(err, str) //---------------------------------------------------
-
+      
       if err != nil {
-
-        fmt.Println("close 0") //---------------------------------------------------
-
         inter.Close()
       }
 
       splitted := strings.Split(str, ",")
       if len(splitted) != 2 {
-
-        fmt.Println("close 1") //---------------------------------------------------
-
         inter.Close()
       }
 
       if splitted[0] == "Req" {
         idx, err := strconv.Atoi(splitted[1][:len(splitted[1]) - 1])
         if err != nil {
-
-          fmt.Println("close 2.0") //---------------------------------------------------
-
           inter.Close()
         }
 
         inter.RequestChan <- idx
-        fmt.Fprintln(stdin, <- inter.InChan)
-        fmt.Println("sent") //---------------------------------------------------
+        fmt.Fprint(stdin, <- inter.InChan)
       } else {
         idx, err := strconv.Atoi(splitted[0])
         if err != nil {
-
-          fmt.Println("close 2.1") //---------------------------------------------------
-
           inter.Close()
         }
 
