@@ -120,7 +120,6 @@ func (h *BasicExtHost) Check() bool {
 
 func (h *BasicExtHost)Listen(pid protocol.ID, rendezvous string) {
   h.PeerStores[pid] = pstoremem.NewPeerstore()
-  h.PeerStores[pid].AddAddrs(h.ID(), h.Addrs(), peerstore.TempAddrTTL)
 
   go func() {
     for h.Check() {
@@ -159,7 +158,7 @@ func (h *BasicExtHost)NewPeer(base protocol.ID) (peer.ID, error) {
 
   peers := pstore.Peers()
   if len(peers) == 0 {
-    return nilPeerId, errors.New("no peers supporting this protocol")
+    return h.ID(), nil
   }
 
   n := rand.Intn(len(peers))
