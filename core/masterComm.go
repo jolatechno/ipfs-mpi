@@ -30,10 +30,10 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     }
   }
 
-  comm := BasicMasterComm{
+  comm := BasicMasterComm {
     Ctx:ctx,
     Pinger: ping.NewPingService(host),
-    Comm: BasicSlaveComm{
+    Comm: BasicSlaveComm {
       Ended: false,
       EndChan: make(chan bool),
       Inter: inter,

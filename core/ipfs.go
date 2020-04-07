@@ -30,7 +30,7 @@ func NewStore(url string, path string, ipfs_store string) (Store, error) {
     store[i] = file.Name()
   }
 
-  return &IpfsShell{
+  return &IpfsShell {
     EndChan: make(chan bool),
     Shell:Shell,
     Store:store,

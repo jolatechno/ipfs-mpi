@@ -87,7 +87,7 @@ func NewHost(ctx context.Context) (ExtHost, error) {
   	),
   )
 
-  return &BasicExtHost{
+  return &BasicExtHost {
     Ctx: ctx,
     Host: h,
     EndChan: make(chan bool),

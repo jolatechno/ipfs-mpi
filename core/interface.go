@@ -39,7 +39,7 @@ func NewInterface(file string, n int, i int) (Interface, error) {
   go func(){
     for inter.Check() {
       str, err := reader.ReadString('\n')
-      
+
       if err != nil {
         inter.Close()
       }
@@ -63,7 +63,7 @@ func NewInterface(file string, n int, i int) (Interface, error) {
           inter.Close()
         }
 
-        inter.OutChan <- Message{
+        inter.OutChan <- Message {
           To: idx,
           Content: splitted[1],
         }

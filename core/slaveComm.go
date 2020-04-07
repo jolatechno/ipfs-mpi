@@ -62,7 +62,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
     Addrs[i] = peer.ID(addr)
   }
 
-  comm := BasicSlaveComm{
+  comm := BasicSlaveComm {
     Ended: false,
     EndChan: make(chan bool),
     Inter: inter,
@@ -74,7 +74,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
     Remotes: make([]Remote, len(param.Addrs)),
   }
 
-  comm.Remotes[0] = Remote{
+  comm.Remotes[0] = Remote {
     Sent: []string{},
     Stream: zeroRw,
     ResetChan: make(chan bool),
@@ -92,7 +92,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
 
       rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
 
-      comm.Remotes[i] = Remote{
+      comm.Remotes[i] = Remote {
         Sent: []string{},
         Stream: rw,
         ResetChan: make(chan bool),

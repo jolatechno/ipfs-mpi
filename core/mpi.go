@@ -22,7 +22,7 @@ func NewMpi(ctx context.Context, url string, path string, ipfs_store string, max
   }
 
   proto := protocol.ID(ipfs_store + string(base))
-  mpi := BasicMpi{
+  mpi := BasicMpi {
     Ctx:ctx,
     Pid: proto,
     Ended: false,
@@ -37,14 +37,14 @@ func NewMpi(ctx context.Context, url string, path string, ipfs_store string, max
     Id: 0,
   }
 
-  go func(){
+  go func() {
     <- store.CloseChan()
     if mpi.Check() {
       mpi.Close()
     }
   }()
 
-  go func(){
+  go func() {
     <- host.CloseChan()
     if mpi.Check() {
       mpi.Close()
@@ -192,7 +192,7 @@ func (m *BasicMpi)Start(file string, n int) error {
   }
 
   m.MasterComms[m.Id] = comm
-  go func(id int){
+  go func(id int) {
     <- comm.CloseChan()
     delete(m.MasterComms, id)
   }(m.Id)
