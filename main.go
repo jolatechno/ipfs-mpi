@@ -55,6 +55,26 @@ func main(){
       }
 
       store.Start(splitted[1], n, splitted[3:]...)
+
+    } else if splitted[0] == "Add" {
+
+      if len(splitted) < 2 {
+        panic("No file given")
+      }
+
+      for _, f := range splitted[1:] {
+        store.Add(f)
+      }
+
+    } else if splitted[0] == "Del" {
+      if len(splitted) < 2 {
+        panic("No file given")
+      }
+
+      for _, f := range splitted[1:] {
+        store.Del(f)
+      }
+
     } else {
       panic("Command not understood")
     }
