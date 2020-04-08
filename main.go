@@ -24,6 +24,8 @@ func main(){
     panic(err)
   }
 
+  fmt.Println("out adress is ", store.Host().ID())
+
   for _, addr := range store.Host().Addrs() {
     fmt.Println("swarm listening on ", addr)
   }
