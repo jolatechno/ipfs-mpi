@@ -253,13 +253,19 @@ func (m *BasicMpi)Start(file string, n int, args ...string) error {
     return errors.New("no such file")
   }
 
+  fmt.Println("Start 0") //--------------------------
+
   inter, err := NewInterface(m.Path + file, n, 0, args...)
   if err != nil {
+    fmt.Println("Start 0, err : ", err) //--------------------------
     return err
   }
 
+  fmt.Println("Start 1") //--------------------------
+
   comm, err := NewMasterComm(m.Ctx, m.Host(), n, protocol.ID(file), inter, fmt.Sprint(m.Host().ID(), m.Id))
   if err != nil {
+    fmt.Println("Start 1, err : ", err) //--------------------------
     return err
   }
 
