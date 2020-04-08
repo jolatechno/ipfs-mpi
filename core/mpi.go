@@ -212,12 +212,12 @@ func (m *BasicMpi)Get(maxsize uint64) error {
   return m.Add(f)
 }
 
-func (m *BasicMpi)Start(file string, n int) error {
+func (m *BasicMpi)Start(file string, n int, args ...string) error {
   if !m.MpiStore.Has(file) {
     return errors.New("no such file")
   }
 
-  inter, err := NewInterface(m.Path + file, n, 0)
+  inter, err := NewInterface(m.Path + file, n, 0, args...)
   if err != nil {
     return err
   }

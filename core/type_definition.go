@@ -18,7 +18,7 @@ type Mpi interface {
 
   Host() ExtHost
   Store() Store
-  Start(string, int) error
+  Start(string, int, ...string) error
 }
 
 type ExtHost interface {

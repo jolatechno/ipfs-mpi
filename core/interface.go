@@ -8,7 +8,7 @@ import (
   "strconv"
 )
 
-func NewInterface(file string, n int, i int) (Interface, error) {
+func NewInterface(file string, n int, i int, args ...string) (Interface, error) {
   inter := StdInterface {
     Ended: false,
     EndChan: make(chan bool),
@@ -17,7 +17,8 @@ func NewInterface(file string, n int, i int) (Interface, error) {
     RequestChan: make(chan int),
   }
 
-  cmd := exec.Command("python3", file + "/run.py", fmt.Sprint(n), fmt.Sprint(i))
+  cmdArgs := append([]string{file + "/run.py", fmt.Sprint(n), fmt.Sprint(i)}, args...)
+  cmd := exec.Command("python3", cmdArgs...)
 
   stdin, err := cmd.StdinPipe()
 	if err != nil {
