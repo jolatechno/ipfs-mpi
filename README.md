@@ -36,8 +36,7 @@ For example :
 ./libp2p-mpi -ipfs-api  /ip4/127.0.0.1/tcp/5001 -ipfs-store Qmb5pxxiBDKiX9zZT3uPHeXYdAQ2keyNyk7QjzvbuAPkSe/
 ```
 
-
-### Commands:
+### Commands
 
 #### Start
 
@@ -47,7 +46,7 @@ You can start a interpreter using :
 Start file n args...
 ```
 
-with file being the name of the interpreter, n being the size the number of peer to connect to and args a list of argument to pass to the interpreter
+with `file` being the name of the interpreter, `n` the size the number of peer to connect to and `args` a list of argument to pass to the interpreter
 
 #### Add
 
@@ -57,7 +56,7 @@ You can add interpreters using :
 Add interpreters...
 ```
 
-with interpreters being a list of interpreter names.
+with `interpreters` being a list of interpreter names.
 
 #### Del
 
@@ -67,7 +66,7 @@ You can delete interpreters using :
 Del interpreters...
 ```
 
-with interpreters being a list of interpreter names.
+with `interpreters` being a list of interpreter names.
 
 ## Usage
 
