@@ -8,6 +8,8 @@ import (
 
   "github.com/libp2p/go-libp2p-core/protocol"
   "github.com/libp2p/go-libp2p-core/network"
+
+  maddr "github.com/multiformats/go-multiaddr"
 )
 
 type Config struct {
@@ -16,10 +18,11 @@ type Config struct {
   Ipfs_store string
   Maxsize uint64
   Base string
+  BootstrapPeers []maddr.Multiaddr
 }
 
 func NewMpi(ctx context.Context, config Config) (Mpi, error) {
-  host, err := NewHost(ctx)
+  host, err := NewHost(ctx, config.BootstrapPeers...)
   if err != nil {
     return nil, err
   }

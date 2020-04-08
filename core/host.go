@@ -5,6 +5,7 @@ import (
   "strings"
   "errors"
   "context"
+  "sync"
   "time"
 	"fmt"
   "math/rand"
@@ -63,7 +64,7 @@ func ListIpAdresses() ([]maddr.Multiaddr, error) {
 	return returnAddr, nil
 }
 
-func NewHost(ctx context.Context) (ExtHost, error) {
+func NewHost(ctx context.Context, bootstrapPeers ...maddr.Multiaddr) (ExtHost, error) {
   listenAddresses, err := ListIpAdresses()
   if err != nil {
     return nil, err
@@ -84,6 +85,16 @@ func NewHost(ctx context.Context) (ExtHost, error) {
       listenAddresses...
   	),
   )
+
+  var wg sync.WaitGroup
+  for _, peerAddr := range bootstrapPeers {
+		peerinfo, _ := peer.AddrInfoFromP2pAddr(peerAddr)
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+      h.Connect(ctx, *peerinfo)
+		}()
+	}
 
   return &BasicExtHost {
     Ctx: ctx,
