@@ -48,7 +48,7 @@ type MasterComm interface {
 
   CheckPeer(int) bool
   Reset(int)
-  Connect(int, peer.ID)
+  Connect(int, peer.ID, bool)
 }
 
 type SlaveComm interface {

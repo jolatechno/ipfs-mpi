@@ -54,8 +54,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
         ResetChan: make(chan bool),
       }
 
-      comm.Connect(i, addr)
-
+      comm.Connect(i, addr, true)
 
       streamHandler, err := comm.Comm.Remotes[i].StreamHandler()
       if err != nil {
@@ -120,15 +119,27 @@ func (c *BasicMasterComm)CheckPeer(idx int) bool {
   }
 }
 
-func (c *BasicMasterComm)Connect(i int, addr peer.ID) {
+func (c *BasicMasterComm)Connect(i int, addr peer.ID, init bool) {
+  fmt.Println("Connect 0") //--------------------------
+
   stream, err := c.Comm.Host.NewStream(c.Ctx, addr, c.Comm.Base)
   if err != nil {
+    fmt.Println("Connect 0, err : ", err) //--------------------------
     c.Reset(i)
     return
   }
 
+  fmt.Println("Connect 1") //--------------------------
+
+  initInt := 0
+  if init {
+    initInt = 1
+  }
+
+  fmt.Printf("%d,%d,%s,%s\n", initInt, i, c.Comm.Id, strings.Join(AddrsToString(c.Comm.Addrs), ";")) //--------------------------
+
   rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
-  fmt.Fprintf(rw, "1,%d,%s,%s\n", i, c.Comm.Id, strings.Join(AddrsToString(c.Comm.Addrs), ";"))
+  fmt.Fprintf(rw, "%d,%d,%s,%s\n", initInt, i, c.Comm.Id, strings.Join(AddrsToString(c.Comm.Addrs), ";"))
 
   c.Comm.Remotes[i].Reset(rw)
 }
@@ -138,7 +149,7 @@ func (c *BasicMasterComm)Reset(i int) {
   if err != nil {
     panic(err) //should never happend here
   }
-  c.Connect(i, addr)
+  c.Connect(i, addr, false)
 }
 
 func AddrsToString(addrs []peer.ID) []string {
