@@ -263,7 +263,8 @@ func (m *BasicMpi)Start(file string, n int, args ...string) error {
 
   fmt.Println("Start 1") //--------------------------
 
-  comm, err := NewMasterComm(m.Ctx, m.Host(), n, protocol.ID(file), inter, fmt.Sprint(m.Host().ID(), m.Id))
+  proto := protocol.ID(file + string(m.Pid))
+  comm, err := NewMasterComm(m.Ctx, m.Host(), n, proto, inter, fmt.Sprint(m.Host().ID(), m.Id))
   if err != nil {
     fmt.Println("Start 1, err : ", err) //--------------------------
     return err
