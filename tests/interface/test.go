@@ -5,25 +5,31 @@ import (
 
   "github.com/jolatechno/ipfs-mpi/core"
 )
-func main(){
-  inter, err := core.NewInterface(".", 2, 1)
+
+func start(i int) {
+  inter, err := core.NewInterface("../../example/test_interpreters/echo", 2, i)
   if err != nil {
     panic(err)
   }
 
   go func(){
     for {
-      fmt.Println(<- inter.Request())
+      fmt.Println("Request from:", <- inter.Request())
       inter.Push("test\n")
     }
   }()
 
   go func(){
     for {
-      fmt.Println(<- inter.Message())
+      fmt.Println("Sending message:", <- inter.Message())
     }
   }()
 
+  fmt.Println("Closed:", <- inter.CloseChan())
+  fmt.Println("")
+}
 
-  fmt.Println("Closed : ", <- inter.CloseChan())
+func main(){
+  start(1)
+  start(0)
 }

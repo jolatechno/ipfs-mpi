@@ -2,8 +2,15 @@ import sys
 import base64
 
 if __name__ == "__main__":
-    n, i = sys.argv[1], sys.argv[2]
+    n, i = int(sys.argv[1]), int(sys.argv[2])
 
-    msg = input("Req,0\n")
+    assert n == 2, "size not understood"
+    assert 0 <= i <= 2, "index not understood"
 
-    print("0," + msg)
+    if i == 1 :
+        msg = input("Req,0\n")
+        print("0," + msg)
+    else :
+        msg = "sending"
+        print("Log," + msg)
+        print("1," + msg)

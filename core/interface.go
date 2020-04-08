@@ -1,6 +1,7 @@
 package core
 
 import (
+  "log"
   "fmt"
   "os/exec"
   "bufio"
@@ -59,7 +60,7 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
         inter.RequestChan <- idx
         fmt.Fprint(stdin, <- inter.InChan)
       } else if splitted[0] == "Log" && i == 0 {
-        fmt.Print(splitted[1])
+        log.Print(splitted[1])
       } else {
         idx, err := strconv.Atoi(splitted[0])
         if err != nil {
