@@ -5,6 +5,7 @@ import (
   "context"
   "fmt"
   "bufio"
+  "strings"
 
   "github.com/libp2p/go-libp2p-core/protocol"
   "github.com/libp2p/go-libp2p-core/network"
@@ -12,13 +13,32 @@ import (
   maddr "github.com/multiformats/go-multiaddr"
 )
 
+type addrList []maddr.Multiaddr
+
+func (al *addrList) String() string {
+	strs := make([]string, len(*al))
+	for i, addr := range *al {
+		strs[i] = addr.String()
+	}
+	return strings.Join(strs, ",")
+}
+
+func (al *addrList) Set(value string) error {
+	addr, err := maddr.NewMultiaddr(value)
+	if err != nil {
+		return err
+	}
+	*al = append(*al, addr)
+	return nil
+}
+
 type Config struct {
   Url string
   Path string
   Ipfs_store string
   Maxsize uint64
   Base string
-  BootstrapPeers []maddr.Multiaddr
+  BootstrapPeers addrList
 }
 
 func NewMpi(ctx context.Context, config Config) (Mpi, error) {

@@ -8,11 +8,13 @@ import (
   "github.com/libp2p/go-libp2p-core/protocol"
 
   "github.com/jolatechno/ipfs-mpi/core"
+
+  dht "github.com/libp2p/go-libp2p-kad-dht"
 )
 
 func main() {
   ctx := context.Background()
-  host, err := core.NewHost(ctx)
+  host, err := core.NewHost(ctx, dht.DefaultBootstrapPeers...)
   if err != nil {
     panic(err)
   }
