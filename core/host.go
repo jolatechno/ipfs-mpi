@@ -164,11 +164,12 @@ func (h *BasicExtHost)Listen(pid protocol.ID, rendezvous string) {
 
   discoveryHandler := func(peer peer.AddrInfo) {
     if peer.ID != h.ID() {
-      h.PeerStores[pid].AddAddrs(peer.ID, peer.Addrs, peerstore.TempAddrTTL)
       go func(){
         err := h.Connect(h.Ctx, peer)
 
-        if err != nil {
+        if err == nil {
+          h.PeerStores[pid].AddAddrs(peer.ID, peer.Addrs, peerstore.TempAddrTTL)
+        } else {
           fmt.Println("Connection failed : ", err) //--------------------------
         }
 
