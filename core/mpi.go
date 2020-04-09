@@ -69,9 +69,6 @@ func NewMpi(ctx context.Context, config Config) (Mpi, error) {
   }
 
   for _, f := range store.List() {
-
-    fmt.Println("Adding : ", f) //--------------------------
-
     mpi.Add(f)
   }
 
