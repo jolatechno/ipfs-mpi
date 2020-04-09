@@ -56,8 +56,9 @@ func main(){
         panic(err)
       }
 
-      store.Start(splitted[1], n, splitted[3:]...)
-
+      go func() {
+        store.Start(splitted[1], n, splitted[3:]...)
+      }()
     } else if splitted[0] == "Add" {
 
       if len(splitted) < 2 {
@@ -65,7 +66,9 @@ func main(){
       }
 
       for _, f := range splitted[1:] {
-        store.Add(f)
+        go func() {
+          store.Add(f)
+        }()
       }
 
     } else if splitted[0] == "Del" {
@@ -74,7 +77,9 @@ func main(){
       }
 
       for _, f := range splitted[1:] {
-        store.Del(f)
+        go func() {
+          store.Del(f)
+        }()
       }
 
     } else if splitted[0] == "exit" {

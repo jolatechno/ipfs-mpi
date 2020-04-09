@@ -271,21 +271,22 @@ func (m *BasicMpi)Start(file string, n int, args ...string) error {
 
   fmt.Println("Start 1") //--------------------------
 
-  proto := protocol.ID("/" + file + "/" + string(m.Pid))
-  comm, err := NewMasterComm(m.Ctx, m.Host(), n, proto, inter, fmt.Sprint(m.Host().ID(), m.Id))
+  id := m.Id
+  m.Id++
+
+  proto := protocol.ID(fmt.Sprintf("/%s/%d", file, id))
+  comm, err := NewMasterComm(m.Ctx, m.Host(), n, proto, inter, fmt.Sprint(m.Host().ID(), id))
+
   if err != nil {
     fmt.Println("Start 1, err : ", err) //--------------------------
     return err
   }
 
-  m.MasterComms[m.Id] = comm
-  go func(id int) {
+  m.MasterComms[id] = comm
+  go func() {
     <- comm.CloseChan()
     delete(m.MasterComms, id)
-  }(m.Id)
-
-  m.Id++
-
+  }()
 
   return nil
 }
