@@ -79,7 +79,7 @@ func (p *Param)String() string {
   }
 
   joinedAddress := strings.Join(addrs, ";")
-  return fmt.Sprintf("%d,%d,%s,%s", initInt, p.Idx, p.N, p.Id, joinedAddress)
+  return fmt.Sprintf("%d,%d,%d,%s,%s", initInt, p.Idx, p.N, p.Id, joinedAddress)
 }
 
 func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, base protocol.ID, inter Interface, param Param) (SlaveComm, error) {

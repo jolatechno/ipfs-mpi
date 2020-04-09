@@ -68,6 +68,10 @@ Del interpreters...
 
 with `interpreters` being a list of interpreter names.
 
+#### exit
+
+You can close the interface using `exit`.
+
 ## Usage
 
 See [example](./example) for info on how to design an interpretor for ipfs-mpi.

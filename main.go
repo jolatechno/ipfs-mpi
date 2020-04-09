@@ -24,7 +24,7 @@ func main(){
     panic(err)
   }
 
-  fmt.Println("out adress is ", store.Host().ID())
+  fmt.Println("Our adress is ", store.Host().ID())
 
   for _, addr := range store.Host().Addrs() {
     fmt.Println("swarm listening on ", addr)
@@ -77,6 +77,8 @@ func main(){
         store.Del(f)
       }
 
+    } else if splitted[0] == "exit" {
+      panic(store.Close())
     } else {
       panic("Command not understood")
     }
