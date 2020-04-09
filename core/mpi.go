@@ -175,7 +175,7 @@ func (m *BasicMpi)Add(f string) error {
   }
 
   proto := protocol.ID(f + string(m.Pid))
-  m.Host().Listen(proto, f + m.Ipfs_store)
+  m.Host().Listen(proto, f + "/" + m.Ipfs_store)
 
   fmt.Println("Setting StreamHandler, proto : ", proto) //--------------------------
 
@@ -266,7 +266,7 @@ func (m *BasicMpi)Start(file string, n int, args ...string) error {
 
   fmt.Println("Start 1") //--------------------------
 
-  proto := protocol.ID(file + string(m.Pid))
+  proto := protocol.ID(file + "/" + string(m.Pid))
   comm, err := NewMasterComm(m.Ctx, m.Host(), n, proto, inter, fmt.Sprint(m.Host().ID(), m.Id))
   if err != nil {
     fmt.Println("Start 1, err : ", err) //--------------------------
