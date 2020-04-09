@@ -125,6 +125,7 @@ func NewHost(ctx context.Context, bootstrapPeers ...maddr.Multiaddr) (ExtHost, e
   return &BasicExtHost {
     Ctx: ctx,
     Host: h,
+    StreamHandlers: make(map[protocol.ID] network.StreamHandler),
     Routing: routingDiscovery,
     EndChan: make(chan bool),
     Ended: false,
@@ -135,6 +136,7 @@ func NewHost(ctx context.Context, bootstrapPeers ...maddr.Multiaddr) (ExtHost, e
 type BasicExtHost struct {
   Ctx context.Context
   Host host.Host
+  StreamHandlers map[protocol.ID] network.StreamHandler
   Routing *discovery.RoutingDiscovery
   EndChan chan bool
   Ended bool
@@ -249,18 +251,32 @@ func (h *BasicExtHost)Connect(ctx context.Context, pi peer.AddrInfo) error {
 }
 
 func (h *BasicExtHost)SetStreamHandler(pid protocol.ID, handler network.StreamHandler) {
+  h.StreamHandlers[pid] = handler
   h.Host.SetStreamHandler(pid, handler)
 }
 
 func (h *BasicExtHost)SetStreamHandlerMatch(pid protocol.ID, match func(string) bool, handler network.StreamHandler) {
+  h.StreamHandlers[pid] = handler
   h.Host.SetStreamHandlerMatch(pid, match, handler)
 }
 
 func (h *BasicExtHost)RemoveStreamHandler(pid protocol.ID) {
+  delete(h.StreamHandlers, pid)
   h.Host.RemoveStreamHandler(pid)
 }
 
 func (h *BasicExtHost)NewStream(ctx context.Context, p peer.ID, pids ...protocol.ID) (network.Stream, error) {
+  if p == h.ID() {
+    for _, pid := range pids{
+      _, ok := h.StreamHandlers[pid]
+      if !ok {
+        return nil, errors.New("protocol not suported")
+      }
+
+      //use _
+    }
+    return nil, errors.New("dialing it self not yet suported")
+  }
   return h.Host.NewStream(ctx, p, pids...)
 }
 
