@@ -161,15 +161,17 @@ func (h *BasicExtHost)Listen(pid protocol.ID, rendezvous string) {
   peerChan := initMDNS(h.Ctx, h.Host, rendezvous)
 
   discoveryHandler := func(peer peer.AddrInfo) {
-    h.PeerStores[pid].AddAddrs(peer.ID, peer.Addrs, peerstore.TempAddrTTL)
-    go func(){
-      err := h.Connect(h.Ctx, peer)
+    if peer.ID != h.ID() {
+      h.PeerStores[pid].AddAddrs(peer.ID, peer.Addrs, peerstore.TempAddrTTL)
+      go func(){
+        err := h.Connect(h.Ctx, peer)
 
-      if err != nil {
-        fmt.Println("Connection failed : ", err) //--------------------------
-      }
+        if err != nil {
+          fmt.Println("Connection failed : ", err) //--------------------------
+        }
 
-    }()
+      }()
+    }
   }
 
   go func() {
