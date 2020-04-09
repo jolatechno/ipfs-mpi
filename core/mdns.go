@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	ScanDuration = time.Second
+	ScanDuration = time.Hour
 )
 
 type discoveryNotifee struct {

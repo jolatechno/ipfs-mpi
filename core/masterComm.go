@@ -71,7 +71,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   for i := range comm.Comm.Addrs {
     go func() {
       for comm.Check() {
-        time.Sleep(ScanDuration)
+        time.Sleep(WaitDuratio)
         if !comm.CheckPeer(i) {
           comm.Reset(i)
         }
@@ -116,7 +116,7 @@ func (c *BasicMasterComm)CheckPeer(idx int) bool {
     }
     return true
 
-  case <- time.After(ScanDuration):
+  case <- time.After(WaitDuratio):
     return false
   }
 }

@@ -157,30 +157,43 @@ func (h *BasicExtHost) Check() bool {
 
 func (h *BasicExtHost)Listen(pid protocol.ID, rendezvous string) {
   h.PeerStores[pid] = pstoremem.NewPeerstore()
+  discovery.Advertise(h.Ctx, h.Routing, rendezvous)
+  peerChan := initMDNS(h.Ctx, h.Host, rendezvous)
+
+  discoveryHandler := func(peer peer.AddrInfo) {
+    h.PeerStores[pid].AddAddrs(peer.ID, peer.Addrs, peerstore.TempAddrTTL)
+    go func(){
+      err := h.Connect(h.Ctx, peer)
+
+      if err != nil {
+        fmt.Println("Connection failed : ", err) //--------------------------
+      }
+
+    }()
+  }
 
   go func() {
     for h.Check() {
-      peerChan := initMDNS(h.Ctx, h.Host, rendezvous)
-      for {
-        select {
-        case peer := <- peerChan:
-          h.PeerStores[pid].AddAddrs(peer.ID, peer.Addrs, peerstore.TempAddrTTL)
-          go func(){
-            err := h.Connect(h.Ctx, peer)
-
-            if err != nil {
-              fmt.Println("Connection failed : ", err) //--------------------------
-            }
-
-          }()
-        case <- time.After(ScanDuration):
-          continue
-        }
+      select {
+      case peer := <- peerChan:
+        discoveryHandler(peer)
+      case <- time.After(WaitDuratio):
+        continue
       }
     }
   }()
 
-  discovery.Advertise(h.Ctx, h.Routing, rendezvous)
+  go func() {
+    for h.Check() {
+      peerChan, err := h.Routing.FindPeers(h.Ctx, rendezvous)
+      if err != nil {
+        return
+      }
+      for peer := range peerChan {
+        discoveryHandler(peer)
+      }
+    }
+  }()
 }
 
 func (h *BasicExtHost)PeerstoreProtocol(base protocol.ID) (peerstore.Peerstore, error) {

@@ -5,12 +5,17 @@ import (
   "context"
   "fmt"
   "bufio"
+  "time"
   "strings"
 
   "github.com/libp2p/go-libp2p-core/protocol"
   "github.com/libp2p/go-libp2p-core/network"
 
   maddr "github.com/multiformats/go-multiaddr"
+)
+
+const (
+  WaitDuratio = time.Second
 )
 
 type addrList []maddr.Multiaddr
