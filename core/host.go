@@ -6,7 +6,7 @@ import (
   "errors"
   "context"
   "sync"
-  "time"
+  //"time"
 	"fmt"
   "math/rand"
 
@@ -158,7 +158,7 @@ func (h *BasicExtHost) Check() bool {
 func (h *BasicExtHost)Listen(pid protocol.ID, rendezvous string) {
   h.PeerStores[pid] = pstoremem.NewPeerstore()
   discovery.Advertise(h.Ctx, h.Routing, rendezvous)
-  peerChan := initMDNS(h.Ctx, h.Host, rendezvous)
+  //peerChan := initMDNS(h.Ctx, h.Host, rendezvous)
 
   discoveryHandler := func(peer peer.AddrInfo) {
     if peer.ID != h.ID() {
@@ -174,7 +174,7 @@ func (h *BasicExtHost)Listen(pid protocol.ID, rendezvous string) {
     }
   }
 
-  go func() {
+  /*go func() {
     for h.Check() {
       select {
       case peer := <- peerChan:
@@ -183,7 +183,7 @@ func (h *BasicExtHost)Listen(pid protocol.ID, rendezvous string) {
         continue
       }
     }
-  }()
+  }()*/
 
   go func() {
     for h.Check() {
