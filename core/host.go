@@ -30,7 +30,6 @@ func EqualMacher(base protocol.ID) func(string) bool {
   return func(str string) bool {
 
     splitted := strings.Split(str, "/")
-    fmt.Println(splitted[len(splitted) - 2]) //--------------------------
     if splitted[len(splitted) - 2] == "libp2p-mpi" {
       fmt.Println(string(base) == str, " from matching ", string(base), " and ", str) //--------------------------
     }
