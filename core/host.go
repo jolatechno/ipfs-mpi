@@ -28,6 +28,9 @@ import (
 
 func EqualMacher(base protocol.ID) func(string) bool {
   return func(str string) bool {
+
+    fmt.Println(string(base) == str, " from matching ", string(base), " and ", str) //--------------------------
+
     return string(base) == str
   }
 }
