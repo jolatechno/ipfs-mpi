@@ -166,7 +166,12 @@ func (h *BasicExtHost)Listen(pid protocol.ID, rendezvous string) {
         case peer := <- peerChan:
           h.PeerStores[pid].AddAddrs(peer.ID, peer.Addrs, peerstore.TempAddrTTL)
           go func(){
-            h.Connect(h.Ctx, peer)
+            err := h.Connect(h.Ctx, peer)
+
+            if err != nil {
+              fmt.Println("Connection failed : ", err) //--------------------------
+            }
+
           }()
         case <- time.After(ScanDuration):
           continue
