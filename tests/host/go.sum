@@ -123,6 +123,8 @@ github.com/jolatechno/ipfs-mpi/core v0.0.0-20200407164100-b2be0a623836 h1:oLvi1m
 github.com/jolatechno/ipfs-mpi/core v0.0.0-20200407164100-b2be0a623836/go.mod h1:3d++F/PvyRgL8fE7ldnW6Tl0w2iaAGgRSNgiAdvb5c4=
 github.com/jolatechno/ipfs-mpi/core v0.0.0-20200408081156-9d680050444e h1:HnzBC63qu0wi8hcXNmyvWfkrCK24ln3vzA0Q0Y8MfgA=
 github.com/jolatechno/ipfs-mpi/core v0.0.0-20200408081156-9d680050444e/go.mod h1:3d++F/PvyRgL8fE7ldnW6Tl0w2iaAGgRSNgiAdvb5c4=
+github.com/jolatechno/ipfs-mpi/core v0.0.0-20200409070743-e3c6fe83e163 h1:vPy+9UBLlFDoGwM52Kt9yUdDxmPT7MeFQlSUMbFgSD0=
+github.com/jolatechno/ipfs-mpi/core v0.0.0-20200409070743-e3c6fe83e163/go.mod h1:VXhn+xeCUq6ThvzHYYWlDeFsthIHrbs3O0XmfSKaDNk=
 github.com/jrick/logrotate v1.0.0/go.mod h1:LNinyqDIJnpAur+b8yyulnQw/wDuN1+BYKlTRt3OuAQ=
 github.com/kami-zh/go-capturer v0.0.0-20171211120116-e492ea43421d/go.mod h1:P2viExyCEfeWGU259JnaQ34Inuec4R38JCyBx2edgD0=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=
