@@ -4,7 +4,6 @@ import (
   "bufio"
   "fmt"
   "context"
-  "strings"
   "time"
 
   "github.com/libp2p/go-libp2p/p2p/protocol/ping"
@@ -15,6 +14,7 @@ import (
 type BasicMasterComm struct {
   Ctx context.Context
   Pinger *ping.PingService
+  N int
   Comm BasicSlaveComm
 }
 
@@ -32,6 +32,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   comm := BasicMasterComm {
     Ctx:ctx,
     Pinger: ping.NewPingService(host),
+    N: n,
     Comm: BasicSlaveComm {
       Ended: false,
       EndChan: make(chan bool),
@@ -132,15 +133,18 @@ func (c *BasicMasterComm)Connect(i int, addr peer.ID, init bool) {
 
   fmt.Println("Connect 1") //--------------------------
 
-  initInt := 0
-  if init {
-    initInt = 1
+  p := Param {
+    Init: init,
+    Idx: i,
+    N: c.N,
+    Id: c.Comm.Id,
+    Addrs: c.Comm.Addrs,
   }
 
-  fmt.Printf("%d,%d,%s,%s\n", initInt, i, c.Comm.Id, strings.Join(AddrsToString(c.Comm.Addrs), ";")) //--------------------------
+  fmt.Printf("%s\n", p.String()) //--------------------------
 
   rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
-  fmt.Fprintf(rw, "%d,%d,%s,%s\n", initInt, i, c.Comm.Id, strings.Join(AddrsToString(c.Comm.Addrs), ";"))
+  fmt.Fprintf(rw, "%s\n", p.String())
 
   c.Comm.Remotes[i].Reset(rw)
 }
@@ -151,13 +155,4 @@ func (c *BasicMasterComm)Reset(i int) {
     panic(err) //should never happend here
   }
   c.Connect(i, addr, false)
-}
-
-func AddrsToString(addrs []peer.ID) []string {
-  list := make([]string, len(addrs))
-  for i, addr := range addrs {
-    list[i] = string(addr)
-  }
-
-  return list
 }

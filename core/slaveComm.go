@@ -15,14 +15,6 @@ import (
   "github.com/libp2p/go-libp2p/p2p/protocol/ping"
 )
 
-type Param struct {
-  Init bool
-  Idx int
-  N int
-  Id string
-  Addrs []string
-}
-
 func ParamFromString(msg string) (Param, error) {
   param := Param{}
   splitted := strings.Split(msg, ",")
@@ -48,19 +40,49 @@ func ParamFromString(msg string) (Param, error) {
     return param, err
   }
 
+  len_addrs := len(splitted[4]) - 1
+  if splitted[4][len_addrs] == '\n' {
+    splitted[4] = splitted[4][:len_addrs]
+  }
+
+  addrs := strings.Split(splitted[4], ";")
+  param.Addrs = make([]peer.ID, len(addrs))
+
+  for i, addr := range addrs {
+    param.Addrs[i] = peer.ID(addr)
+  }
+
   param.Idx = idx
   param.N = n
   param.Id = splitted[3]
-  param.Addrs = strings.Split(splitted[4], ";")
 
-  return param, err
+  return param, nil
+}
+
+type Param struct {
+  Init bool
+  Idx int
+  N int
+  Id string
+  Addrs []peer.ID
+}
+
+func (p *Param)String() string {
+  addrs := make([]string, len(p.Addrs))
+  for i, addr := range addrs {
+    addrs[i] = string(addr)
+  }
+
+  initInt := 0
+  if p.Init {
+    initInt = 1
+  }
+
+  joinedAddress := strings.Join(addrs, ";")
+  return fmt.Sprintf("%d,%d,%s,%s", initInt, p.Idx, p.N, p.Id, joinedAddress)
 }
 
 func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, base protocol.ID, inter Interface, param Param) (SlaveComm, error) {
-  Addrs := make([]peer.ID, len(param.Addrs))
-  for i, addr := range param.Addrs {
-    Addrs[i] = peer.ID(addr)
-  }
 
   comm := BasicSlaveComm {
     Ended: false,
@@ -69,7 +91,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
     Id: param.Id,
     Idx: param.Idx,
     Host: host,
-    Addrs: Addrs,
+    Addrs: param.Addrs,
     Pid: protocol.ID(fmt.Sprintf("%s/%s", param.Id, string(base))),
     Remotes: make([]Remote, len(param.Addrs)),
   }
@@ -106,7 +128,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
         comm.Close()
         return nil, err
       }
-      
+
       host.SetStreamHandlerMatch(proto, EqualMacher(proto), streamHandler)
     }
   }
