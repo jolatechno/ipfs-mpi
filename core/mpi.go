@@ -179,7 +179,7 @@ func (m *BasicMpi)Add(f string) error {
 
   fmt.Println("Setting StreamHandler, proto : ", proto) //--------------------------
 
-  m.Host().SetStreamHandler(proto, func(stream network.Stream) {
+  m.Host().SetStreamHandlerMatch(proto, EqualMacher(proto), func(stream network.Stream) {
 
     fmt.Println("StreamHandler 0, proto : ", proto) //--------------------------
 

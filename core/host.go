@@ -26,6 +26,12 @@ import (
   maddr "github.com/multiformats/go-multiaddr"
 )
 
+func EqualMacher(base protocol.ID) func(string) bool {
+  return func(str string) bool {
+    return string(base) == str
+  }
+}
+
 func ListIpAdresses() ([]maddr.Multiaddr, error) {
   returnAddr := []maddr.Multiaddr{}
 	addr, err := maddr.NewMultiaddr("/ip4/127.0.0.1/tcp/0")
