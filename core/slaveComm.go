@@ -98,7 +98,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
 
   for i, addr := range comm.Addrs {
     if i != param.Idx {
-      proto := protocol.ID(fmt.Sprintf("/%d/%s", i, string(comm.Pid)))
+      proto := protocol.ID(fmt.Sprintf("%d/%s", i, comm.Pid))
 
       if i == 0 {
         comm.Remotes[i] = Remote {
@@ -121,15 +121,15 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
           Stream: rw,
           ResetChan: make(chan bool),
         }
-      }
 
-      streamHandler, err := comm.Remotes[i].StreamHandler()
-      if err != nil {
-        comm.Close()
-        return nil, err
-      }
+        streamHandler, err := comm.Remotes[i].StreamHandler()
+        if err != nil {
+          comm.Close()
+          return nil, err
+        }
 
-      host.SetStreamHandler(proto, streamHandler)
+        host.SetStreamHandler(proto, streamHandler)
+      }
     }
   }
 
