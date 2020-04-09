@@ -6,7 +6,6 @@ import (
   "errors"
   "context"
   "sync"
-  //"time"
 	"fmt"
   "math/rand"
 
@@ -25,18 +24,6 @@ import (
 
   maddr "github.com/multiformats/go-multiaddr"
 )
-
-func EqualMacher(base protocol.ID) func(string) bool {
-  return func(str string) bool {
-
-    splitted := strings.Split(str, "/")
-    if splitted[len(splitted) - 2] == "libp2p-mpi" {
-      fmt.Println(string(base) == str, " from matching ", string(base), " and ", str) //--------------------------
-    }
-
-    return string(base) == str
-  }
-}
 
 func ListIpAdresses() ([]maddr.Multiaddr, error) {
   returnAddr := []maddr.Multiaddr{}
@@ -160,7 +147,6 @@ func (h *BasicExtHost) Check() bool {
 func (h *BasicExtHost)Listen(pid protocol.ID, rendezvous string) {
   h.PeerStores[pid] = pstoremem.NewPeerstore()
   discovery.Advertise(h.Ctx, h.Routing, rendezvous)
-  //peerChan := initMDNS(h.Ctx, h.Host, rendezvous)
 
   discoveryHandler := func(peer peer.AddrInfo) {
     if peer.ID != h.ID() {
@@ -169,24 +155,10 @@ func (h *BasicExtHost)Listen(pid protocol.ID, rendezvous string) {
 
         if err == nil {
           h.PeerStores[pid].AddAddrs(peer.ID, peer.Addrs, peerstore.TempAddrTTL)
-        } else {
-          fmt.Println("Connection failed : ", err) //--------------------------
         }
-
       }()
     }
   }
-
-  /*go func() {
-    for h.Check() {
-      select {
-      case peer := <- peerChan:
-        discoveryHandler(peer)
-      case <- time.After(WaitDuratio):
-        continue
-      }
-    }
-  }()*/
 
   go func() {
     for h.Check() {
@@ -268,15 +240,7 @@ func (h *BasicExtHost)RemoveStreamHandler(pid protocol.ID) {
 
 func (h *BasicExtHost)NewStream(ctx context.Context, p peer.ID, pids ...protocol.ID) (network.Stream, error) {
   if p == h.ID() {
-    for _, pid := range pids{
-      _, ok := h.StreamHandlers[pid]
-      if !ok {
-        return nil, errors.New("protocol not suported")
-      }
-
-      //use _
-    }
-    return nil, errors.New("dialing it self not yet suported")
+    return h.SelfStream(pids[0])
   }
   return h.Host.NewStream(ctx, p, pids...)
 }
@@ -287,4 +251,16 @@ func (h *BasicExtHost)ConnManager() connmgr.ConnManager {
 
 func (h *BasicExtHost)EventBus() event.Bus {
   return h.Host.EventBus()
+}
+
+func (h *BasicExtHost)SelfStream(pid protocol.ID) (network.Stream, error) {
+  handler, ok := h.StreamHandlers[pid]
+  if !ok {
+    return nil, errors.New("no such protocol")
+  }
+
+  stream := NewStream(pid)
+  handler(stream)
+
+  return stream, nil
 }

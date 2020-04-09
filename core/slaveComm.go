@@ -129,7 +129,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
         return nil, err
       }
 
-      host.SetStreamHandlerMatch(proto, EqualMacher(proto), streamHandler)
+      host.SetStreamHandler(proto, streamHandler)
     }
   }
 

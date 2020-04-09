@@ -64,7 +64,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
       }
 
       proto := protocol.ID(fmt.Sprintf("/%d/%s", i, string(comm.Comm.Pid)))
-      host.SetStreamHandlerMatch(proto, EqualMacher(proto), streamHandler)
+      host.SetStreamHandler(proto, streamHandler)
     }
   }
 

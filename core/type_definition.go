@@ -5,6 +5,7 @@ import (
   "github.com/libp2p/go-libp2p-core/peer"
   "github.com/libp2p/go-libp2p-core/host"
   "github.com/libp2p/go-libp2p-core/protocol"
+  "github.com/libp2p/go-libp2p-core/network"
 )
 
 type Mpi interface {
@@ -29,6 +30,7 @@ type ExtHost interface {
   PeerstoreProtocol(protocol.ID) (peerstore.Peerstore, error)
   NewPeer(protocol.ID) (peer.ID, error)
   Listen(protocol.ID, string)
+  SelfStream(protocol.ID) (network.Stream, error)
 }
 
 type Store interface {
