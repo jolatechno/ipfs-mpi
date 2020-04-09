@@ -176,6 +176,9 @@ func (m *BasicMpi)Add(f string) error {
 
   proto := protocol.ID(f + string(m.Pid))
   m.Host().Listen(proto, f + m.Ipfs_store)
+
+  fmt.Println("Setting StreamHandler, proto : ", proto) //--------------------------
+
   m.Host().SetStreamHandler(proto, func(stream network.Stream) {
 
     fmt.Println("StreamHandler 0, proto : ", proto) //--------------------------

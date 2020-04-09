@@ -20,6 +20,8 @@ import (
   "github.com/libp2p/go-libp2p-core/network"
   "github.com/libp2p/go-libp2p-core/connmgr"
   "github.com/libp2p/go-libp2p-peerstore/pstoremem"
+  "github.com/libp2p/go-libp2p-discovery"
+	dht "github.com/libp2p/go-libp2p-kad-dht"
 
   maddr "github.com/multiformats/go-multiaddr"
 )
@@ -86,6 +88,16 @@ func NewHost(ctx context.Context, bootstrapPeers ...maddr.Multiaddr) (ExtHost, e
   	),
   )
 
+  kademliaDHT, err := dht.New(ctx, h)
+	if err != nil {
+		return nil, err
+	}
+
+	err = kademliaDHT.Bootstrap(ctx)
+  if err != nil {
+		return nil, err
+	}
+
   var wg sync.WaitGroup
   for _, peerAddr := range bootstrapPeers {
 		peerinfo, _ := peer.AddrInfoFromP2pAddr(peerAddr)
@@ -96,18 +108,22 @@ func NewHost(ctx context.Context, bootstrapPeers ...maddr.Multiaddr) (ExtHost, e
 		}()
 	}
 
+  routingDiscovery := discovery.NewRoutingDiscovery(kademliaDHT)
+
   return &BasicExtHost {
     Ctx: ctx,
     Host: h,
+    Routing: routingDiscovery,
     EndChan: make(chan bool),
     Ended: false,
     PeerStores: make(map[protocol.ID]peerstore.Peerstore),
-  }, err
+  }, nil
 }
 
 type BasicExtHost struct {
   Ctx context.Context
   Host host.Host
+  Routing *discovery.RoutingDiscovery
   EndChan chan bool
   Ended bool
   PeerStores map[protocol.ID]peerstore.Peerstore
@@ -146,6 +162,8 @@ func (h *BasicExtHost)Listen(pid protocol.ID, rendezvous string) {
       }
     }
   }()
+
+  discovery.Advertise(h.Ctx, h.Routing, rendezvous)
 }
 
 func (h *BasicExtHost)PeerstoreProtocol(base protocol.ID) (peerstore.Peerstore, error) {
