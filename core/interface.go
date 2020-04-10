@@ -58,6 +58,8 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
           inter.Close()
         }
 
+        fmt.Printf("Requesting from %d\n", idx) //--------------------------
+
         inter.RequestChan <- idx
         fmt.Fprint(stdin, <- inter.InChan)
 
@@ -77,6 +79,8 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
         if err != nil {
           inter.Close()
         }
+
+        fmt.Printf("Sending \"%s\" to %d\n", strings.Join(splitted[2:], ","), idx) //--------------------------
 
         inter.OutChan <- Message {
           To: idx,

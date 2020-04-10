@@ -241,7 +241,7 @@ func (h *BasicExtHost)RemoveStreamHandler(pid protocol.ID) {
 
 func (h *BasicExtHost)NewStream(ctx context.Context, p peer.ID, pids ...protocol.ID) (network.Stream, error) {
   if p == h.ID() {
-    return h.SelfStream(pids[0])
+    return h.SelfStream(pids...)
   }
   return h.Host.NewStream(ctx, p, pids...)
 }
@@ -254,13 +254,21 @@ func (h *BasicExtHost)EventBus() event.Bus {
   return h.Host.EventBus()
 }
 
-func (h *BasicExtHost)SelfStream(pid protocol.ID) (SelfStream, error) {
-  handler, ok := h.StreamHandlers[pid]
+func (h *BasicExtHost)SelfStream(pid ...protocol.ID) (SelfStream, error) {
+  if len(pid) == 0 {
+    return nil, errors.New("no protocol given")
+  }
+
+  if len(pid) > 1 {
+    return nil, errors.New("too many protocol given")
+  }
+
+  handler, ok := h.StreamHandlers[pid[0]]
   if !ok {
     return nil, errors.New("no such protocol")
   }
 
-  stream := NewStream(pid)
+  stream := NewStream(pid[0])
   reversed_stream, err := stream.Reverse()
   if err != nil {
     return nil, err

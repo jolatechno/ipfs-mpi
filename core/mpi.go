@@ -182,37 +182,22 @@ func (m *BasicMpi)Add(f string) error {
 
   proto := protocol.ID("/" + f + "/" + string(m.Pid))
   m.Host().Listen(proto, "/" + f + "/" + m.Ipfs_store)
-
-  fmt.Println("Setting StreamHandler, proto : ", proto) //--------------------------
-
   m.Host().SetStreamHandler(proto, func(stream network.Stream) {
-
-    fmt.Println("StreamHandler 0, proto : ", proto) //--------------------------
-
     rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
     str, err := rw.ReadString('\n')
     if err != nil {
-      fmt.Println("StreamHandler 0, err : ", err) //--------------------------
       return
     }
-
-    fmt.Println("StreamHandler 1") //--------------------------
 
     param, err := ParamFromString(str[:len(str) - 1])
     if err != nil {
-      fmt.Println("StreamHandler 1, err : ", err) //--------------------------
       return
     }
-
-    fmt.Println("StreamHandler 2") //--------------------------
 
     inter, err := NewInterface(f, param.N, param.Idx)
     if err != nil {
-      fmt.Println("StreamHandler 2, err : ", err) //--------------------------
       return
     }
-
-    fmt.Println("StreamHandler 3") //--------------------------
 
     comm, err := NewSlaveComm(m.Ctx, m.Host(), rw, proto, inter, param)
     if err != nil {

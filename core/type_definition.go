@@ -30,7 +30,7 @@ type ExtHost interface {
   PeerstoreProtocol(protocol.ID) (peerstore.Peerstore, error)
   NewPeer(protocol.ID) (peer.ID, error)
   Listen(protocol.ID, string)
-  SelfStream(protocol.ID) (SelfStream, error)
+  SelfStream(...protocol.ID) (SelfStream, error)
 }
 
 type Store interface {
