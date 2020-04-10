@@ -47,7 +47,10 @@ func ParamFromString(msg string) (Param, error) {
   param.Addrs = make([]peer.ID, len(addrs))
 
   for i, addr := range addrs {
-    param.Addrs[i] = peer.ID(addr)
+    param.Addrs[i], err = peer.IDB58Decode(addr)
+    if err != nil {
+      return param, err
+    }
   }
 
   param.Idx = idx
@@ -68,7 +71,7 @@ type Param struct {
 func (p *Param)String() string {
   addrs := make([]string, len(p.Addrs))
   for i, addr := range p.Addrs {
-    addrs[i] = string(addr)
+    addrs[i] = peer.IDB58Encode(addr)
   }
 
   initInt := 0
