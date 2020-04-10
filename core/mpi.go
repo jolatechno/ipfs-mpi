@@ -194,7 +194,7 @@ func (m *BasicMpi)Add(f string) error {
       return
     }
 
-    inter, err := NewInterface(f, param.N, param.Idx)
+    inter, err := NewInterface(m.Path + f, param.N, param.Idx)
     if err != nil {
       return
     }
