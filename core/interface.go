@@ -85,10 +85,12 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
 
         fmt.Printf("Sending \"%s\" to %d\n", strings.Join(splitted[2:], ","), idx) //--------------------------
 
-        inter.OutChan <- Message {
-          To: idx,
-          Content: strings.Join(splitted[2:], ","),
-        }
+        go func() {
+          inter.OutChan <- Message {
+            To: idx,
+            Content: strings.Join(splitted[2:], ","),
+          }
+        }()
       } else {
         inter.Close()
       }
