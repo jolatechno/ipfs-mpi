@@ -19,4 +19,4 @@ if __name__ == "__main__":
         print("Log,responded: " + resp)
     else:
         msg = input("Req,0\n")
-        print("0," + msg + " " + msg)
+        print("Send,0," + msg + " " + msg)

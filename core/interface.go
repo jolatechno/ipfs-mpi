@@ -47,11 +47,12 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
       }
 
       splitted := strings.Split(str, ",")
-      if len(splitted) != 2 {
-        inter.Close()
-      }
 
       if splitted[0] == "Req" {
+        if len(splitted) != 2 {
+          inter.Close()
+        }
+
         idx, err := strconv.Atoi(splitted[1][:len(splitted[1]) - 1])
         if err != nil {
           inter.Close()
@@ -59,18 +60,30 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
 
         inter.RequestChan <- idx
         fmt.Fprint(stdin, <- inter.InChan)
+
       } else if splitted[0] == "Log" && i == 0 {
-        log.Print(splitted[1])
-      } else {
-        idx, err := strconv.Atoi(splitted[0])
+        if len(splitted) < 2 {
+          inter.Close()
+        }
+
+        log.Print(strings.Join(splitted[1:], ","))
+
+      } else if splitted[0] == "Send" {
+        if len(splitted) < 3 {
+          inter.Close()
+        }
+
+        idx, err := strconv.Atoi(splitted[1])
         if err != nil {
           inter.Close()
         }
 
         inter.OutChan <- Message {
           To: idx,
-          Content: splitted[1],
+          Content: strings.Join(splitted[2:], ","),
         }
+      } else {
+        inter.Close()
       }
     }
   }()
