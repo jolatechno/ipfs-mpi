@@ -30,7 +30,7 @@ type ExtHost interface {
   PeerstoreProtocol(protocol.ID) (peerstore.Peerstore, error)
   NewPeer(protocol.ID) (peer.ID, error)
   Listen(protocol.ID, string)
-  SelfStream(protocol.ID) (network.Stream, error)
+  SelfStream(protocol.ID) (SelfStream, error)
 }
 
 type Store interface {
@@ -69,6 +69,11 @@ type Interface interface {
   Message() chan Message
   Request() chan int
   Push(string) error
+}
+type SelfStream interface {
+  network.Stream
+
+  Reverse() (SelfStream, error)
 }
 
 type Message struct {

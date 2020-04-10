@@ -253,14 +253,19 @@ func (h *BasicExtHost)EventBus() event.Bus {
   return h.Host.EventBus()
 }
 
-func (h *BasicExtHost)SelfStream(pid protocol.ID) (network.Stream, error) {
+func (h *BasicExtHost)SelfStream(pid protocol.ID) (SelfStream, error) {
   handler, ok := h.StreamHandlers[pid]
   if !ok {
     return nil, errors.New("no such protocol")
   }
 
   stream := NewStream(pid)
-  handler(stream)
+  reversed_stream, err := stream.Reverse()
+  if err != nil {
+    return nil, err
+  }
+
+  handler(reversed_stream)
 
   return stream, nil
 }
