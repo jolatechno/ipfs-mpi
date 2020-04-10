@@ -144,7 +144,9 @@ func (c *BasicMasterComm)Connect(i int, addr peer.ID, init bool) {
   fmt.Printf("%s\n", p.String()) //--------------------------
 
   rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
+
   fmt.Fprintf(rw, "%s\n", p.String())
+  rw.Flush()
 
   c.Comm.Remotes[i].Reset(rw)
 }

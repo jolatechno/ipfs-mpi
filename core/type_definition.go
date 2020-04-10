@@ -70,6 +70,7 @@ type Interface interface {
   Request() chan int
   Push(string) error
 }
+
 type SelfStream interface {
   network.Stream
 

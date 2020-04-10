@@ -240,6 +240,7 @@ type Remote struct {
 func (r *Remote)Send(msg string) {
   r.Sent = append(r.Sent, msg)
   fmt.Fprint(r.Stream, msg)
+  r.Stream.Flush()
 }
 
 func (r *Remote)Get() string {
@@ -272,6 +273,7 @@ func (r *Remote)Reset(stream *bufio.ReadWriter) {
   r.Offset = r.Received
   for _, msg := range r.Sent {
     fmt.Fprint(r.Stream, msg)
+    r.Stream.Flush()
   }
   r.ResetChan <- true
 }

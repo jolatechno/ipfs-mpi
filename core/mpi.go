@@ -16,6 +16,7 @@ import (
 
 var (
   WaitDuration = time.Second
+  ThrottleDuration = time.Nanosecond
 )
 
 type addrList []maddr.Multiaddr
