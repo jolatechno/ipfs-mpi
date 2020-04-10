@@ -18,16 +18,20 @@ type BasicMasterComm struct {
   Comm BasicSlaveComm
 }
 
-func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, inter Interface, id string) (MasterComm, error) {
-  var err error
-
+func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, inter Interface, id string) (_ MasterComm, err error) {
   Addrs := make([]peer.ID, n)
   for i, _ := range Addrs {
+
+    addr, _ := host.NewPeer(base) //--------------------------
+    fmt.Println(i, addr) //--------------------------
+
     Addrs[i], err = host.NewPeer(base)
     if err != nil {
       return nil, err
     }
   }
+
+  fmt.Println(Addrs) //--------------------------
 
   comm := BasicMasterComm {
     Ctx:ctx,
