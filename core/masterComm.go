@@ -109,6 +109,10 @@ func (c *BasicMasterComm)Get(idx int) string {
 }
 
 func (c *BasicMasterComm)CheckPeer(idx int) bool {
+  if c.Comm.Addrs[idx] == c.Comm.Host.ID() {
+    return true
+  }
+
   select {
   case res := <- c.Pinger.Ping(c.Ctx, c.Comm.Addrs[idx]):
     if res.Error != nil {
