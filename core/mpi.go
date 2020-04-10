@@ -15,7 +15,7 @@ import (
 )
 
 const (
-  WaitDuratio = time.Second
+  WaitDuration = time.Second
 )
 
 type addrList []maddr.Multiaddr

@@ -137,12 +137,12 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
 
   go func() {
     for comm.Check() {
-      time.Sleep(WaitDuratio)
+      time.Sleep(WaitDuration)
       select {
       case <- pinger.Ping(ctx, comm.Addrs[0]):
         continue
 
-      case <- time.After(WaitDuratio):
+      case <- time.After(WaitDuration):
         comm.Close()
         return
       }
