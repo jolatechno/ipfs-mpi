@@ -39,6 +39,8 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
     return nil, err
   }
 
+  fmt.Printf("Started execution of %s %d\n", file, i) //--------------------------
+
   reader := bufio.NewReader(stdout)
 
   go func(){
