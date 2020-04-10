@@ -83,7 +83,6 @@ func (p *Param)String() string {
 }
 
 func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, base protocol.ID, inter Interface, param Param) (SlaveComm, error) {
-
   comm := BasicSlaveComm {
     Ended: false,
     EndChan: make(chan bool),
