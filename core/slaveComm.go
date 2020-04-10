@@ -67,7 +67,7 @@ type Param struct {
 
 func (p *Param)String() string {
   addrs := make([]string, len(p.Addrs))
-  for i, addr := range addrs {
+  for i, addr := range p.Addrs {
     addrs[i] = string(addr)
   }
 
