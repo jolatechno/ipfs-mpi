@@ -146,7 +146,7 @@ func (c *BasicSlaveComm)start() {
 
       fmt.Printf("[slaveComm] %d Sending \"%s\" to %d\n", c.Idx, msg.Content, msg.To) //--------------------------
 
-      c.Send(msg.To, msg.Content)
+      go c.Send(msg.To, msg.Content)
     }
   }()
 
@@ -157,7 +157,7 @@ func (c *BasicSlaveComm)start() {
 
       fmt.Printf("[slaveComm] %d Requesting from %d\n", c.Idx, req) //--------------------------
 
-      c.Inter.Push(c.Get(req))
+      go c.Inter.Push(c.Get(req))
     }
   }()
 
