@@ -64,7 +64,7 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
         fmt.Printf("Requesting from %d\n", idx) //--------------------------
 
         inter.RequestChan <- idx
-        fmt.Fprint(stdin, <- inter.InChan)
+        go fmt.Fprint(stdin, <- inter.InChan)
 
       } else if splitted[0] == "Log" && i == 0 {
         if len(splitted) < 2 {
