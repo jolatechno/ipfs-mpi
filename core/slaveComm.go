@@ -97,9 +97,6 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
   }
 
   for i, addr := range comm.Addrs {
-
-    fmt.Println("SlaveComm ", i) //--------------------------
-
     if i != param.Idx {
       proto := protocol.ID(fmt.Sprintf("%d/%s", i, comm.Pid))
 
@@ -226,6 +223,9 @@ type Remote struct {
 
 func (r *Remote)Send(msg string) {
   r.Sent = append(r.Sent, msg)
+
+  fmt.Printf("[Remote] sending %s\n", msg) //--------------------------
+
   fmt.Fprint(r.Stream, msg)
   r.Stream.Flush()
 }

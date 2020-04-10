@@ -10,9 +10,6 @@ import (
 )
 
 func NewInterface(file string, n int, i int, args ...string) (Interface, error) {
-
-  fmt.Printf("Starting %s %d out of %d\n", file, i, n) //--------------------------
-
   inter := StdInterface {
     Ended: false,
     EndChan: make(chan bool),
@@ -39,8 +36,6 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
     return nil, err
   }
 
-  fmt.Printf("Started execution of %s %d\n", file, i) //--------------------------
-
   reader := bufio.NewReader(stdout)
 
   go func(){
@@ -63,7 +58,7 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
           inter.Close()
         }
 
-        fmt.Printf("Requesting from %d\n", idx) //--------------------------
+        fmt.Printf("%s %d Requesting from %d\n", file, i, idx) //--------------------------
 
         inter.RequestChan <- idx
         go fmt.Fprint(stdin, <- inter.InChan)
@@ -85,7 +80,7 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
           inter.Close()
         }
 
-        fmt.Printf("Sending \"%s\" to %d\n", strings.Join(splitted[2:], ","), idx) //--------------------------
+        fmt.Printf("%s %d Sending \"%s\" to %d\n", file, i, strings.Join(splitted[2:], ","), idx) //--------------------------
 
         go func() {
           inter.OutChan <- Message {
