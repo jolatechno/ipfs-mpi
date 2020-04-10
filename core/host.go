@@ -265,7 +265,7 @@ func (h *BasicExtHost)SelfStream(pid protocol.ID) (SelfStream, error) {
     return nil, err
   }
 
-  handler(reversed_stream)
+  go handler(reversed_stream)
 
   return stream, nil
 }
