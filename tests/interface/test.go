@@ -7,7 +7,7 @@ import (
 )
 
 func start(i int) {
-  inter, err := core.NewInterface("../../example/test_interpreters/echo", 2, i)
+  inter, err := core.NewInterface("../../interpreter/echo", 2, i)
   if err != nil {
     panic(err)
   }

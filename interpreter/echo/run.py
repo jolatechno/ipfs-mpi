@@ -13,7 +13,7 @@ if __name__ == "__main__":
         else:
             msg = "sending"
         print("Log," + msg)
-        print("1," + msg)
+        print("Send,1," + msg)
 
         resp = input("Req,1\n")
         print("Log,responded: " + resp)

@@ -83,7 +83,9 @@ func main(){
       }
 
     } else if splitted[0] == "exit" {
-      panic(store.Close())
+      go store.Close()
+      break
+
     } else {
       panic("Command not understood")
     }

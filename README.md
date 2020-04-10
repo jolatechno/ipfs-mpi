@@ -8,6 +8,29 @@
 
 Message Passing Interface computing using libp2p as a back-bone to build computational pool.
 
+## How to build an interpreter directory ?
+
+This example needs to be added to ipfs :
+
+```
+ipfs add -r example_interpretor
+```
+
+Wich will give an output ressembling :
+
+```
+added QmYjH4sibLpCSNCVbHXhfCZY78Ckj2aDDMWFwup7NGJ3JD interpreter/dummy/init.py
+added Qmb5jKmyFQFDceBXLCkjdfQbJrJ5fQ6KLGJHESTJ8E5mZo interpreter/dummy/run.py
+added QmYjH4sibLpCSNCVbHXhfCZY78Ckj2aDDMWFwup7NGJ3JD interpreter/echo/init.py
+added QmeFK352Eytu69fP8R6rPkPtsWybPY6JTwmj7MF1EUNxVr interpreter/echo/run.py
+added QmUQT4c4btHFZGgcrSzzxXTstFWSe3eS32YhVCJYGqtut7 interpreter/dummy
+added QmPgsYeJbpKc19o3xzmyjAyiabhb6B5qKo6TY1yPWVa1Zy interpreter/echo
+added QmdKupoVYvBKP3qZmGk7sf9U6S8aYZP2yrFdwh4qPZniwa interpreter
+ 650 B / 650 B [==========================================================================================================================================================================================] 100.00%
+ ```
+
+Where the line corresponding to the whole directory is `added QmdKupoVYvBKP3qZmGk7sf9U6S8aYZP2yrFdwh4qPZniwa interpreter`, so the ipfs-store that you should use will be `QmdKupoVYvBKP3qZmGk7sf9U6S8aYZP2yrFdwh4qPZniwa/`
+
 ## How to build ?
 
 ```
