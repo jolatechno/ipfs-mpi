@@ -199,8 +199,6 @@ func (m *BasicMpi)Add(f string) error {
       return
     }
 
-    fmt.Println("StreamHandler NewInterface") //--------------------------
-
     comm, err := NewSlaveComm(m.Ctx, m.Host(), rw, proto, inter, param)
     if err != nil {
       return
@@ -248,15 +246,10 @@ func (m *BasicMpi)Start(file string, n int, args ...string) error {
     return errors.New("no such file")
   }
 
-  fmt.Println("Start 0") //--------------------------
-
   inter, err := NewInterface(m.Path + file, n, 0, args...)
   if err != nil {
-    fmt.Println("Start 0, err : ", err) //--------------------------
     return err
   }
-
-  fmt.Println("Start 1") //--------------------------
 
   id := m.Id
   m.Id++

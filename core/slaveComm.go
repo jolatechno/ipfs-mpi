@@ -143,6 +143,9 @@ func (c *BasicSlaveComm)start() {
     outChan := c.Inter.Message()
     for c.Check() {
       msg := <- outChan
+
+      fmt.Printf("[slaveComm] %d Sending \"%s\" to %d\n", c.Idx, msg.Content, msg.To) //--------------------------
+
       c.Send(msg.To, msg.Content)
     }
   }()
@@ -151,6 +154,9 @@ func (c *BasicSlaveComm)start() {
     requestChan := c.Inter.Request()
     for c.Check() {
       req := <- requestChan
+
+      fmt.Printf("[slaveComm] %d Requesting from %d\n", c.Idx, req) //--------------------------
+
       c.Inter.Push(c.Get(req))
     }
   }()
