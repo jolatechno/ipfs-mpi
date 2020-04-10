@@ -14,7 +14,7 @@ import (
   maddr "github.com/multiformats/go-multiaddr"
 )
 
-const (
+var (
   WaitDuration = time.Second
 )
 

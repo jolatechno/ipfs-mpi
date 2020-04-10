@@ -12,12 +12,16 @@ import (
   "github.com/jolatechno/go-timeout"
 )
 
+var (
+  StandardTimeout = time.Hour
+)
+
 func NewStream(pid protocol.ID) SelfStream {
   return &CloseableBuffer {
     WriteBuffer: bytes.NewBuffer([]byte{}),
     ReadBuffer: bytes.NewBuffer([]byte{}),
-    WriteTimeout: WaitDuration,
-    ReadTimeout: WaitDuration,
+    WriteTimeout: StandardTimeout,
+    ReadTimeout: StandardTimeout,
     Closed: false,
 		Pid: pid,
   }
@@ -65,8 +69,8 @@ func (b *CloseableBuffer)Reset() error {
 	}
   b.WriteBuffer = bytes.NewBuffer([]byte{})
   b.ReadBuffer = bytes.NewBuffer([]byte{})
-  b.WriteTimeout = WaitDuration
-  b.ReadTimeout = WaitDuration
+  b.WriteTimeout = StandardTimeout
+  b.ReadTimeout = StandardTimeout
   return nil
 }
 
@@ -92,6 +96,10 @@ func (b *CloseableBuffer)Read(p []byte) (int, error) {
 
     return 0, errors.New("Timedout")
   }, b.ReadTimeout)
+
+  if n == nil {
+    n = 0
+  }
 
   return n.(int), err
 }
