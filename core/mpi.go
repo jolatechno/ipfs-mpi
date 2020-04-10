@@ -199,9 +199,10 @@ func (m *BasicMpi)Add(f string) error {
       return
     }
 
+    fmt.Println("StreamHandler NewInterface") //--------------------------
+
     comm, err := NewSlaveComm(m.Ctx, m.Host(), rw, proto, inter, param)
     if err != nil {
-      fmt.Println("StreamHandler 3, err : ", err) //--------------------------
       return
     }
 

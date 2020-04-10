@@ -97,6 +97,9 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
   }
 
   for i, addr := range comm.Addrs {
+
+    fmt.Println("SlaveComm ", i) //--------------------------
+
     if i != param.Idx {
       proto := protocol.ID(fmt.Sprintf("%d/%s", i, comm.Pid))
 

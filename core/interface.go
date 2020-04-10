@@ -10,6 +10,9 @@ import (
 )
 
 func NewInterface(file string, n int, i int, args ...string) (Interface, error) {
+
+  fmt.Printf("Starting %s %d out of %d\n", file, i, n) //--------------------------
+
   inter := StdInterface {
     Ended: false,
     EndChan: make(chan bool),

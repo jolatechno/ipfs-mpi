@@ -124,11 +124,8 @@ func (c *BasicMasterComm)CheckPeer(idx int) bool {
 }
 
 func (c *BasicMasterComm)Connect(i int, addr peer.ID, init bool) {
-  fmt.Println("Connect 0, proto : ", c.Comm.Base, ", peer : ", addr) //--------------------------
-
   stream, err := c.Comm.Host.NewStream(c.Ctx, addr, c.Comm.Base)
   if err != nil {
-    fmt.Println("Connect 0, err : ", err) //--------------------------
     c.Reset(i)
     return
   }
