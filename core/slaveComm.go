@@ -226,6 +226,9 @@ type Remote struct {
 }
 
 func (r *Remote)Send(msg string) {
+
+  fmt.Printf("[Remote] Sending %q\n", msg) //--------------------------
+
   r.Sent = append(r.Sent, msg)
 
   fmt.Fprint(r.Stream, msg)
@@ -233,6 +236,9 @@ func (r *Remote)Send(msg string) {
 }
 
 func (r *Remote)Get() string {
+
+  fmt.Println("[Remote] Requesting") //--------------------------
+
   readChan := make(chan string)
   go func() {
     for r.Offset > 0 {
@@ -251,6 +257,9 @@ func (r *Remote)Get() string {
 
   select {
   case msg := <- readChan:
+
+    fmt.Printf("[Remote] Requesting %q\n", msg) //--------------------------
+
     return msg
 
   case <- r.ResetChan:

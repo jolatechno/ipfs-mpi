@@ -79,6 +79,8 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     }
   }
 
+  fmt.Printf("[MasterComm] Started") //--------------------------
+
   comm.Comm.start()
 
   return &comm, nil
@@ -166,5 +168,6 @@ func (c *BasicMasterComm)Reset(i int) {
   if err != nil {
     c.Close()
   }
+  
   c.Connect(i, addr, false)
 }
