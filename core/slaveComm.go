@@ -243,6 +243,9 @@ func (r *Remote)Send(msg string) {
 }
 
 func (r *Remote)Get() string {
+
+  fmt.Println("[Remote] reading") //--------------------------
+
   readChan := make(chan string)
   go func() {
     for r.Offset > 0 {
@@ -255,6 +258,9 @@ func (r *Remote)Get() string {
     if err == nil {
       readChan <- str
     }
+
+    fmt.Println("[Remote] reading err: ", err) //--------------------------
+
     close(readChan)
   }()
 
