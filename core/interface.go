@@ -8,6 +8,11 @@ import (
   "strings"
   "strconv"
   "errors"
+  "time"
+)
+
+var (
+  SafeWait = time.Millisecond
 )
 
 func NewInterface(file string, n int, i int, args ...string) (Interface, error) {
@@ -33,37 +38,74 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
 		return nil, err
 	}
 
+  stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return nil, err
+	}
+
   err = cmd.Start()
   if err != nil {
     return nil, err
   }
 
-  reader := bufio.NewReader(stdout)
+  go func() {
+    err := cmd.Wait()
+    if err != nil {
+      inter.Error <- err
+    }
 
+    if inter.Check() {
+      inter.Close()
+    }
+  }()
+
+  errReader := bufio.NewReader(stderr)
+  go func() {
+    for {
+      strErr, err := errReader.ReadString('\n')
+      if err != nil {
+        return
+      }
+      if strErr != "" {
+        time.Sleep(SafeWait)
+        if inter.Check() {
+          inter.Error <- errors.New(strErr)
+          inter.Close()
+        }
+      }
+    }
+  }()
+
+  reader := bufio.NewReader(stdout)
   go func(){
     for inter.Check() {
       str, err := reader.ReadString('\n')
       if err != nil {
-
-        fmt.Println("[Interface] read error : ", err) //--------------------------
-
-
-        inter.Error <- err
-        inter.Close()
+        time.Sleep(SafeWait)
+        if inter.Check() {
+          inter.Error <- err
+          inter.Close()
+        }
       }
 
       splitted := strings.Split(str, ",")
 
       if splitted[0] == "Req" {
         if len(splitted) != 2 {
-          inter.Error <- errors.New("Not enough field")
-          inter.Close()
+          time.Sleep(SafeWait)
+          if inter.Check() {
+            inter.Error <- errors.New("Not enough field")
+            inter.Close()
+          }
         }
 
         idx, err := strconv.Atoi(splitted[1][:len(splitted[1]) - 1])
         if err != nil {
-          inter.Error <- err
-          inter.Close()
+          time.Sleep(SafeWait)
+          if inter.Check() {
+            inter.Error <- err
+            inter.Close()
+          }
         }
 
         inter.RequestChan <- idx
@@ -71,22 +113,31 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
 
       } else if splitted[0] == "Log" && i == 0 {
         if len(splitted) < 2 {
-          inter.Error <- errors.New("Not enough field")
-          inter.Close()
+          time.Sleep(SafeWait)
+          if inter.Check() {
+            inter.Error <- errors.New("Not enough field")
+            inter.Close()
+          }
         }
 
         log.Print(strings.Join(splitted[1:], ","))
 
       } else if splitted[0] == "Send" {
         if len(splitted) < 3 {
-          inter.Error <- errors.New("Not enough field")
-          inter.Close()
+          time.Sleep(SafeWait)
+          if inter.Check() {
+            inter.Error <- errors.New("Not enough field")
+            inter.Close()
+          }
         }
 
         idx, err := strconv.Atoi(splitted[1])
         if err != nil {
-          inter.Error <- err
-          inter.Close()
+          time.Sleep(SafeWait)
+          if inter.Check() {
+            inter.Error <- err
+            inter.Close()
+          }
         }
 
         go func() {
@@ -96,8 +147,11 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
           }
         }()
       } else {
-        inter.Error <- errors.New("Not understood")
-        inter.Close()
+        time.Sleep(SafeWait)
+        if inter.Check() {
+          inter.Error <- errors.New("Not understood")
+          inter.Close()
+        }
       }
     }
   }()
