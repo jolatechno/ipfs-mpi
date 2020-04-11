@@ -260,7 +260,6 @@ func (m *BasicMpi)Start(file string, n int, args ...string) error {
   comm, err := NewMasterComm(m.Ctx, m.Host(), n, proto, inter, StringId)
 
   if err != nil {
-    fmt.Println("Start 1, err : ", err) //--------------------------
     return err
   }
 

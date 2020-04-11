@@ -58,8 +58,6 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
           inter.Close()
         }
 
-        fmt.Printf("[interface] %s %d Requesting from %d\n", file, i, idx) //--------------------------
-
         inter.RequestChan <- idx
         go fmt.Fprint(stdin, <- inter.InChan)
 
@@ -79,8 +77,6 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
         if err != nil {
           inter.Close()
         }
-
-        fmt.Printf("[interface] %s %d Sending \"%s\" to %d\n", file, i, strings.Join(splitted[2:], ","), idx) //--------------------------
 
         go func() {
           inter.OutChan <- Message {

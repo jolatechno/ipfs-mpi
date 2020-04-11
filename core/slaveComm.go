@@ -96,6 +96,8 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
     Remotes: make([]Remote, len(param.Addrs)),
   }
 
+  fmt.Printf("[SlaveComm] starting %d out of %d\n", param.Idx, param.N) //--------------------------
+
   for i, addr := range comm.Addrs {
     if i != param.Idx {
       proto := protocol.ID(fmt.Sprintf("%d/%s", i, comm.Pid))
@@ -144,8 +146,6 @@ func (c *BasicSlaveComm)start() {
     for c.Check() {
       msg := <- outChan
 
-      fmt.Printf("[slaveComm] %d Sending \"%s\" to %d\n", c.Idx, msg.Content, msg.To) //--------------------------
-
       go c.Send(msg.To, msg.Content)
     }
   }()
@@ -154,8 +154,6 @@ func (c *BasicSlaveComm)start() {
     requestChan := c.Inter.Request()
     for c.Check() {
       req := <- requestChan
-
-      fmt.Printf("[slaveComm] %d Requesting from %d\n", c.Idx, req) //--------------------------
 
       go c.Inter.Push(c.Get(req))
     }
@@ -187,9 +185,6 @@ func (c *BasicSlaveComm)Interface() Interface {
 }
 
 func (c *BasicSlaveComm)Close() error {
-
-  fmt.Printf("[slaveComm] %d Closing\n", c.Idx) //--------------------------
-
   c.EndChan <- true
   c.Ended = true
   err := c.Inter.Close()
@@ -233,8 +228,6 @@ type Remote struct {
 func (r *Remote)Send(msg string) {
   r.Sent = append(r.Sent, msg)
 
-  fmt.Printf("[Remote] sending %s\n", msg) //--------------------------
-
   fmt.Fprint(r.Stream, msg)
   r.Stream.Flush()
 }
@@ -251,8 +244,6 @@ func (r *Remote)Get() string {
     str, err := r.Stream.ReadString('\n')
     if err == nil {
       readChan <- str
-    } else {
-      fmt.Println("[Remote] reading err: ", err) //--------------------------
     }
 
     close(readChan)
@@ -260,9 +251,6 @@ func (r *Remote)Get() string {
 
   select {
   case msg := <- readChan:
-
-    fmt.Println("[Remote] reading msg: ", msg) //--------------------------
-
     return msg
 
   case <- r.ResetChan:
