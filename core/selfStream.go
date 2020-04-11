@@ -84,7 +84,7 @@ func (b *CloseableBuffer)Reset() error {
 func (b *CloseableBuffer)Read(p []byte) (int, error) {
   n, err := timeout.MakeTimeout(func() (interface{}, error) {
     return b.ReadPipe.Read(p)
-  }, b.WriteTimeout)
+  }, b.ReadTimeout)
 
   if n == nil {
     n = 0

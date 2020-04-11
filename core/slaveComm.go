@@ -139,9 +139,6 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
 }
 
 func (c *BasicSlaveComm)start() {
-
-  fmt.Printf("[slaveComm] %d Starting\n", c.Idx) //--------------------------
-
   go func(){
     outChan := c.Inter.Message()
     for c.Check() {
@@ -192,7 +189,7 @@ func (c *BasicSlaveComm)Interface() Interface {
 func (c *BasicSlaveComm)Close() error {
 
   fmt.Printf("[slaveComm] %d Closing\n", c.Idx) //--------------------------
-  
+
   c.EndChan <- true
   c.Ended = true
   err := c.Inter.Close()
@@ -243,9 +240,6 @@ func (r *Remote)Send(msg string) {
 }
 
 func (r *Remote)Get() string {
-
-  fmt.Println("[Remote] reading") //--------------------------
-
   readChan := make(chan string)
   go func() {
     for r.Offset > 0 {
@@ -257,15 +251,18 @@ func (r *Remote)Get() string {
     str, err := r.Stream.ReadString('\n')
     if err == nil {
       readChan <- str
+    } else {
+      fmt.Println("[Remote] reading err: ", err) //--------------------------
     }
-
-    fmt.Println("[Remote] reading err: ", err) //--------------------------
 
     close(readChan)
   }()
 
   select {
   case msg := <- readChan:
+
+    fmt.Println("[Remote] reading msg: ", msg) //--------------------------
+
     return msg
 
   case <- r.ResetChan:
@@ -274,9 +271,6 @@ func (r *Remote)Get() string {
 }
 
 func (r *Remote)Reset(stream *bufio.ReadWriter) {
-
-  fmt.Println("[Remote] resseting") //--------------------------
-
   r.Stream = stream
   r.Offset = r.Received
   for _, msg := range r.Sent {
