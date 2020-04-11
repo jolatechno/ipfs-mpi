@@ -186,6 +186,9 @@ func (c *BasicSlaveComm)Interface() Interface {
 }
 
 func (c *BasicSlaveComm)Close() error {
+
+  fmt.Printf("[SlaveComm] Closing %d out of %d\n", c.Idx, len(c.Addrs)) //--------------------------
+
   c.EndChan <- true
   c.Ended = true
   err := c.Inter.Close()
