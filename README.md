@@ -22,17 +22,17 @@ Wich will give an output ressembling :
 added QmYjH4sibLpCSNCVbHXhfCZY78Ckj2aDDMWFwup7NGJ3JD interpreter/dummy/init.py
 added Qmb5jKmyFQFDceBXLCkjdfQbJrJ5fQ6KLGJHESTJ8E5mZo interpreter/dummy/run.py
 added QmYjH4sibLpCSNCVbHXhfCZY78Ckj2aDDMWFwup7NGJ3JD interpreter/echo/init.py
-added QmeFK352Eytu69fP8R6rPkPtsWybPY6JTwmj7MF1EUNxVr interpreter/echo/run.py
+added QmYz1jdThETe4WDi5kWRwpMSQgxnuKZmMc8tXYRN9KmhjC interpreter/echo/run.py
 added QmYjH4sibLpCSNCVbHXhfCZY78Ckj2aDDMWFwup7NGJ3JD interpreter/multi_echo/init.py
-added QmUooPZ9e9PCrZEn3X9wezjASAKzcNCxuZwcfJyYHbVQz5 interpreter/multi_echo/run.py
+added QmXNQSQetxsei35vKuBZksAhRaae76iUJXVRmjbJVdPDXv interpreter/multi_echo/run.py
 added QmUQT4c4btHFZGgcrSzzxXTstFWSe3eS32YhVCJYGqtut7 interpreter/dummy
-added QmPgsYeJbpKc19o3xzmyjAyiabhb6B5qKo6TY1yPWVa1Zy interpreter/echo
-added QmZLYgkkEvUHXJi5C2M1RuV1jtVvWcMkHQS9F9WirRzQR3 interpreter/multi_echo
-added QmT79ArWYrEHJrzB41LUv6c2DbCKwiCFyDykvThokhiUgV interpreter
- 1.28 KiB / 1.28 KiB [====================================================================] 100.00%
+added QmV1oTQNQzyjWtHSofj7UnovfyAtYvvXu1MXxpDyD3UFih interpreter/echo
+added QmXYyVzHWknNvHpbeYPei3Zm54xwBrowdEcXjtJwLajMHi interpreter/multi_echo
+added QmNjoMCCwfGC6JSQP6gPBWRA95noJQKFRScK7H9BsCg5X3 interpreter
+ 1.26 KiB / 1.26 KiB [===============================================================================] 100.00%
  ```
 
-Where the line corresponding to the whole directory is `added QmT79ArWYrEHJrzB41LUv6c2DbCKwiCFyDykvThokhiUgV interpreter`, so the ipfs-store that you should use will be `QmT79ArWYrEHJrzB41LUv6c2DbCKwiCFyDykvThokhiUgV/`
+Where the line corresponding to the whole directory is `added QmNjoMCCwfGC6JSQP6gPBWRA95noJQKFRScK7H9BsCg5X3 interpreter`, so the ipfs-store that you should use will be `QmNjoMCCwfGC6JSQP6gPBWRA95noJQKFRScK7H9BsCg5X3/`
 
 ## How to build ?
 
