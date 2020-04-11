@@ -274,6 +274,9 @@ func (r *Remote)Get() string {
 }
 
 func (r *Remote)Reset(stream *bufio.ReadWriter) {
+
+  fmt.Println("[Remote] resseting") //--------------------------
+
   r.Stream = stream
   r.Offset = r.Received
   for _, msg := range r.Sent {
