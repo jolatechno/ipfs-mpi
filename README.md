@@ -22,17 +22,17 @@ Wich will give an output ressembling :
 added QmYjH4sibLpCSNCVbHXhfCZY78Ckj2aDDMWFwup7NGJ3JD interpreter/dummy/init.py
 added Qmb5jKmyFQFDceBXLCkjdfQbJrJ5fQ6KLGJHESTJ8E5mZo interpreter/dummy/run.py
 added QmYjH4sibLpCSNCVbHXhfCZY78Ckj2aDDMWFwup7NGJ3JD interpreter/echo/init.py
-added QmYz1jdThETe4WDi5kWRwpMSQgxnuKZmMc8tXYRN9KmhjC interpreter/echo/run.py
+added Qmccr1oeWtn2kumHvQScsVhCRqvTECsv9oBZu9i2QscUvY interpreter/echo/run.py
 added QmYjH4sibLpCSNCVbHXhfCZY78Ckj2aDDMWFwup7NGJ3JD interpreter/multi_echo/init.py
 added QmXNQSQetxsei35vKuBZksAhRaae76iUJXVRmjbJVdPDXv interpreter/multi_echo/run.py
 added QmUQT4c4btHFZGgcrSzzxXTstFWSe3eS32YhVCJYGqtut7 interpreter/dummy
-added QmV1oTQNQzyjWtHSofj7UnovfyAtYvvXu1MXxpDyD3UFih interpreter/echo
+added QmT29r7Pgba1q2crW8MW4dKwaGw3Wg72E6uLRTp17rFFyC interpreter/echo
 added QmXYyVzHWknNvHpbeYPei3Zm54xwBrowdEcXjtJwLajMHi interpreter/multi_echo
-added QmNjoMCCwfGC6JSQP6gPBWRA95noJQKFRScK7H9BsCg5X3 interpreter
+added QmWQ3CcPDnGgZDFJnaqFF7GUzSXE7C1vLm2sMFvEJ8Fr9e interpreter
  1.26 KiB / 1.26 KiB [===============================================================================] 100.00%
  ```
 
-Where the line corresponding to the whole directory is `added QmNjoMCCwfGC6JSQP6gPBWRA95noJQKFRScK7H9BsCg5X3 interpreter`, so the ipfs-store that you should use will be `QmNjoMCCwfGC6JSQP6gPBWRA95noJQKFRScK7H9BsCg5X3/`
+Where the line corresponding to the whole directory is `added QmWQ3CcPDnGgZDFJnaqFF7GUzSXE7C1vLm2sMFvEJ8Fr9e interpreter`, so the ipfs-store that you should use will be `QmWQ3CcPDnGgZDFJnaqFF7GUzSXE7C1vLm2sMFvEJ8Fr9e/`
 
 ## How to build ?
 
@@ -63,6 +63,14 @@ For example :
 ```
 
 ### Commands
+
+#### List
+
+You can list all installed interpreters using :
+
+```
+List
+```
 
 #### Start
 

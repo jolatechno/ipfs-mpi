@@ -46,7 +46,12 @@ func main(){
     last_size := len(splitted[end_idx]) - 1
     splitted[end_idx] = splitted[end_idx][:last_size]
 
-    if splitted[0] == "Start" {
+    if splitted[0] == "List" {
+      list := store.Store().List()
+      for _, f := range list {
+        fmt.Println(" ", f)
+      }
+    } else if splitted[0] == "Start" {
       if len(splitted) < 3 {
         panic("No size given")
       }

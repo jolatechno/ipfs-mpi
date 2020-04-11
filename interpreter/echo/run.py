@@ -14,8 +14,8 @@ if __name__ == "__main__":
             msg = "sending"
 
         print("Log," + msg)
-        print(f"Send,0,{msg}")
-        resp = input(f"Req,0\n")
+        print(f"Send,1,{msg}")
+        resp = input(f"Req,1\n")
         print(f"Log,responded: {resp}")
     else:
         msg = input("Req,0\n")
