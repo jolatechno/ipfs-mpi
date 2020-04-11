@@ -44,6 +44,10 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
     for inter.Check() {
       str, err := reader.ReadString('\n')
       if err != nil {
+
+        fmt.Println("[Interface] read error : ", err) //--------------------------
+
+
         inter.Error <- err
         inter.Close()
       }
