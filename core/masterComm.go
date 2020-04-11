@@ -147,21 +147,19 @@ func (c *BasicMasterComm)Connect(i int, addr peer.ID, init bool) {
   if err != nil {
     c.Reset(i)
   } else {
-    go func() {
-      rw := rwi.(*bufio.ReadWriter)
-      p := Param {
-        Init: init,
-        Idx: i,
-        N: c.N,
-        Id: c.Comm.Id,
-        Addrs: c.Comm.Addrs,
-      }
+    rw := rwi.(*bufio.ReadWriter)
+    c.Comm.Remotes[i].Reset(rw)
 
-      fmt.Fprintf(rw, "%s\n", p.String())
-      rw.Flush()
+    p := Param {
+      Init: init,
+      Idx: i,
+      N: c.N,
+      Id: c.Comm.Id,
+      Addrs: c.Comm.Addrs,
+    }
 
-      c.Comm.Remotes[i].Reset(rw)
-    }()
+    fmt.Fprintf(rw, "%s\n", p.String())
+    rw.Flush()
   }
 }
 

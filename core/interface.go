@@ -92,20 +92,14 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
 
       if splitted[0] == "Req" {
         if len(splitted) != 2 {
-          time.Sleep(SafeWait)
-          if inter.Check() {
-            inter.Error <- errors.New("Not enough field")
-            inter.Close()
-          }
+          inter.Error <- errors.New("Not enough field")
+          inter.Close()
         }
 
         idx, err := strconv.Atoi(splitted[1][:len(splitted[1]) - 1])
         if err != nil {
-          time.Sleep(SafeWait)
-          if inter.Check() {
-            inter.Error <- err
-            inter.Close()
-          }
+          inter.Error <- err
+          inter.Close()
         }
 
         inter.RequestChan <- idx
@@ -113,31 +107,22 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
 
       } else if splitted[0] == "Log" && i == 0 {
         if len(splitted) < 2 {
-          time.Sleep(SafeWait)
-          if inter.Check() {
-            inter.Error <- errors.New("Not enough field")
-            inter.Close()
-          }
+          inter.Error <- errors.New("Not enough field")
+          inter.Close()
         }
 
         log.Print(strings.Join(splitted[1:], ","))
 
       } else if splitted[0] == "Send" {
         if len(splitted) < 3 {
-          time.Sleep(SafeWait)
-          if inter.Check() {
-            inter.Error <- errors.New("Not enough field")
-            inter.Close()
-          }
+          inter.Error <- errors.New("Not enough field")
+          inter.Close()
         }
 
         idx, err := strconv.Atoi(splitted[1])
         if err != nil {
-          time.Sleep(SafeWait)
-          if inter.Check() {
-            inter.Error <- err
-            inter.Close()
-          }
+          inter.Error <- err
+          inter.Close()
         }
 
         go func() {
@@ -147,11 +132,8 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
           }
         }()
       } else {
-        time.Sleep(SafeWait)
-        if inter.Check() {
-          inter.Error <- errors.New("Not understood")
-          inter.Close()
-        }
+        inter.Error <- errors.New("Not understood")
+        inter.Close()
       }
     }
   }()
@@ -171,6 +153,11 @@ type StdInterface struct {
 func (s *StdInterface)Close() error {
   s.EndChan <- true
   s.Ended = true
+
+  close(s.InChan)
+  close(s.OutChan)
+  close(s.EndChan)
+
   return nil
 }
 
