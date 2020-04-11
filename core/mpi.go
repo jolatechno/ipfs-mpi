@@ -227,10 +227,17 @@ func (m *BasicMpi)Add(f string) error {
     }
 
     m.SlaveComms[param.Id] = comm
-    go func(id string){
+
+    go func(){
+      err := <- comm.ErrorChan()
+      m.Error <- err
+      m.Close()
+    }()
+
+    go func(){
       <- comm.CloseChan()
-      delete(m.SlaveComms, id)
-    }(param.Id)
+      delete(m.SlaveComms, param.Id)
+    }()
   })
   return nil
 }
@@ -286,6 +293,13 @@ func (m *BasicMpi)Start(file string, n int, args ...string) error {
   }
 
   m.MasterComms[id] = comm
+
+  go func() {
+    err := <- comm.ErrorChan()
+    m.Error <- err
+    m.Close()
+  }()
+
   go func() {
     <- comm.CloseChan()
     delete(m.MasterComms, id)

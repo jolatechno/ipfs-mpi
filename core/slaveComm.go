@@ -177,9 +177,23 @@ func (c *BasicSlaveComm)start() {
   }()
 
   go func(){
+    <- c.Inter.CloseChan()
+    if c.Check() {
+      c.Close()
+    }
+  }()
+
+  go func(){
     err := <- c.Host.ErrorChan()
     if c.Check() {
       c.Error <- err
+      c.Close()
+    }
+  }()
+
+  go func(){
+    <- c.Host.CloseChan()
+    if c.Check() {
       c.Close()
     }
   }()
