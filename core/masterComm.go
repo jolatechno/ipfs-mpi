@@ -53,6 +53,8 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
         ResetChan: make(chan bool),
       }
 
+      fmt.Printf("[MasterComm] connecting to %d out of %d, is host ? %s\n", i, n, addr == host.ID()) //--------------------------
+
       go comm.Connect(i, addr, true)
 
       streamHandler, err := comm.Comm.Remotes[i].StreamHandler()
@@ -63,11 +65,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
       proto := protocol.ID(fmt.Sprintf("%d/%s", i, comm.Comm.Pid))
       host.SetStreamHandler(proto, streamHandler)
-    }
-  }
 
-  for i := range comm.Comm.Addrs {
-    if i > 0 {
       go func() {
         for comm.Check() {
           time.Sleep(WaitDuration)
