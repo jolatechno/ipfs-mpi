@@ -12,7 +12,7 @@ import (
 )
 
 var (
-  SafeWait = time.Millisecond
+  SafeWait = 10 * time.Millisecond
 )
 
 func NewInterface(file string, n int, i int, args ...string) (Interface, error) {

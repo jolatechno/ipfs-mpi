@@ -23,13 +23,16 @@ added QmYjH4sibLpCSNCVbHXhfCZY78Ckj2aDDMWFwup7NGJ3JD interpreter/dummy/init.py
 added Qmb5jKmyFQFDceBXLCkjdfQbJrJ5fQ6KLGJHESTJ8E5mZo interpreter/dummy/run.py
 added QmYjH4sibLpCSNCVbHXhfCZY78Ckj2aDDMWFwup7NGJ3JD interpreter/echo/init.py
 added QmeFK352Eytu69fP8R6rPkPtsWybPY6JTwmj7MF1EUNxVr interpreter/echo/run.py
+added QmYjH4sibLpCSNCVbHXhfCZY78Ckj2aDDMWFwup7NGJ3JD interpreter/multi_echo/init.py
+added QmUooPZ9e9PCrZEn3X9wezjASAKzcNCxuZwcfJyYHbVQz5 interpreter/multi_echo/run.py
 added QmUQT4c4btHFZGgcrSzzxXTstFWSe3eS32YhVCJYGqtut7 interpreter/dummy
 added QmPgsYeJbpKc19o3xzmyjAyiabhb6B5qKo6TY1yPWVa1Zy interpreter/echo
-added QmdKupoVYvBKP3qZmGk7sf9U6S8aYZP2yrFdwh4qPZniwa interpreter
- 650 B / 650 B [==========================================================================================================================================================================================] 100.00%
+added QmZLYgkkEvUHXJi5C2M1RuV1jtVvWcMkHQS9F9WirRzQR3 interpreter/multi_echo
+added QmT79ArWYrEHJrzB41LUv6c2DbCKwiCFyDykvThokhiUgV interpreter
+ 1.28 KiB / 1.28 KiB [====================================================================] 100.00%
  ```
 
-Where the line corresponding to the whole directory is `added QmdKupoVYvBKP3qZmGk7sf9U6S8aYZP2yrFdwh4qPZniwa interpreter`, so the ipfs-store that you should use will be `QmdKupoVYvBKP3qZmGk7sf9U6S8aYZP2yrFdwh4qPZniwa/`
+Where the line corresponding to the whole directory is `added QmT79ArWYrEHJrzB41LUv6c2DbCKwiCFyDykvThokhiUgV interpreter`, so the ipfs-store that you should use will be `QmT79ArWYrEHJrzB41LUv6c2DbCKwiCFyDykvThokhiUgV/`
 
 ## How to build ?
 

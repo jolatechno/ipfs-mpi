@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-  store, err := core.NewStore("/ip4/127.0.0.1/tcp/5001", "./interpreter/", "QmdKupoVYvBKP3qZmGk7sf9U6S8aYZP2yrFdwh4qPZniwa/")
+  store, err := core.NewStore("/ip4/127.0.0.1/tcp/5001", "./interpreter/", "QmT79ArWYrEHJrzB41LUv6c2DbCKwiCFyDykvThokhiUgV/")
   if err != nil {
     panic(err)
   }
