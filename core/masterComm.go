@@ -46,9 +46,6 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   }
 
   for i, addr := range comm.Comm.Addrs {
-
-    fmt.Printf("[MasterComm] %d\n", i) //--------------------------
-
     if i > 0 {
       comm.Comm.Remotes[i] = Remote{
         Sent: []string{},
@@ -57,8 +54,6 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
       }
 
       go comm.Connect(i, addr, true)
-
-      fmt.Println("[MasterComm] Connected") //--------------------------
 
       streamHandler, err := comm.Comm.Remotes[i].StreamHandler()
       if err != nil {
@@ -83,8 +78,6 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
       }()
     }
   }
-
-  fmt.Println("[MasterComm] Starting") //--------------------------
 
   comm.Comm.start()
 
@@ -147,14 +140,10 @@ func (c *BasicMasterComm)Connect(i int, addr peer.ID, init bool) {
     Addrs: c.Comm.Addrs,
   }
 
-  fmt.Printf("[MasterComm connect] %s\n", p.String()) //--------------------------
-
   rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
 
   fmt.Fprintf(rw, "%s\n", p.String())
   rw.Flush()
-
-  fmt.Println("[MasterComm connect] reset") //--------------------------
 
   c.Comm.Remotes[i].Reset(rw)
 }
@@ -162,7 +151,7 @@ func (c *BasicMasterComm)Connect(i int, addr peer.ID, init bool) {
 func (c *BasicMasterComm)Reset(i int) {
   addr, err := c.Comm.Host.NewPeer(c.Comm.Base)
   if err != nil {
-    panic(err) //should never happend here
+    c.Close()
   }
   c.Connect(i, addr, false)
 }

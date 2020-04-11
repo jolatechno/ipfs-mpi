@@ -165,9 +165,6 @@ func (c *BasicSlaveComm)start() {
   }()
 
   go func(){
-
-    fmt.Printf("[slaveComm] %d Closing\n", c.Idx) //--------------------------
-
     <- c.Inter.CloseChan()
     if c.Check() {
       c.Close()
@@ -193,6 +190,9 @@ func (c *BasicSlaveComm)Interface() Interface {
 }
 
 func (c *BasicSlaveComm)Close() error {
+
+  fmt.Printf("[slaveComm] %d Closing\n", c.Idx) //--------------------------
+  
   c.EndChan <- true
   c.Ended = true
   err := c.Inter.Close()
