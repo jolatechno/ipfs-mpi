@@ -112,6 +112,8 @@ github.com/jessevdk/go-flags v0.0.0-20141203071132-1679536dcc89/go.mod h1:4FA24M
 github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
 github.com/jolatechno/go-timeout v0.0.0-20200402071232-e1164f166d08 h1:sShtSX3Wm2zVSiSmtpIu0WpT6Vs8/t4dydDAiPGfASw=
 github.com/jolatechno/go-timeout v0.0.0-20200402071232-e1164f166d08/go.mod h1:paJwIP2pqExVj8gEqc5Kz6kEhgkoUad8eRNAYi2EH7I=
+github.com/jolatechno/go-timeout v0.0.0-20200411125652-7b3152960795 h1:9WgdmfWr/NtUyLen14R2SuHYFoJAnUcgniyHhNFkyiI=
+github.com/jolatechno/go-timeout v0.0.0-20200411125652-7b3152960795/go.mod h1:paJwIP2pqExVj8gEqc5Kz6kEhgkoUad8eRNAYi2EH7I=
 github.com/jolatechno/ipfs-mpi/core v0.0.0-20200402125506-8091fb1a3606 h1:z4qrJn6khEkaInOLB8xUjqDItDGJa1v4eFBmDNqOaWE=
 github.com/jolatechno/ipfs-mpi/core v0.0.0-20200402125506-8091fb1a3606/go.mod h1:awbRXEkOTFNgcUqT0BhgBBlGqtlagHOPoxgr+2HMWjU=
 github.com/jolatechno/ipfs-mpi/core v0.0.0-20200402135516-306c7f168c36 h1:9hzDopwWO3vdBn6DmeTbJDp+AkAVTdAEnnvy5xS9M0A=
@@ -231,6 +233,8 @@ github.com/jolatechno/ipfs-mpi/core v0.0.0-20200411082148-eb619fd57ca7 h1:sKLaY3
 github.com/jolatechno/ipfs-mpi/core v0.0.0-20200411082148-eb619fd57ca7/go.mod h1:VXhn+xeCUq6ThvzHYYWlDeFsthIHrbs3O0XmfSKaDNk=
 github.com/jolatechno/ipfs-mpi/core v0.0.0-20200411123734-37dc93955856 h1:7rE0xHgMQJUSf1mzstUgFnIMMtUTcjxl6LZvdsa9/MM=
 github.com/jolatechno/ipfs-mpi/core v0.0.0-20200411123734-37dc93955856/go.mod h1:VXhn+xeCUq6ThvzHYYWlDeFsthIHrbs3O0XmfSKaDNk=
+github.com/jolatechno/ipfs-mpi/core v0.0.0-20200411130241-3b60fc1ed70f h1:Psc47x+0TpS46AUimW+P9fnPJgf/LXAornCwpt2NA7I=
+github.com/jolatechno/ipfs-mpi/core v0.0.0-20200411130241-3b60fc1ed70f/go.mod h1:QqK9YRAQ3amk/Yn2EizvqSKCtd/6YrC9RdaoiVma4bA=
 github.com/jrick/logrotate v1.0.0/go.mod h1:LNinyqDIJnpAur+b8yyulnQw/wDuN1+BYKlTRt3OuAQ=
 github.com/kami-zh/go-capturer v0.0.0-20171211120116-e492ea43421d/go.mod h1:P2viExyCEfeWGU259JnaQ34Inuec4R38JCyBx2edgD0=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=

@@ -55,7 +55,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
         ResetChan: make(chan bool),
       }
 
-      fmt.Printf("[MasterComm] connecting to %d out of %d, is host ?: %t\n", i, n, addr == host.ID()) //--------------------------
+      fmt.Printf("[MasterComm] connecting to %d out of %d, is host : %t\n", i, n, addr == host.ID()) //--------------------------
 
       comm.Connect(i, addr, true)
 
@@ -137,8 +137,14 @@ func (c *BasicMasterComm)Connect(i int, addr peer.ID, init bool) {
   }, StandardTimeout)
 
   if err != nil {
+
+    fmt.Printf("[MasterComm] Failed to connect to %d out of %d\n", i, n) //--------------------------
+
     c.Reset(i)
   } else {
+
+    fmt.Printf("[MasterComm] Successfully connected to %d out of %d\n", i, n) //--------------------------
+
     rw := rwi.(*bufio.ReadWriter)
     p := Param {
       Init: init,
