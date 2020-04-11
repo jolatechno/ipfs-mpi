@@ -46,6 +46,9 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   }
 
   for i, addr := range comm.Comm.Addrs {
+
+    fmt.Printf("[MasterComm] %d ", i) //--------------------------
+
     if i > 0 {
       comm.Comm.Remotes[i] = Remote{
         Sent: []string{},
@@ -54,6 +57,8 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
       }
 
       comm.Connect(i, addr, true)
+
+      fmt.Println("Connected") //--------------------------
 
       streamHandler, err := comm.Comm.Remotes[i].StreamHandler()
       if err != nil {
@@ -76,6 +81,8 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
       }
     }()
   }
+
+  fmt.Println("[MasterComm] Starting") //--------------------------
 
   comm.Comm.start()
 
@@ -129,8 +136,6 @@ func (c *BasicMasterComm)Connect(i int, addr peer.ID, init bool) {
     c.Reset(i)
     return
   }
-
-  fmt.Println("Connect 1") //--------------------------
 
   p := Param {
     Init: init,
