@@ -139,6 +139,9 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
 }
 
 func (c *BasicSlaveComm)start() {
+
+  fmt.Printf("[slaveComm] %d Starting\n", c.Idx) //--------------------------
+
   go func(){
     outChan := c.Inter.Message()
     for c.Check() {
@@ -162,6 +165,9 @@ func (c *BasicSlaveComm)start() {
   }()
 
   go func(){
+
+    fmt.Printf("[slaveComm] %d Closing\n", c.Idx) //--------------------------
+
     <- c.Inter.CloseChan()
     if c.Check() {
       c.Close()
