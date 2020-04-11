@@ -96,8 +96,6 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
     Remotes: make([]Remote, len(param.Addrs)),
   }
 
-  fmt.Printf("[SlaveComm] starting %d out of %d\n", param.Idx, param.N) //--------------------------
-
   for i, addr := range comm.Addrs {
     if i != param.Idx {
       proto := protocol.ID(fmt.Sprintf("%d/%s", i, comm.Pid))
@@ -141,6 +139,9 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
 }
 
 func (c *BasicSlaveComm)start() {
+
+  fmt.Printf("[SlaveComm] starting %d out of %d\n", c.Idx, len(c.Addrs)) //--------------------------
+
   go func(){
     outChan := c.Inter.Message()
     for c.Check() {
