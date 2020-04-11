@@ -9,6 +9,8 @@ import (
   "github.com/libp2p/go-libp2p/p2p/protocol/ping"
   "github.com/libp2p/go-libp2p-core/protocol"
   "github.com/libp2p/go-libp2p-core/peer"
+
+  "github.com/jolatechno/go-timeout"
 )
 
 type BasicMasterComm struct {
@@ -53,9 +55,9 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
         ResetChan: make(chan bool),
       }
 
-      fmt.Printf("[MasterComm] connecting to %d out of %d, is host ? %s\n", i, n, addr == host.ID()) //--------------------------
+      fmt.Printf("[MasterComm] connecting to %d out of %d, is host ?: %t\n", i, n, addr == host.ID()) //--------------------------
 
-      go comm.Connect(i, addr, true)
+      comm.Connect(i, addr, true)
 
       streamHandler, err := comm.Comm.Remotes[i].StreamHandler()
       if err != nil {
@@ -124,26 +126,33 @@ func (c *BasicMasterComm)CheckPeer(idx int) bool {
 }
 
 func (c *BasicMasterComm)Connect(i int, addr peer.ID, init bool) {
-  stream, err := c.Comm.Host.NewStream(c.Ctx, addr, c.Comm.Base)
+  rwi, err := timeout.MakeTimeout(func() (interface{}, error) {
+    stream, err := c.Comm.Host.NewStream(c.Ctx, addr, c.Comm.Base)
+    if err != nil {
+      return nil, err
+    }
+
+    rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
+    return rw, nil
+  }, StandardTimeout)
+
   if err != nil {
     c.Reset(i)
-    return
+  } else {
+    rw := rwi.(*bufio.ReadWriter)
+    p := Param {
+      Init: init,
+      Idx: i,
+      N: c.N,
+      Id: c.Comm.Id,
+      Addrs: c.Comm.Addrs,
+    }
+
+    fmt.Fprintf(rw, "%s\n", p.String())
+    rw.Flush()
+
+    c.Comm.Remotes[i].Reset(rw)
   }
-
-  p := Param {
-    Init: init,
-    Idx: i,
-    N: c.N,
-    Id: c.Comm.Id,
-    Addrs: c.Comm.Addrs,
-  }
-
-  rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
-
-  fmt.Fprintf(rw, "%s\n", p.String())
-  rw.Flush()
-
-  c.Comm.Remotes[i].Reset(rw)
 }
 
 func (c *BasicMasterComm)Reset(i int) {
