@@ -139,27 +139,23 @@ func (c *BasicMasterComm)Connect(i int, addr peer.ID, init bool) {
   }, StandardTimeout)
 
   if err != nil {
-
-    fmt.Printf("[MasterComm] Failed to connect to %d out of %d\n", i, len(c.Comm.Addrs)) //--------------------------
-
     c.Reset(i)
   } else {
+    go func() {
+      rw := rwi.(*bufio.ReadWriter)
+      p := Param {
+        Init: init,
+        Idx: i,
+        N: c.N,
+        Id: c.Comm.Id,
+        Addrs: c.Comm.Addrs,
+      }
 
-    fmt.Printf("[MasterComm] Successfully connected to %d out of %d\n", i, len(c.Comm.Addrs)) //--------------------------
+      fmt.Fprintf(rw, "%s\n", p.String())
+      rw.Flush()
 
-    rw := rwi.(*bufio.ReadWriter)
-    p := Param {
-      Init: init,
-      Idx: i,
-      N: c.N,
-      Id: c.Comm.Id,
-      Addrs: c.Comm.Addrs,
-    }
-
-    fmt.Fprintf(rw, "%s\n", p.String())
-    rw.Flush()
-
-    c.Comm.Remotes[i].Reset(rw)
+      c.Comm.Remotes[i].Reset(rw)
+    }()
   }
 }
 
@@ -168,6 +164,6 @@ func (c *BasicMasterComm)Reset(i int) {
   if err != nil {
     c.Close()
   }
-  
+
   c.Connect(i, addr, false)
 }
