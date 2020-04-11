@@ -42,6 +42,7 @@ func NewStore(url string, path string, ipfs_store string) (Store, error) {
 
   return &IpfsShell {
     EndChan: make(chan bool),
+    Error: make(chan error),
     Shell:Shell,
     Store:store,
     Path:path,
@@ -52,6 +53,7 @@ func NewStore(url string, path string, ipfs_store string) (Store, error) {
 
 type IpfsShell struct {
   EndChan chan bool
+  Error chan error
   Shell *shell.Shell
   Store []string
   Path string
@@ -65,6 +67,10 @@ func (s *IpfsShell)Close() error {
 
 func (s *IpfsShell)CloseChan() chan bool {
   return s.EndChan
+}
+
+func (s *IpfsShell)ErrorChan() chan error {
+  return s.Error
 }
 
 func (s *IpfsShell)Add(f string) {

@@ -66,6 +66,7 @@ func NewMpi(ctx context.Context, config Config) (Mpi, error) {
     Maxsize: config.Maxsize,
     Path: config.Path,
     EndChan: make(chan bool),
+    Error: make(chan error),
     Ipfs_store: config.Ipfs_store,
     MpiHost: host,
     MpiStore: store,
@@ -103,8 +104,24 @@ func NewMpi(ctx context.Context, config Config) (Mpi, error) {
   }()
 
   go func() {
+    err := <- store.ErrorChan()
+    if mpi.Check() {
+      mpi.Error <- err
+      mpi.Close()
+    }
+  }()
+
+  go func() {
     <- store.CloseChan()
     if mpi.Check() {
+      mpi.Close()
+    }
+  }()
+
+  go func() {
+    err := <- host.ErrorChan()
+    if mpi.Check() {
+      mpi.Error <- err
       mpi.Close()
     }
   }()
@@ -126,6 +143,7 @@ type BasicMpi struct {
   Maxsize uint64
   Path string
   EndChan chan bool
+  Error chan error
   Ipfs_store string
   MpiHost ExtHost
   MpiStore Store
@@ -166,6 +184,10 @@ func (m *BasicMpi)Close() error {
 
 func (m *BasicMpi)CloseChan() chan bool {
   return m.EndChan
+}
+
+func (m *BasicMpi)ErrorChan() chan error {
+  return m.Error
 }
 
 func (m *BasicMpi)Check() bool {

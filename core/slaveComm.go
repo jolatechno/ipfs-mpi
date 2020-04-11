@@ -87,6 +87,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
   comm := BasicSlaveComm {
     Ended: false,
     EndChan: make(chan bool),
+    Error: make(chan error),
     Inter: inter,
     Id: param.Id,
     Idx: param.Idx,
@@ -110,6 +111,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
       } else if i > param.Idx || !param.Init {
         stream, err := host.NewStream(ctx, addr, proto)
         if err != nil {
+          comm.Error <- err
           comm.Close()
           return nil, err
         }
@@ -124,6 +126,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
 
         streamHandler, err := comm.Remotes[i].StreamHandler()
         if err != nil {
+          comm.Error <- err
           comm.Close()
           return nil, err
         }
@@ -144,7 +147,7 @@ func (c *BasicSlaveComm)start() {
 
   go func(){
     outChan := c.Inter.Message()
-    for c.Check() {
+    for c.Check() && c.Inter.Check() {
       msg := <- outChan
 
       go c.Send(msg.To, msg.Content)
@@ -156,13 +159,27 @@ func (c *BasicSlaveComm)start() {
     for c.Check() {
       req := <- requestChan
 
-      go c.Inter.Push(c.Get(req))
+      go func() {
+        err := c.Inter.Push(c.Get(req))
+        if err != nil {
+
+        }
+      }()
     }
   }()
 
   go func(){
-    <- c.Inter.CloseChan()
+    err := <- c.Inter.ErrorChan()
     if c.Check() {
+      c.Error <- err
+      c.Close()
+    }
+  }()
+
+  go func(){
+    err := <- c.Host.ErrorChan()
+    if c.Check() {
+      c.Error <- err
       c.Close()
     }
   }()
@@ -171,6 +188,7 @@ func (c *BasicSlaveComm)start() {
 type BasicSlaveComm struct {
   Ended bool
   EndChan chan bool
+  Error chan error
   Inter Interface
   Id string
   Idx int
@@ -207,6 +225,10 @@ func (c *BasicSlaveComm)Close() error {
 
 func (c *BasicSlaveComm)CloseChan() chan bool {
   return c.EndChan
+}
+
+func (c *BasicSlaveComm)ErrorChan() chan error {
+  return c.Error
 }
 
 func (c *BasicSlaveComm)Check() bool {

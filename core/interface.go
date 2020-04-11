@@ -7,6 +7,7 @@ import (
   "bufio"
   "strings"
   "strconv"
+  "errors"
 )
 
 func NewInterface(file string, n int, i int, args ...string) (Interface, error) {
@@ -14,6 +15,7 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
     Ended: false,
     EndChan: make(chan bool),
     InChan: make(chan string),
+    Error: make(chan error),
     OutChan: make(chan Message),
     RequestChan: make(chan int),
   }
@@ -41,8 +43,8 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
   go func(){
     for inter.Check() {
       str, err := reader.ReadString('\n')
-
       if err != nil {
+        inter.Error <- err
         inter.Close()
       }
 
@@ -50,11 +52,13 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
 
       if splitted[0] == "Req" {
         if len(splitted) != 2 {
+          inter.Error <- errors.New("Not enough field")
           inter.Close()
         }
 
         idx, err := strconv.Atoi(splitted[1][:len(splitted[1]) - 1])
         if err != nil {
+          inter.Error <- err
           inter.Close()
         }
 
@@ -63,6 +67,7 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
 
       } else if splitted[0] == "Log" && i == 0 {
         if len(splitted) < 2 {
+          inter.Error <- errors.New("Not enough field")
           inter.Close()
         }
 
@@ -70,11 +75,13 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
 
       } else if splitted[0] == "Send" {
         if len(splitted) < 3 {
+          inter.Error <- errors.New("Not enough field")
           inter.Close()
         }
 
         idx, err := strconv.Atoi(splitted[1])
         if err != nil {
+          inter.Error <- err
           inter.Close()
         }
 
@@ -85,6 +92,7 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
           }
         }()
       } else {
+        inter.Error <- errors.New("Not understood")
         inter.Close()
       }
     }
@@ -98,6 +106,7 @@ type StdInterface struct {
   EndChan chan bool
   InChan chan string
   OutChan chan Message
+  Error chan error
   RequestChan chan int
 }
 
@@ -109,6 +118,10 @@ func (s *StdInterface)Close() error {
 
 func (s *StdInterface)CloseChan() chan bool {
   return s.EndChan
+}
+
+func (s *StdInterface)ErrorChan() chan error {
+  return s.Error
 }
 
 func (s *StdInterface)Check() bool {
@@ -124,6 +137,9 @@ func (s *StdInterface)Request() chan int {
 }
 
 func (s *StdInterface)Push(msg string) error {
+  if s.Ended {
+    return errors.New("Interface closed")
+  }
   s.InChan <- msg
   return nil
 }

@@ -36,6 +36,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     Comm: BasicSlaveComm {
       Ended: false,
       EndChan: make(chan bool),
+      Error: make(chan error),
       Inter: inter,
       Id: id,
       Idx: 0,
@@ -61,6 +62,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
       streamHandler, err := comm.Comm.Remotes[i].StreamHandler()
       if err != nil {
+        comm.Comm.Error <- err
         comm.Close()
         return &comm, err
       }
@@ -96,6 +98,10 @@ func (c *BasicMasterComm)Close() error {
 
 func (c *BasicMasterComm)CloseChan() chan bool {
   return c.Comm.CloseChan()
+}
+
+func (c *BasicMasterComm)ErrorChan() chan error {
+  return c.Comm.ErrorChan()
 }
 
 func (c *BasicMasterComm)Check() bool {
@@ -162,6 +168,7 @@ func (c *BasicMasterComm)Connect(i int, addr peer.ID, init bool) {
 func (c *BasicMasterComm)Reset(i int) {
   addr, err := c.Comm.Host.NewPeer(c.Comm.Base)
   if err != nil {
+    c.Comm.Error <- err
     c.Close()
   }
 

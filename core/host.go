@@ -115,6 +115,7 @@ func NewHost(ctx context.Context, bootstrapPeers ...maddr.Multiaddr) (ExtHost, e
     StreamHandlers: make(map[protocol.ID] network.StreamHandler),
     Routing: routingDiscovery,
     EndChan: make(chan bool),
+    Error: make(chan error),
     Ended: false,
     PeerStores: make(map[protocol.ID]peerstore.Peerstore),
   }, nil
@@ -126,6 +127,7 @@ type BasicExtHost struct {
   StreamHandlers map[protocol.ID] network.StreamHandler
   Routing *discovery.RoutingDiscovery
   EndChan chan bool
+  Error chan error
   Ended bool
   PeerStores map[protocol.ID]peerstore.Peerstore
 }
@@ -138,6 +140,10 @@ func (h *BasicExtHost) Close() error {
 
 func (h *BasicExtHost)CloseChan() chan bool {
   return h.EndChan
+}
+
+func (h *BasicExtHost)ErrorChan() chan error {
+  return h.Error
 }
 
 func (h *BasicExtHost) Check() bool {

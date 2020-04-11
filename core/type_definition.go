@@ -11,6 +11,7 @@ import (
 type Mpi interface {
   Close() error
   CloseChan() chan bool
+  ErrorChan() chan error
   Check() bool
 
   Add(string) error
@@ -26,6 +27,7 @@ type ExtHost interface {
   host.Host
 
   CloseChan() chan bool
+  ErrorChan() chan error
   Check() bool
   PeerstoreProtocol(protocol.ID) (peerstore.Peerstore, error)
   NewPeer(protocol.ID) (peer.ID, error)
@@ -36,6 +38,7 @@ type ExtHost interface {
 type Store interface {
   Close() error
   CloseChan() chan bool
+  ErrorChan() chan error
   Add(string)
   List() []string
   Has(string) bool
@@ -56,6 +59,7 @@ type MasterComm interface {
 type SlaveComm interface {
   Close() error
   CloseChan() chan bool
+  ErrorChan() chan error
   Check() bool
   Interface() Interface
   Send(int, string)
@@ -65,6 +69,7 @@ type SlaveComm interface {
 type Interface interface {
   Close() error
   CloseChan() chan bool
+  ErrorChan() chan error
   Check() bool
   Message() chan Message
   Request() chan int
