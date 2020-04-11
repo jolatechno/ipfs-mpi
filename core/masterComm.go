@@ -158,8 +158,10 @@ func (c *BasicMasterComm)Connect(i int, addr peer.ID, init bool) {
       Addrs: c.Comm.Addrs,
     }
 
-    fmt.Fprintf(rw, "%s\n", p.String())
-    rw.Flush()
+    go func() {
+      fmt.Fprintf(rw, "%s\n", p.String())
+      rw.Flush()
+    }()
   }
 }
 
