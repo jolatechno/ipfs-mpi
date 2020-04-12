@@ -290,12 +290,12 @@ func (c *BasicSlaveComm)Connect(i int, addr peer.ID) error {
 
   if err != nil {
     return err
-  } else {
-    rw := rwi.(*bufio.ReadWriter)
-    c.Remotes[i].Reset(rw)
-
-    return nil
   }
+
+  rw := rwi.(*bufio.ReadWriter)
+  c.Remotes[i].Reset(rw)
+
+  return nil
 }
 
 type Remote struct {

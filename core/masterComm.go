@@ -153,6 +153,9 @@ func (c *BasicMasterComm)Connect(i int, addr peer.ID, init bool) {
   err := c.SlaveComm().Connect(i, addr)
 
   if err != nil {
+
+    fmt.Println("[MasterComm] Connect err : ", err) //--------------------------
+
     c.Reset(i)
   } else {
     p := Param {
@@ -170,7 +173,7 @@ func (c *BasicMasterComm)Connect(i int, addr peer.ID, init bool) {
 
 func (c *BasicMasterComm)Reset(i int) {
 
-  fmt.Printf("[MasterComm] reseting ", i) //--------------------------
+  fmt.Println("[MasterComm] reseting ", i) //--------------------------
 
   addr, err := c.Comm.Host.NewPeer(c.Comm.Base)
   if err != nil {
