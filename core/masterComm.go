@@ -115,10 +115,6 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   return &comm, nil
 }
 
-func (c *BasicMasterComm)Interface() Interface {
-  return c.Comm.Interface()
-}
-
 func (c *BasicMasterComm)Close() error {
   return c.Comm.Close()
 }
@@ -135,12 +131,8 @@ func (c *BasicMasterComm)Check() bool {
   return !c.Comm.Check()
 }
 
-func (c *BasicMasterComm)Send(idx int, msg string) {
-  c.Comm.Send(idx, msg)
-}
-
-func (c *BasicMasterComm)Get(idx int) string {
-  return c.Comm.Get(idx)
+func (c *BasicMasterComm)SlaveComm() SlaveComm {
+  return &c.Comm
 }
 
 func (c *BasicMasterComm)CheckPeer(idx int) bool {
@@ -160,12 +152,8 @@ func (c *BasicMasterComm)CheckPeer(idx int) bool {
   }
 }
 
-func (c *BasicMasterComm)InitConnection(i int, addr peer.ID) error {
-  return c.Comm.InitConnection(i, addr)
-}
-
 func (c *BasicMasterComm)Connect(i int, addr peer.ID, init bool) {
-  err := c.InitConnection(i, addr)
+  err := c.SlaveComm().Connect(i, addr)
 
   if err != nil {
     c.Reset(i)

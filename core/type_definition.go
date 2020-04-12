@@ -8,11 +8,29 @@ import (
   "github.com/libp2p/go-libp2p-core/network"
 )
 
-type Mpi interface {
+//-------
+
+type standardFunctionsCloser interface {
+  standardFunctions
+
   Close() error
+}
+
+type standardFunctions interface {
+  Check() bool
   CloseChan() chan bool
   ErrorChan() chan error
-  Check() bool
+}
+
+type Message struct {
+  To int
+  Content string
+}
+
+//-------
+
+type Mpi interface {
+  standardFunctionsCloser
 
   Add(string) error
   Del(string) error
@@ -24,21 +42,18 @@ type Mpi interface {
 }
 
 type ExtHost interface {
-  CloseChan() chan bool
-  ErrorChan() chan error
-  Check() bool
+  host.Host
+  standardFunctions
+
   PeerstoreProtocol(protocol.ID) (peerstore.Peerstore, error)
   NewPeer(protocol.ID) (peer.ID, error)
   Listen(protocol.ID, string)
   SelfStream(...protocol.ID) (SelfStream, error)
-
-  host.Host
 }
 
 type Store interface {
-  Close() error
-  CloseChan() chan bool
-  ErrorChan() chan error
+  standardFunctionsCloser
+
   Add(string)
   List() []string
   Has(string) bool
@@ -49,29 +64,26 @@ type Store interface {
 }
 
 type MasterComm interface {
+  standardFunctionsCloser
+
+  SlaveComm() SlaveComm
   Connect(int, peer.ID, bool)
   CheckPeer(int) bool
   Reset(int)
-
-  SlaveComm
 }
 
 type SlaveComm interface {
-  Close() error
-  CloseChan() chan bool
-  ErrorChan() chan error
-  Check() bool
+  standardFunctionsCloser
+
   Interface() Interface
   Send(int, string)
   Get(int) string
-  InitConnection(int, peer.ID) error
+  Connect(int, peer.ID) error
 }
 
 type Interface interface {
-  Close() error
-  CloseChan() chan bool
-  ErrorChan() chan error
-  Check() bool
+  standardFunctionsCloser
+
   Message() chan Message
   Request() chan int
   Push(string) error
@@ -81,9 +93,4 @@ type SelfStream interface {
   Reverse() (SelfStream, error)
 
   network.Stream
-}
-
-type Message struct {
-  To int
-  Content string
 }

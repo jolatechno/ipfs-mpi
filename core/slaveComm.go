@@ -146,7 +146,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
   for i, addr := range comm.Addrs {
     if i > 0 && (i > param.Idx || !param.Init) {
       go func(wp *sync.WaitGroup) {
-        comm.InitConnection(i, addr)
+        comm.Connect(i, addr)
         wp.Done()
       }(&wg)
     }
@@ -277,7 +277,7 @@ func (c *BasicSlaveComm)Get(idx int) string {
   return c.Remotes[idx].Get()
 }
 
-func (c *BasicSlaveComm)InitConnection(i int, addr peer.ID) error {
+func (c *BasicSlaveComm)Connect(i int, addr peer.ID) error {
   rwi, err := timeout.MakeTimeout(func() (interface{}, error) {
     stream, err := c.Host.NewStream(c.Ctx, addr, c.Pid)
     if err != nil {
