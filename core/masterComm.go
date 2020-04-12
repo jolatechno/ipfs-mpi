@@ -76,11 +76,11 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
         str, err := comm.Comm.Remotes[i].Stream.ReadString('\n')
         if err != nil || str != "Done\n" {
+
+          fmt.Printf("[MasterComm] done err : ", err) //--------------------------
+
           comm.Reset(i)
         }
-
-        fmt.Printf("[MasterComm] Wg Done") //--------------------------
-        time.Sleep(time.Second) //--------------------------
 
         wp.Done()
       }(&wg)
