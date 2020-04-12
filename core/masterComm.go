@@ -79,6 +79,8 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
           comm.Reset(i)
         }
 
+        fmt.Printf("[MasterComm] Wg Done") //--------------------------
+
         wp.Done()
       }(&wg)
     }
