@@ -44,8 +44,8 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
       Idx: 0,
       Host: host,
       Addrs: Addrs,
-      Base: base,
-      Pid: protocol.ID(fmt.Sprintf("%s/%s", id, string(base))),
+      Base: protocol.ID(fmt.Sprintf("%s/%s", id, string(base))),
+      Pid: base,
       Remotes: make([]Remote, n),
     },
   }
