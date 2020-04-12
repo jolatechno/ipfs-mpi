@@ -76,9 +76,6 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
         str, err := comm.Comm.Remotes[i].Stream.ReadString('\n')
         if err != nil || str != "Done\n" {
-
-          fmt.Printf("[MasterComm] done err : ", err) //--------------------------
-
           comm.Reset(i)
         }
 
@@ -172,6 +169,9 @@ func (c *BasicMasterComm)Connect(i int, addr peer.ID, init bool) {
 }
 
 func (c *BasicMasterComm)Reset(i int) {
+
+  fmt.Printf("[MasterComm] reseting ", i) //--------------------------
+
   addr, err := c.Comm.Host.NewPeer(c.Comm.Base)
   if err != nil {
     c.Comm.Error <- err
