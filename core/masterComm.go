@@ -80,6 +80,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
         }
 
         fmt.Printf("[MasterComm] Wg Done") //--------------------------
+        time.Sleep(time.Second) //--------------------------
 
         wp.Done()
       }(&wg)
