@@ -3,7 +3,7 @@ module github.com/jolatechno/libp2p-mpi
 go 1.13
 
 require (
-	github.com/jolatechno/ipfs-mpi/core v0.0.0-20200411192700-5469e02a2034
+	github.com/jolatechno/ipfs-mpi/core v0.0.0-20200412075859-2124e70f9c56
 	github.com/libp2p/go-libp2p-core v0.3.0
 	github.com/libp2p/go-libp2p-kad-dht v0.5.0
 	github.com/multiformats/go-multiaddr v0.2.1

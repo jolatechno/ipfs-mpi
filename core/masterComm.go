@@ -51,13 +51,12 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   }
 
   var wg sync.WaitGroup
-  wp := & wg
 
   wg.Add(n - 1)
 
   for i, addr := range comm.Comm.Addrs {
     if i > 0 {
-      go func() {
+      go func(wp *sync.WaitGroup) {
         comm.Comm.Remotes[i] = Remote{
           Sent: []string{},
           Stream: nil,
@@ -81,7 +80,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
         }
 
         wp.Done()
-      }()
+      }(&wg)
     }
   }
 
@@ -90,19 +89,18 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   fmt.Printf("[MasterComm] Done") //--------------------------
 
   var wg2 sync.WaitGroup
-  wp2 := & wg2
 
   wg2.Add(n - 1)
 
   for i := 1; i < n; i++ {
-    go func() {
+    go func(wp *sync.WaitGroup) {
       str, err := comm.Comm.Remotes[i].Stream.ReadString('\n')
       if err != nil || str != "Connected\n" {
         comm.Reset(i)
       }
 
-      wp2.Done()
-    }()
+      wp.Done()
+    }(&wg2)
   }
 
   wg2.Wait()

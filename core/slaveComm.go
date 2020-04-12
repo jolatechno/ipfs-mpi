@@ -136,7 +136,6 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
   }
 
   var wg sync.WaitGroup
-  wp := &wg
 
   if param.Init {
     wg.Add(len(param.Addrs) - param.Idx - 1)
@@ -146,8 +145,10 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
 
   for i, addr := range comm.Addrs {
     if i > 0 && (i > param.Idx || !param.Init) {
-      comm.InitConnection(i, addr)
-      wp.Done()
+      go func(wp *sync.WaitGroup) {
+        comm.InitConnection(i, addr)
+        wp.Done()
+      }(&wg)
     }
   }
 
