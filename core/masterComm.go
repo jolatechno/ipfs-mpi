@@ -1,16 +1,14 @@
 package core
 
 import (
-  "bufio"
   "fmt"
   "context"
   "time"
+  "sync"
 
   "github.com/libp2p/go-libp2p/p2p/protocol/ping"
   "github.com/libp2p/go-libp2p-core/protocol"
   "github.com/libp2p/go-libp2p-core/peer"
-
-  "github.com/jolatechno/go-timeout"
 )
 
 type BasicMasterComm struct {
@@ -23,17 +21,21 @@ type BasicMasterComm struct {
 func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, inter Interface, id string) (_ MasterComm, err error) {
   Addrs := make([]peer.ID, n)
   for i, _ := range Addrs {
-    Addrs[i], err = host.NewPeer(base)
-    if err != nil {
-      return nil, err
+    if i == 0 {
+      Addrs[i] = host.ID()
+    } else {
+      Addrs[i], err = host.NewPeer(base)
+      if err != nil {
+        return nil, err
+      }
     }
   }
 
   comm := BasicMasterComm {
-    Ctx:ctx,
     Pinger: ping.NewPingService(host),
     N: n,
     Comm: BasicSlaveComm {
+      Ctx: ctx,
       Ended: false,
       EndChan: make(chan bool),
       Error: make(chan error),
@@ -48,38 +50,62 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     },
   }
 
+  var wg sync.WaitGroup
+  wp := & wg
+
+  wg.Add(n - 1)
+
   for i, addr := range comm.Comm.Addrs {
     if i > 0 {
-      comm.Comm.Remotes[i] = Remote{
-        Sent: []string{},
-        Stream: nil,
-        ResetChan: make(chan bool),
-      }
-
-      fmt.Printf("[MasterComm] connecting to %d out of %d, is host : %t\n", i, n, addr == host.ID()) //--------------------------
-
-      comm.Connect(i, addr, true)
-
-      streamHandler, err := comm.Comm.Remotes[i].StreamHandler()
-      if err != nil {
-        comm.Comm.Error <- err
-        comm.Close()
-        return &comm, err
-      }
-
-      proto := protocol.ID(fmt.Sprintf("%d/%s", i, comm.Comm.Pid))
-      host.SetStreamHandler(proto, streamHandler)
-
       go func() {
-        for comm.Check() {
-          time.Sleep(WaitDuration)
-          if !comm.CheckPeer(i) {
-            comm.Reset(i)
-          }
+        comm.Comm.Remotes[i] = Remote{
+          Sent: []string{},
+          Stream: nil,
+          ResetChan: make(chan bool),
         }
+
+        comm.Connect(i, addr, true)
+
+        go func() {
+          for comm.Check() {
+            time.Sleep(WaitDuration)
+            if !comm.CheckPeer(i) {
+              comm.Reset(i)
+            }
+          }
+        }()
+
+        str, err := comm.Comm.Remotes[i].Stream.ReadString('\n')
+        if err != nil || str != "Done\n" {
+          comm.Reset(i)
+        }
+
+        wp.Done()
       }()
     }
   }
+
+  wg.Wait()
+
+  fmt.Printf("[MasterComm] Done") //--------------------------
+
+  var wg2 sync.WaitGroup
+  wp2 := & wg2
+
+  wg2.Add(n - 1)
+
+  for i := 1; i < n; i++ {
+    go func() {
+      str, err := comm.Comm.Remotes[i].Stream.ReadString('\n')
+      if err != nil || str != "Connected\n" {
+        comm.Reset(i)
+      }
+
+      wp2.Done()
+    }()
+  }
+
+  wg2.Wait()
 
   fmt.Printf("[MasterComm] Started") //--------------------------
 
@@ -122,7 +148,7 @@ func (c *BasicMasterComm)CheckPeer(idx int) bool {
   }
 
   select {
-  case res := <- c.Pinger.Ping(c.Ctx, c.Comm.Addrs[idx]):
+  case res := <- c.Pinger.Ping(c.Comm.Ctx, c.Comm.Addrs[idx]):
     if res.Error != nil {
       return false
     }
@@ -133,23 +159,16 @@ func (c *BasicMasterComm)CheckPeer(idx int) bool {
   }
 }
 
-func (c *BasicMasterComm)Connect(i int, addr peer.ID, init bool) {
-  rwi, err := timeout.MakeTimeout(func() (interface{}, error) {
-    stream, err := c.Comm.Host.NewStream(c.Ctx, addr, c.Comm.Base)
-    if err != nil {
-      return nil, err
-    }
+func (c *BasicMasterComm)InitConnection(i int, addr peer.ID) error {
+  return c.Comm.InitConnection(i, addr)
+}
 
-    rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
-    return rw, nil
-  }, StandardTimeout)
+func (c *BasicMasterComm)Connect(i int, addr peer.ID, init bool) {
+  err := c.InitConnection(i, addr)
 
   if err != nil {
     c.Reset(i)
   } else {
-    rw := rwi.(*bufio.ReadWriter)
-    c.Comm.Remotes[i].Reset(rw)
-
     p := Param {
       Init: init,
       Idx: i,
@@ -158,10 +177,8 @@ func (c *BasicMasterComm)Connect(i int, addr peer.ID, init bool) {
       Addrs: c.Comm.Addrs,
     }
 
-    go func() {
-      fmt.Fprintf(rw, "%s\n", p.String())
-      rw.Flush()
-    }()
+    fmt.Fprintf(c.Comm.Remotes[i].Stream, "%s\n", p.String())
+    c.Comm.Remotes[i].Stream.Flush()
   }
 }
 

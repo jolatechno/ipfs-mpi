@@ -24,8 +24,6 @@ type Mpi interface {
 }
 
 type ExtHost interface {
-  host.Host
-
   CloseChan() chan bool
   ErrorChan() chan error
   Check() bool
@@ -33,6 +31,8 @@ type ExtHost interface {
   NewPeer(protocol.ID) (peer.ID, error)
   Listen(protocol.ID, string)
   SelfStream(...protocol.ID) (SelfStream, error)
+
+  host.Host
 }
 
 type Store interface {
@@ -49,11 +49,11 @@ type Store interface {
 }
 
 type MasterComm interface {
-  SlaveComm
-
+  Connect(int, peer.ID, bool)
   CheckPeer(int) bool
   Reset(int)
-  Connect(int, peer.ID, bool)
+
+  SlaveComm
 }
 
 type SlaveComm interface {
@@ -64,6 +64,7 @@ type SlaveComm interface {
   Interface() Interface
   Send(int, string)
   Get(int) string
+  InitConnection(int, peer.ID) error
 }
 
 type Interface interface {
@@ -77,9 +78,9 @@ type Interface interface {
 }
 
 type SelfStream interface {
-  network.Stream
-
   Reverse() (SelfStream, error)
+
+  network.Stream
 }
 
 type Message struct {

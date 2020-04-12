@@ -7,10 +7,13 @@ import (
   "context"
   "strings"
   "strconv"
+  "sync"
 
   "github.com/libp2p/go-libp2p-core/network"
   "github.com/libp2p/go-libp2p-core/protocol"
   "github.com/libp2p/go-libp2p-core/peer"
+
+  "github.com/jolatechno/go-timeout"
 )
 
 func ParamFromString(msg string) (Param, error) {
@@ -85,6 +88,7 @@ func (p *Param)String() string {
 
 func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, base protocol.ID, inter Interface, param Param) (SlaveComm, error) {
   comm := BasicSlaveComm {
+    Ctx: ctx,
     Ended: false,
     EndChan: make(chan bool),
     Error: make(chan error),
@@ -93,48 +97,62 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
     Idx: param.Idx,
     Host: host,
     Addrs: param.Addrs,
-    Pid: protocol.ID(fmt.Sprintf("%s/%s", param.Id, string(base))),
+    Base: base,
+    Pid: protocol.ID(fmt.Sprintf("%d/%s/%s", param.Idx, param.Id, string(base))),
     Remotes: make([]Remote, len(param.Addrs)),
   }
 
+  comm.Remotes[0] = Remote {
+    Sent: []string{},
+    Stream: zeroRw,
+    ResetChan: make(chan bool),
+  }
+
+  for i := 1; i < len(param.Addrs); i++ {
+    comm.Remotes[i] = Remote {
+      Sent: []string{},
+      Stream: nil,
+      ResetChan: make(chan bool),
+    }
+
+    streamHandler, err := comm.Remotes[i].StreamHandler()
+    if err != nil {
+      return nil, err
+    }
+
+    proto := protocol.ID(fmt.Sprintf("%d/%s/%s", i, param.Id, string(base)))
+    host.SetStreamHandler(proto, streamHandler)
+  }
+
+  fmt.Fprint(zeroRw, "Done\n")
+  zeroRw.Flush()
+
+  str, err := zeroRw.ReadString('\n')
+  if err != nil {
+    return &comm, err
+  }
+  if str != "Connect\n"{
+    return &comm, errors.New("Responce no understood")
+  }
+
+  var wg sync.WaitGroup
+  wp := &wg
+
+  if param.Init {
+    wg.Add(len(param.Addrs) - param.Idx - 1)
+  } else {
+    wg.Add(len(param.Addrs) - 1)
+  }
+
   for i, addr := range comm.Addrs {
-    if i != param.Idx {
-      proto := protocol.ID(fmt.Sprintf("%d/%s", i, comm.Pid))
-
-      if i == 0 {
-        comm.Remotes[i] = Remote {
-          Sent: []string{},
-          Stream: zeroRw,
-          ResetChan: make(chan bool),
-        }
-
-      } else if i > param.Idx || !param.Init {
-        stream, err := host.NewStream(ctx, addr, proto)
-        if err != nil {
-          comm.Error <- err
-          comm.Close()
-          return nil, err
-        }
-
-        rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
-
-        comm.Remotes[i] = Remote {
-          Sent: []string{},
-          Stream: rw,
-          ResetChan: make(chan bool),
-        }
-
-        streamHandler, err := comm.Remotes[i].StreamHandler()
-        if err != nil {
-          comm.Error <- err
-          comm.Close()
-          return nil, err
-        }
-
-        host.SetStreamHandler(proto, streamHandler)
-      }
+    if i > 0 && (i > param.Idx || !param.Init) {
+      comm.InitConnection(i, addr)
+      wp.Done()
     }
   }
+
+  fmt.Fprint(zeroRw, "Connected\n")
+  zeroRw.Flush()
 
   comm.start()
 
@@ -200,6 +218,7 @@ func (c *BasicSlaveComm)start() {
 }
 
 type BasicSlaveComm struct {
+  Ctx context.Context
   Ended bool
   EndChan chan bool
   Error chan error
@@ -255,6 +274,27 @@ func (c *BasicSlaveComm)Send(idx int, msg string) {
 
 func (c *BasicSlaveComm)Get(idx int) string {
   return c.Remotes[idx].Get()
+}
+
+func (c *BasicSlaveComm)InitConnection(i int, addr peer.ID) error {
+  rwi, err := timeout.MakeTimeout(func() (interface{}, error) {
+    stream, err := c.Host.NewStream(c.Ctx, addr, c.Pid)
+    if err != nil {
+      return nil, err
+    }
+
+    rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
+    return rw, nil
+  }, StandardTimeout)
+
+  if err != nil {
+    return err
+  } else {
+    rw := rwi.(*bufio.ReadWriter)
+    c.Remotes[i].Reset(rw)
+
+    return nil
+  }
 }
 
 type Remote struct {
