@@ -150,12 +150,14 @@ func (c *BasicMasterComm)CheckPeer(idx int) bool {
 }
 
 func (c *BasicMasterComm)Connect(i int, addr peer.ID, init bool) {
+
+  fmt.Println("[MasterComm] Connect 0") //--------------------------
+  
   err := c.SlaveComm().Connect(i, addr)
 
+  fmt.Println("[MasterComm] Connect 1") //--------------------------
+
   if err != nil {
-
-    fmt.Println("[MasterComm] Connect err : ", err) //--------------------------
-
     c.Reset(i)
   } else {
     p := Param {
@@ -165,6 +167,8 @@ func (c *BasicMasterComm)Connect(i int, addr peer.ID, init bool) {
       Id: c.Comm.Id,
       Addrs: c.Comm.Addrs,
     }
+
+    fmt.Println("[MasterComm] Connect 2 : ", p.String()) //--------------------------
 
     fmt.Fprintf(c.Comm.Remotes[i].Stream, "%s\n", p.String())
     c.Comm.Remotes[i].Stream.Flush()
