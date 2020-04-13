@@ -104,7 +104,12 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
     Remotes: make([]Remote, len(param.Addrs)),
   }
 
-  comm.Remotes[0], err = NewRemote()
+  n := 0
+  if param.Init {
+    n = 2
+  }
+
+  comm.Remotes[0], err = NewRemote(n)
   if err != nil {
     return nil, err
   }
@@ -112,7 +117,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
   comm.Remotes[0].Reset(zeroRw)
 
   for i := 1; i < len(param.Addrs); i++ {
-    comm.Remotes[i], err = NewRemote()
+    comm.Remotes[i], err = NewRemote(n)
     if err != nil {
       return nil, err
     }
@@ -128,15 +133,17 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
 
   fmt.Println("[SlaveComm] New, Done") //--------------------------
 
-  fmt.Fprint(zeroRw, "Done\n")
-  zeroRw.Flush()
+  if param.Init {
+    fmt.Fprint(zeroRw, "Done\n")
+    zeroRw.Flush()
 
-  str, err := zeroRw.ReadString('\n')
-  if err != nil {
-    return &comm, err
-  }
-  if str != "Connect\n"{
-    return &comm, errors.New("Responce no understood")
+    str, err := zeroRw.ReadString('\n')
+    if err != nil {
+      return &comm, err
+    }
+    if str != "Connect\n"{
+      return &comm, errors.New("Responce no understood")
+    }
   }
 
   var wg sync.WaitGroup
@@ -158,8 +165,10 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
 
   fmt.Println("[SlaveComm] New, Connected") //--------------------------
 
-  fmt.Fprint(zeroRw, "Connected\n")
-  zeroRw.Flush()
+  if param.Init {
+    fmt.Fprint(zeroRw, "Connected\n")
+    zeroRw.Flush()
+  }
 
   comm.start()
 

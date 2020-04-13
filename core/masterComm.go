@@ -56,7 +56,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
   for i, addr := range comm.Comm.Addrs {
     if i > 0 {
-      comm.Comm.Remotes[i], err = NewRemote()
+      comm.Comm.Remotes[i], err = NewRemote(2)
       if err != nil {
         return nil, err
       }

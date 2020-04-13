@@ -7,7 +7,7 @@ import (
   "github.com/libp2p/go-libp2p-core/network"
 )
 
-func NewRemote() (Remote, error) {
+func NewRemote(handshakeMessage int) (Remote, error) {
   return &BasicRemote {
     Closed: false,
     EndChan: make(chan bool),
@@ -16,7 +16,7 @@ func NewRemote() (Remote, error) {
     Sent: []string{},
     Rw: nil,
     Offset: 0,
-    Received: 0,
+    Received: -handshakeMessage,
   }, nil
 }
 
