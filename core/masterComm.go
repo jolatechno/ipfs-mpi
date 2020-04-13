@@ -42,7 +42,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
       Inter: inter,
       Id: id,
       Idx: 0,
-      Host: host,
+      CommHost: host,
       Addrs: Addrs,
       Base: protocol.ID(fmt.Sprintf("%s/%s", id, string(base))),
       Pid: base,
@@ -152,7 +152,7 @@ func (c *BasicMasterComm)CheckPeer(idx int) bool {
 func (c *BasicMasterComm)Connect(i int, addr peer.ID, init bool) {
 
   fmt.Println("[MasterComm] Connect 0") //--------------------------
-  
+
   err := c.SlaveComm().Connect(i, addr)
 
   fmt.Println("[MasterComm] Connect 1") //--------------------------

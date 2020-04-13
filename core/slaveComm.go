@@ -9,7 +9,6 @@ import (
   "strconv"
   "sync"
 
-  "github.com/libp2p/go-libp2p-core/network"
   "github.com/libp2p/go-libp2p-core/protocol"
   "github.com/libp2p/go-libp2p-core/peer"
 
@@ -98,7 +97,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
     Inter: inter,
     Id: param.Id,
     Idx: param.Idx,
-    Host: host,
+    CommHost: host,
     Addrs: param.Addrs,
     Base: base,
     Pid: protocol.ID(fmt.Sprintf("%d/%s/%s", param.Idx, param.Id, string(base))),
@@ -210,7 +209,7 @@ func (c *BasicSlaveComm)start() {
   }()
 
   go func(){
-    err := <- c.Host.ErrorChan()
+    err := <- c.CommHost.ErrorChan()
     if c.Check() {
       c.Error <- err
       c.Close()
@@ -218,7 +217,7 @@ func (c *BasicSlaveComm)start() {
   }()
 
   go func(){
-    <- c.Host.CloseChan()
+    <- c.CommHost.CloseChan()
     if c.Check() {
       c.Close()
     }
@@ -233,7 +232,7 @@ type BasicSlaveComm struct {
   Inter Interface
   Id string
   Idx int
-  Host ExtHost
+  CommHost ExtHost
   Addrs []peer.ID
   Base protocol.ID
   Pid protocol.ID
@@ -258,7 +257,8 @@ func (c *BasicSlaveComm)Close() error {
   for i := range c.Remotes {
     if i != c.Idx {
       proto := protocol.ID(fmt.Sprintf("%d/%s", i, string(c.Pid)))
-      c.Host.RemoveStreamHandler(proto)
+      c.CommHost.RemoveStreamHandler(proto)
+      c.Remotes[i].Close()
     }
   }
   return nil
@@ -276,17 +276,25 @@ func (c *BasicSlaveComm)Check() bool {
   return !c.Ended
 }
 
-func (c *BasicSlaveComm)Send(idx int, msg string) {
+/*func (c *BasicSlaveComm)Send(idx int, msg string) {
   c.Remotes[idx].Send(msg)
 }
 
 func (c *BasicSlaveComm)Get(idx int) string {
   return c.Remotes[idx].Get()
+}*/
+
+func (c *BasicSlaveComm)Remote(idx int) Remote {
+  return c.Remotes[idx]
+}
+
+func (c *BasicSlaveComm)Host() ExtHost {
+  return c.CommHost
 }
 
 func (c *BasicSlaveComm)Connect(i int, addr peer.ID) error {
   rwi, err := timeout.MakeTimeout(func() (interface{}, error) {
-    stream, err := c.Host.NewStream(c.Ctx, addr, c.Pid)
+    stream, err := c.CommCommHost.NewStream(c.Ctx, addr, c.Pid)
     if err != nil {
       return nil, err
     }
@@ -303,78 +311,4 @@ func (c *BasicSlaveComm)Connect(i int, addr peer.ID) error {
   c.Remotes[i].Reset(rw)
 
   return nil
-}
-
-type Remote struct {
-  Sent []string
-  Stream *bufio.ReadWriter
-  Offset int
-  Received int
-  ResetChan chan bool
-}
-
-func (r *Remote)Send(msg string) {
-
-  fmt.Printf("[Remote] Sending %q\n", msg) //--------------------------
-
-  r.Sent = append(r.Sent, msg)
-
-  fmt.Fprint(r.Stream, msg)
-  r.Stream.Flush()
-}
-
-func (r *Remote)Get() string {
-
-  fmt.Println("[Remote] Requesting") //--------------------------
-
-  readChan := make(chan string)
-  go func() {
-    for r.Offset > 0 {
-      _, err := r.Stream.ReadString('\n')
-      if err == nil {
-        r.Offset --
-      }
-    }
-    str, err := r.Stream.ReadString('\n')
-    if err == nil {
-      readChan <- str
-    }
-
-    close(readChan)
-  }()
-
-  select {
-  case msg := <- readChan:
-
-    fmt.Printf("[Remote] Requesting %q\n", msg) //--------------------------
-
-    return msg
-
-  case <- r.ResetChan:
-    return r.Get()
-  }
-}
-
-func (r *Remote)Reset(stream *bufio.ReadWriter) {
-
-  fmt.Println("[Remote] reset 0") //--------------------------
-
-  r.Stream = stream
-  r.Offset = r.Received
-  for _, msg := range r.Sent {
-    fmt.Fprint(r.Stream, msg)
-    r.Stream.Flush()
-  }
-
-  fmt.Println("[Remote] reset 1") //--------------------------
-
-  go func() {
-    r.ResetChan <- true
-  }()
-}
-
-func (r *Remote)StreamHandler() (network.StreamHandler, error) {
-  return func(stream network.Stream) {
-    r.Reset(bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream)))
-  }, nil
 }

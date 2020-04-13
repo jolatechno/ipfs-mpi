@@ -1,6 +1,8 @@
 package core
 
 import (
+  "bufio"
+
   "github.com/libp2p/go-libp2p-core/peerstore"
   "github.com/libp2p/go-libp2p-core/peer"
   "github.com/libp2p/go-libp2p-core/host"
@@ -66,6 +68,7 @@ type Store interface {
 type MasterComm interface {
   standardFunctionsCloser
 
+  Host() ExtHost
   SlaveComm() SlaveComm
   Connect(int, peer.ID, bool)
   CheckPeer(int) bool
@@ -75,10 +78,19 @@ type MasterComm interface {
 type SlaveComm interface {
   standardFunctionsCloser
 
+  Host() ExtHost
   Interface() Interface
-  Send(int, string)
-  Get(int) string
+  Remote(int) Remote
   Connect(int, peer.ID) error
+}
+
+type Remote interface {
+  standardFunctionsCloser
+  
+  Reset(*bufio.ReadWriter)
+  Get() string
+  Send(string)
+  StreamHandler() (network.StreamHandler, error)
 }
 
 type Interface interface {
