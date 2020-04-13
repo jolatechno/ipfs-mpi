@@ -109,10 +109,12 @@ func NewHost(ctx context.Context, bootstrapPeers ...maddr.Multiaddr) (ExtHost, e
 
   routingDiscovery := discovery.NewRoutingDiscovery(kademliaDHT)
 
+  var streamHandlers sync.Map
+
   return &BasicExtHost {
     Ctx: ctx,
     Host: h,
-    StreamHandlers: make(map[protocol.ID] network.StreamHandler),
+    StreamHandlers: streamHandlers,
     Routing: routingDiscovery,
     PeerStores: make(map[protocol.ID]peerstore.Peerstore),
     Standard: NewStandardInterface(),
@@ -122,7 +124,7 @@ func NewHost(ctx context.Context, bootstrapPeers ...maddr.Multiaddr) (ExtHost, e
 type BasicExtHost struct {
   Ctx context.Context
   Host host.Host
-  StreamHandlers map[protocol.ID] network.StreamHandler
+  StreamHandlers sync.Map
   Routing *discovery.RoutingDiscovery
   PeerStores map[protocol.ID]peerstore.Peerstore
   Standard BasicFunctionsCloser
@@ -150,33 +152,35 @@ func (h *BasicExtHost) Check() bool {
 }
 
 func (h *BasicExtHost)Listen(pid protocol.ID, rendezvous string) {
-  h.PeerStores[pid] = pstoremem.NewPeerstore()
-  h.PeerStores[pid].AddAddrs(h.ID(), h.Addrs(), peerstore.TempAddrTTL)
-  discovery.Advertise(h.Ctx, h.Routing, rendezvous)
+  if h.Check() {
+    h.PeerStores[pid] = pstoremem.NewPeerstore()
+    h.PeerStores[pid].AddAddrs(h.ID(), h.Addrs(), peerstore.TempAddrTTL)
+    discovery.Advertise(h.Ctx, h.Routing, rendezvous)
 
-  discoveryHandler := func(peer peer.AddrInfo) {
-    if peer.ID != h.ID() {
-      go func(){
-        err := h.Connect(h.Ctx, peer)
+    discoveryHandler := func(peer peer.AddrInfo) {
+      if peer.ID != h.ID() {
+        go func(){
+          err := h.Connect(h.Ctx, peer)
 
-        if err == nil {
-          h.PeerStores[pid].AddAddrs(peer.ID, peer.Addrs, peerstore.TempAddrTTL)
+          if err == nil {
+            h.PeerStores[pid].AddAddrs(peer.ID, peer.Addrs, peerstore.TempAddrTTL)
+          }
+        }()
+      }
+    }
+
+    go func() {
+      for h.Check() {
+        peerChan, err := h.Routing.FindPeers(h.Ctx, rendezvous)
+        if err != nil {
+          return
         }
-      }()
-    }
+        for peer := range peerChan {
+          discoveryHandler(peer)
+        }
+      }
+    }()
   }
-
-  go func() {
-    for h.Check() {
-      peerChan, err := h.Routing.FindPeers(h.Ctx, rendezvous)
-      if err != nil {
-        return
-      }
-      for peer := range peerChan {
-        discoveryHandler(peer)
-      }
-    }
-  }()
 }
 
 func (h *BasicExtHost)PeerstoreProtocol(base protocol.ID) (peerstore.Peerstore, error) {
@@ -230,17 +234,17 @@ func (h *BasicExtHost)Connect(ctx context.Context, pi peer.AddrInfo) error {
 }
 
 func (h *BasicExtHost)SetStreamHandler(pid protocol.ID, handler network.StreamHandler) {
-  h.StreamHandlers[pid] = handler
+  h.StreamHandlers.Store(pid, handler)
   h.Host.SetStreamHandler(pid, handler)
 }
 
 func (h *BasicExtHost)SetStreamHandlerMatch(pid protocol.ID, match func(string) bool, handler network.StreamHandler) {
-  h.StreamHandlers[pid] = handler
+  h.StreamHandlers.Store(pid, handler)
   h.Host.SetStreamHandlerMatch(pid, match, handler)
 }
 
 func (h *BasicExtHost)RemoveStreamHandler(pid protocol.ID) {
-  delete(h.StreamHandlers, pid)
+  h.StreamHandlers.Delete(pid)
   h.Host.RemoveStreamHandler(pid)
 }
 
@@ -268,9 +272,14 @@ func (h *BasicExtHost)SelfStream(pid ...protocol.ID) (SelfStream, error) {
     return nil, errors.New("too many protocol given")
   }
 
-  handler, ok := h.StreamHandlers[pid[0]]
+  handlerInterface, ok := h.StreamHandlers.Load(pid[0])
   if !ok {
     return nil, errors.New("no such protocol")
+  }
+
+  handler, ok := handlerInterface.(network.StreamHandler)
+  if !ok {
+    return nil, errors.New("couldn't convert interface")
   }
 
   stream := NewStream(pid[0])

@@ -306,7 +306,11 @@ func (c *BasicSlaveComm)Connect(i int, addr peer.ID) error {
     return err
   }
 
-  rw := rwi.(*bufio.ReadWriter)
+  rw, ok := rwi.(*bufio.ReadWriter)
+  if !ok {
+    return errors.New("couldn't convert interface")
+  }
+  
   c.Remotes[i].Reset(rw)
 
   return nil
