@@ -10,6 +10,7 @@ import (
 func NewRemote(handshakeMessage int) (Remote, error) {
   return &BasicRemote {
     ReadChan: make(chan string),
+    HandshakeChan: make(chan string),
     Sent: []string{},
     Rw: nil,
     Offset: 0,
@@ -22,6 +23,7 @@ func NewRemote(handshakeMessage int) (Remote, error) {
 
 type BasicRemote struct {
   ReadChan chan string
+  HandshakeChan chan string
   Sent []string
   Rw *bufio.ReadWriter
   Offset int
@@ -49,6 +51,10 @@ func (r *BasicRemote)Get() string {
 
 }
 
+func (r *BasicRemote)GetHandshake() string {
+  return <- r.HandshakeChan
+}
+
 func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
 
   fmt.Println("[Remote] reset") //--------------------------
@@ -73,16 +79,20 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
         return
       }
 
+      fmt.Printf("[Remote] Received %q\n", str) //--------------------------
+
       if r.ReceivedHandshakeMessage < r.HandshakeMessage {
         r.ReceivedHandshakeMessage++
-        r.ReadChan <- str
+        r.HandshakeChan <- str
+
+        continue
       }
 
       if r.Offset > 0 {
         r.Offset --
-      }
 
-      fmt.Printf("[Remote] Received %q\n", str) //--------------------------
+        continue
+      }
 
       r.Received++
       r.ReadChan <- str

@@ -104,7 +104,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
 
   n := 0
   if param.Init {
-    n = 2
+    n = 1
   }
 
   comm.Remotes[0], err = NewRemote(n)
@@ -195,7 +195,7 @@ func (c *BasicSlaveComm)start() {
     err := <- c.Inter.ErrorChan()
     if c.Check() {
 
-      fmt.Printf("[SlaveComm] interface error : ", err) //--------------------------
+      fmt.Println("[SlaveComm] interface error : ", err) //--------------------------
 
       c.Standard.Push(err)
       c.Close()
@@ -206,7 +206,7 @@ func (c *BasicSlaveComm)start() {
     <- c.Inter.CloseChan()
     if c.Check() {
 
-      fmt.Printf("[SlaveComm] interface closed") //--------------------------
+      fmt.Println("[SlaveComm] interface closed") //--------------------------
 
       c.Close()
     }
@@ -216,7 +216,7 @@ func (c *BasicSlaveComm)start() {
     err := <- c.CommHost.ErrorChan()
     if c.Check() {
 
-      fmt.Printf("[SlaveComm] host error : ", err) //--------------------------
+      fmt.Println("[SlaveComm] host error : ", err) //--------------------------
 
       c.Standard.Push(err)
       c.Close()
@@ -227,8 +227,8 @@ func (c *BasicSlaveComm)start() {
     <- c.CommHost.CloseChan()
     if c.Check() {
 
-      fmt.Printf("[SlaveComm] interface closed") //--------------------------
-      
+      fmt.Println("[SlaveComm] interface closed") //--------------------------
+
       c.Close()
     }
   }()

@@ -82,7 +82,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
         }()
 
         for {
-          str := comm.SlaveComm().Remote(i).Get()
+          str := comm.SlaveComm().Remote(i).GetHandshake()
           if str != "Done\n" {
             comm.Reset(i)
           } else {
@@ -105,7 +105,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
   for j := 1; j < n; j++ {
     go func(wp *sync.WaitGroup, i int) {
-      str := comm.SlaveComm().Remote(i).Get()
+      str := comm.SlaveComm().Remote(i).GetHandshake()
       if str != "Connected\n" {
         comm.Reset(i)
       }
@@ -197,9 +197,6 @@ func (c *BasicMasterComm)Reset(i int) {
 
   addr, err := c.SlaveComm().Host().NewPeer(c.Comm.Pid)
   if err != nil {
-
-    fmt.Println("[MasterComm] NewPeer err : ", err) //--------------------------
-
     c.Comm.Standard.Push(err)
     c.Close()
   }

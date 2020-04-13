@@ -89,6 +89,7 @@ type Remote interface {
   Stream() *bufio.ReadWriter
   Reset(*bufio.ReadWriter)
   Get() string
+  GetHandshake() string
   Send(string)
   StreamHandler() (network.StreamHandler, error)
 }
