@@ -38,10 +38,12 @@ func (b *BasicFunctionsCloser)Close() error {
 }
 
 func (b *BasicFunctionsCloser)Push(err error) {
-  for i := range b.Error {
-    go func() {
-      b.Error[i] <- err
-    }()
+  if b.Check() {
+    for i := range b.Error {
+      go func() {
+        b.Error[i] <- err
+      }()
+    }
   }
 }
 

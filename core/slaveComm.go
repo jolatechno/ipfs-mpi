@@ -86,9 +86,6 @@ func (p *Param)String() string {
 }
 
 func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, base protocol.ID, inter Interface, param Param) (_ SlaveComm, err error) {
-
-  fmt.Printf("[SlaveComm] Starting %d out of %d\n", param.Idx, len(param.Addrs)) //--------------------------
-
   comm := BasicSlaveComm {
     Ctx: ctx,
     Inter: inter,
@@ -117,9 +114,6 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
   go func(){
     err, ok := <- comm.Remotes[0].ErrorChan()
     if comm.Check() && ok {
-
-      fmt.Println("[SlaveComm] master remote error : ", err) //--------------------------
-
       comm.Standard.Push(err)
       comm.Close()
     }
@@ -128,9 +122,6 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
   go func(){
     <- comm.Remotes[0].CloseChan()
     if comm.Check() {
-
-      fmt.Println("[SlaveComm] master remote closed") //--------------------------
-
       comm.Close()
     }
   }()
@@ -150,8 +141,6 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
     host.SetStreamHandler(proto, streamHandler)
   }
 
-  fmt.Println("[SlaveComm] New, Done") //--------------------------
-
   comm.Remotes[0].Send("Done\n")
 
   str := comm.Remotes[0].GetHandshake()
@@ -161,8 +150,6 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
   if str != "Connect\n"{
     return &comm, errors.New("Responce no understood")
   }
-
-  fmt.Println("[SlaveComm] New, Connecting") //--------------------------
 
   var wg sync.WaitGroup
 
@@ -181,8 +168,6 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
     }
   }
 
-  fmt.Println("[SlaveComm] New, Connected") //--------------------------
-
   comm.Remotes[0].Send("Connected\n")
 
   comm.start()
@@ -191,9 +176,6 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
 }
 
 func (c *BasicSlaveComm)start() {
-
-  fmt.Printf("[SlaveComm] starting %d out of %d\n", c.Idx, len(c.Addrs)) //--------------------------
-
   go func(){
     outChan := c.Inter.Message()
     for c.Check() && c.Inter.Check() {
@@ -219,9 +201,6 @@ func (c *BasicSlaveComm)start() {
   go func(){
     err, ok := <- c.Inter.ErrorChan()
     if c.Check() && ok {
-
-      fmt.Println("[SlaveComm] interface error : ", err) //--------------------------
-
       c.Standard.Push(err)
       c.Close()
     }
@@ -230,9 +209,6 @@ func (c *BasicSlaveComm)start() {
   go func(){
     <- c.Inter.CloseChan()
     if c.Check() {
-
-      fmt.Println("[SlaveComm] interface closed") //--------------------------
-
       c.Close()
     }
   }()
@@ -240,9 +216,6 @@ func (c *BasicSlaveComm)start() {
   go func(){
     err, ok := <- c.CommHost.ErrorChan()
     if c.Check() && ok {
-
-      fmt.Println("[SlaveComm] host error : ", err) //--------------------------
-
       c.Standard.Push(err)
       c.Close()
     }
@@ -251,9 +224,6 @@ func (c *BasicSlaveComm)start() {
   go func(){
     <- c.CommHost.CloseChan()
     if c.Check() {
-
-      fmt.Println("[SlaveComm] interface closed") //--------------------------
-
       c.Close()
     }
   }()
@@ -278,8 +248,6 @@ func (c *BasicSlaveComm)Interface() Interface {
 
 func (c *BasicSlaveComm)Close() error {
   if c.Check() {
-    fmt.Printf("[SlaveComm] Closing %d out of %d\n", c.Idx, len(c.Addrs)) //--------------------------
-
     c.Standard.Close()
 
     err := c.Inter.Close()

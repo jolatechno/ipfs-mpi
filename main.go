@@ -24,6 +24,13 @@ func main(){
     panic(err)
   }
 
+  go func() {
+    err, ok := <- store.ErrorChan()
+    if ok {
+      panic(err)
+    }
+  }()
+
   fmt.Println("Our adress is ", store.Host().ID())
 
   for _, addr := range store.Host().Addrs() {

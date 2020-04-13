@@ -95,9 +95,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   }
 
   wg.Wait()
-
-  fmt.Println("[MasterComm] Done") //--------------------------
-
+  
   var wg2 sync.WaitGroup
 
   wg2.Add(n - 1)
@@ -117,17 +115,12 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
   wg2.Wait()
 
-  fmt.Printf("[MasterComm] Started") //--------------------------
-
   comm.Comm.start()
 
   return &comm, nil
 }
 
 func (c *BasicMasterComm)Close() error {
-  
-  fmt.Println("[MasterComm] closing ") //--------------------------
-
   if c.Check() {
     c.SlaveComm().Close()
   }
