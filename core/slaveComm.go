@@ -87,7 +87,7 @@ func (p *Param)String() string {
 
 func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, base protocol.ID, inter Interface, param Param) (_ SlaveComm, err error) {
 
-  fmt.Println("[SlaveComm] New") //--------------------------
+  fmt.Printf("[SlaveComm] Starting %d out of %d\n", param.Idx, len(param.Addrs)) //--------------------------
 
   comm := BasicSlaveComm {
     Ctx: ctx,
@@ -271,14 +271,6 @@ func (c *BasicSlaveComm)ErrorChan() chan error {
 func (c *BasicSlaveComm)Check() bool {
   return c.Standard.Check()
 }
-
-/*func (c *BasicSlaveComm)Send(idx int, msg string) {
-  c.Remotes[idx].Send(msg)
-}
-
-func (c *BasicSlaveComm)Get(idx int) string {
-  return c.Remotes[idx].Get()
-}*/
 
 func (c *BasicSlaveComm)Remote(idx int) Remote {
   return c.Remotes[idx]
