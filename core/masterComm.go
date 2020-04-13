@@ -195,8 +195,11 @@ func (c *BasicMasterComm)Reset(i int) {
 
   fmt.Println("[MasterComm] reseting ", i) //--------------------------
 
-  addr, err := c.SlaveComm().Host().NewPeer(c.Comm.Base)
+  addr, err := c.SlaveComm().Host().NewPeer(c.Comm.Pid)
   if err != nil {
+
+    fmt.Println("[MasterComm] NewPeer err : ", err) //--------------------------
+
     c.Comm.Standard.Push(err)
     c.Close()
   }
