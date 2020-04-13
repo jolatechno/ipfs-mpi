@@ -194,6 +194,9 @@ func (c *BasicSlaveComm)start() {
   go func(){
     err := <- c.Inter.ErrorChan()
     if c.Check() {
+
+      fmt.Printf("[SlaveComm] interface error : ", err) //--------------------------
+
       c.Standard.Push(err)
       c.Close()
     }
@@ -202,6 +205,9 @@ func (c *BasicSlaveComm)start() {
   go func(){
     <- c.Inter.CloseChan()
     if c.Check() {
+
+      fmt.Printf("[SlaveComm] interface closed") //--------------------------
+
       c.Close()
     }
   }()
@@ -209,6 +215,9 @@ func (c *BasicSlaveComm)start() {
   go func(){
     err := <- c.CommHost.ErrorChan()
     if c.Check() {
+
+      fmt.Printf("[SlaveComm] host error : ", err) //--------------------------
+
       c.Standard.Push(err)
       c.Close()
     }
@@ -217,6 +226,9 @@ func (c *BasicSlaveComm)start() {
   go func(){
     <- c.CommHost.CloseChan()
     if c.Check() {
+
+      fmt.Printf("[SlaveComm] interface closed") //--------------------------
+      
       c.Close()
     }
   }()
