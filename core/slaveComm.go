@@ -178,29 +178,47 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
 
 func (c *BasicSlaveComm)start() {
   go func() {
-    outChan := c.Inter.Message()
-    for c.Check() && c.Inter.Check() {
-      select {
-      case msg, ok := <- outChan:
+    outChan := c.Interface().Message()
+    for c.Check() {
+      if c.Interface().Check() {
+        msg, ok := <- outChan
         if ok {
           go c.Remote(msg.To).Send(msg.Content)
         }
-      case <- time.After(WaitDuration):
-        close(outChan)
+
+      } else {
+        select {
+        case msg, ok := <- outChan:
+          if ok {
+            go c.Remote(msg.To).Send(msg.Content)
+          }
+        case <- time.After(WaitDuration):
+          close(outChan)
+        }
+
       }
     }
   }()
 
   go func(){
-    requestChan := c.Inter.Request()
+    requestChan := c.Interface().Request()
     for c.Check() {
-      select {
-      case req, ok := <- requestChan:
+      if c.Interface().Check() {
+        req, ok := <- requestChan
         if ok {
-          go c.Inter.Push(c.Remote(req).Get())
+          go c.Interface().Push(c.Remote(req).Get())
         }
-      case <- time.After(WaitDuration):
-        close(requestChan)
+
+      } else {
+        select {
+        case req, ok := <- requestChan:
+          if ok {
+            go c.Interface().Push(c.Remote(req).Get())
+          }
+        case <- time.After(WaitDuration):
+          close(requestChan)
+        }
+
       }
     }
   }()
