@@ -184,7 +184,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
   fmt.Println("[SlaveComm] New, Connected") //--------------------------
 
   comm.Remotes[0].Send("Connected\n")
-  
+
   comm.start()
 
   return &comm, nil
@@ -197,18 +197,22 @@ func (c *BasicSlaveComm)start() {
   go func(){
     outChan := c.Inter.Message()
     for c.Check() && c.Inter.Check() {
-      msg := <- outChan
+      msg, ok := <- outChan
 
-      go c.Remote(msg.To).Send(msg.Content)
+      if ok {
+        go c.Remote(msg.To).Send(msg.Content)
+      }
     }
   }()
 
   go func(){
     requestChan := c.Inter.Request()
     for c.Check() {
-      req := <- requestChan
+      req, ok := <- requestChan
 
-      go c.Inter.Push(c.Remote(req).Get())
+      if ok {
+        go c.Inter.Push(c.Remote(req).Get())
+      }
     }
   }()
 

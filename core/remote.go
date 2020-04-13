@@ -37,7 +37,7 @@ func (r *BasicRemote)Send(msg string) {
 
   fmt.Printf("[Remote] Sending %q\n", msg) //--------------------------
 
-  if r.ReceivedHandshakeMessage == r.HandshakeMessage {
+  if r.ReceivedHandshakeMessage >= r.HandshakeMessage { //shouldn't be strictly greater
     r.Sent = append(r.Sent, msg)
   }
 
@@ -46,11 +46,7 @@ func (r *BasicRemote)Send(msg string) {
 }
 
 func (r *BasicRemote)Get() string {
-
-  fmt.Println("[Remote] Requesting") //--------------------------
-
   return <- r.ReadChan
-
 }
 
 func (r *BasicRemote)GetHandshake() string {
