@@ -87,7 +87,7 @@ func (p *Param)String() string {
 }
 
 func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, base protocol.ID, inter Interface, param Param) (SlaveComm, error) {
-  
+
   fmt.Println("[SlaveComm] New") //--------------------------
 
   comm := BasicSlaveComm {
@@ -286,14 +286,20 @@ func (c *BasicSlaveComm)Get(idx int) string {
 
 func (c *BasicSlaveComm)Connect(i int, addr peer.ID) error {
   rwi, err := timeout.MakeTimeout(func() (interface{}, error) {
+
+    fmt.Println("[SlaveComm] Connect 0") //--------------------------
+
     stream, err := c.Host.NewStream(c.Ctx, addr, c.Pid)
+
+    fmt.Println("[SlaveComm] Connect 1") //--------------------------
+
     if err != nil {
       return nil, err
     }
 
     rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
     return rw, nil
-  }, StandardTimeout)
+  }, WaitDuration)
 
   if err != nil {
     return err
