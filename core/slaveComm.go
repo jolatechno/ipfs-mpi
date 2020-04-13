@@ -127,6 +127,15 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
     }
   }()
 
+  go func(){
+    for comm.Check() {
+      time.Sleep(WaitDuration)
+      if !comm.Remotes[0].Ping(WaitDuration) {
+        comm.Close()
+      }
+    }
+  }()
+
   for i := 1; i < len(param.Addrs); i++ {
     comm.Remotes[i], err = NewRemote(0)
     if err != nil {

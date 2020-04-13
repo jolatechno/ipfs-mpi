@@ -2,6 +2,7 @@ package core
 
 import (
   "bufio"
+  "time"
 
   "github.com/libp2p/go-libp2p-core/peerstore"
   "github.com/libp2p/go-libp2p-core/peer"
@@ -86,6 +87,8 @@ type SlaveComm interface {
 type Remote interface {
   standardFunctionsCloser
 
+  CloseRemote()
+  Ping(time.Duration) bool
   Stream() *bufio.ReadWriter
   Reset(*bufio.ReadWriter)
   Get() string

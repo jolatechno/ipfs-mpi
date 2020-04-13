@@ -20,4 +20,7 @@ if __name__ == "__main__":
         print(f"Log,{n - 1} responded: {resp}")
     else:
         msg = input(f"Req,{i - 1}\n")
-        print(f"Send,{(i + 1)%n},{msg}")
+        if i == n - 1:
+            print(f"Send,0,{msg}")
+        else:
+            print(f"Send,{i + 1},{msg}")

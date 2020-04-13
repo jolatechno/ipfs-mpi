@@ -3,12 +3,18 @@ package core
 import (
   "bufio"
   "fmt"
+  "errors"
+  "strings"
+  "time"
 
   "github.com/libp2p/go-libp2p-core/network"
+
+  "github.com/jolatechno/go-timeout"
 )
 
 func NewRemote(handshakeMessage int) (Remote, error) {
   return &BasicRemote {
+    PingChan: make(chan bool),
     ReadChan: make(chan string),
     HandshakeChan: make(chan string),
     Sent: []string{},
@@ -22,6 +28,7 @@ func NewRemote(handshakeMessage int) (Remote, error) {
 }
 
 type BasicRemote struct {
+  PingChan chan bool
   ReadChan chan string
   HandshakeChan chan string
   Sent []string
@@ -33,6 +40,24 @@ type BasicRemote struct {
   Standard BasicFunctionsCloser
 }
 
+func (r *BasicRemote)Ping(timeoutDuration time.Duration) bool {
+  err := timeout.MakeSimpleTimeout(func () error {
+    fmt.Fprint(r.Rw, "Ping\n")
+    <- r.PingChan
+    return nil
+  }, timeoutDuration)
+
+  if err != nil {
+    return false
+  }
+  return true
+}
+
+func (r *BasicRemote)CloseRemote() {
+  fmt.Fprint(r.Rw, "Close\n")
+  r.Rw.Flush()
+}
+
 func (r *BasicRemote)Send(msg string) {
 
   fmt.Printf("[Remote] Sending %q\n", msg) //--------------------------
@@ -41,7 +66,7 @@ func (r *BasicRemote)Send(msg string) {
     r.Sent = append(r.Sent, msg)
   }
 
-  fmt.Fprint(r.Rw, msg)
+  fmt.Fprintf(r.Rw, "Msg,%s", msg)
   r.Rw.Flush()
 }
 
@@ -66,30 +91,58 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
         return
       }
 
-      fmt.Printf("[Remote] Received %q\n", str) //--------------------------
+      splitted := strings.Split(str, ",")
+      if splitted[0] == "Msg" {
+        if len(splitted) <= 1 {
+          r.Standard.Push(errors.New("not enough fields"))
+          r.Close()
+        }
+        msg := strings.Join(splitted[1:], ",")
 
-      if r.ReceivedHandshakeMessage < r.HandshakeMessage {
-        r.ReceivedHandshakeMessage++
-        r.HandshakeChan <- str
+        fmt.Printf("[Remote] Received %q\n", msg) //--------------------------
 
-        if r.ReceivedHandshakeMessage == r.HandshakeMessage {
-          for _, msg := range r.Sent {
-            fmt.Fprint(r.Rw, msg)
-            r.Rw.Flush()
+        if r.ReceivedHandshakeMessage < r.HandshakeMessage {
+          r.ReceivedHandshakeMessage++
+          go func() {
+            r.HandshakeChan <- str
+          }()
+
+          if r.ReceivedHandshakeMessage == r.HandshakeMessage {
+            for _, msg_hist := range r.Sent {
+              fmt.Fprintf(r.Rw, "Msg,%s", msg_hist)
+              r.Rw.Flush()
+            }
           }
+
+          continue
         }
 
-        continue
+        if r.Offset > 0 {
+          r.Offset --
+
+          continue
+        }
+
+        r.Received++
+        go func() {
+          r.ReadChan <- msg
+        }()
+
+      } else if splitted[0] == "Ping\n" {
+        fmt.Fprint(r.Rw, "PingResp\n")
+        r.Rw.Flush()
+
+      } else if splitted[0] == "PingResp\n" {
+        r.PingChan <- true
+
+      } else if splitted[0] == "Close\n" {
+        r.Close()
+
+      } else {
+        r.Standard.Push(errors.New("command not understood"))
+        r.Close()
+
       }
-
-      if r.Offset > 0 {
-        r.Offset --
-
-        continue
-      }
-
-      r.Received++
-      r.ReadChan <- str
     }
   }()
 }
