@@ -28,10 +28,6 @@ func (b *BasicFunctionsCloser)Close() error {
         close(b.EndChan[i])
       }()
     }
-
-    for i := range b.Error {
-      close(b.Error[i])
-    }
   }
 
   return nil

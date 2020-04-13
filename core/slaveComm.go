@@ -294,6 +294,10 @@ func (c *BasicSlaveComm)Connect(i int, addr peer.ID) error {
       return nil, err
     }
 
+    if c.Idx != 0 && i != 0 { //--------------------------
+      fmt.Println("[SlaveComm] Connected") //--------------------------
+    } //--------------------------
+
     rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
     return rw, nil
   }, WaitDuration)
