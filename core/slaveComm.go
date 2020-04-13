@@ -305,8 +305,12 @@ func (c *BasicSlaveComm)Connect(i int, addr peer.ID) error {
     return err
   }
 
+  fmt.Println("[SlaveComm] Connect 2") //--------------------------
+
   rw := rwi.(*bufio.ReadWriter)
   c.Remotes[i].Reset(rw)
+
+  fmt.Println("[SlaveComm] Connect 3") //--------------------------
 
   return nil
 }
