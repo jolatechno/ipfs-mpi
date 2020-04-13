@@ -6,14 +6,12 @@ import (
   "time"
   "sync"
 
-  "github.com/libp2p/go-libp2p/p2p/protocol/ping"
   "github.com/libp2p/go-libp2p-core/protocol"
   "github.com/libp2p/go-libp2p-core/peer"
 )
 
 type BasicMasterComm struct {
   Ctx context.Context
-  Pinger *ping.PingService
   N int
   Comm BasicSlaveComm
 }
@@ -32,7 +30,6 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   }
 
   comm := BasicMasterComm {
-    Pinger: ping.NewPingService(host),
     N: n,
     Comm: BasicSlaveComm {
       Ctx: ctx,
@@ -65,7 +62,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
         go func() {
           for comm.Check() {
             time.Sleep(WaitDuration)
-            if !comm.CheckPeer(i) {
+            if !comm.SlaveComm().Remote(i).Ping(WaitDuration) {
               comm.Reset(i)
             }
           }
@@ -145,23 +142,6 @@ func (c *BasicMasterComm)Check() bool {
 
 func (c *BasicMasterComm)SlaveComm() SlaveComm {
   return &c.Comm
-}
-
-func (c *BasicMasterComm)CheckPeer(idx int) bool {
-  if c.Comm.Addrs[idx] == c.SlaveComm().Host().ID() {
-    return true
-  }
-
-  select {
-  case res := <- c.Pinger.Ping(c.Comm.Ctx, c.Comm.Addrs[idx]):
-    if res.Error != nil {
-      return false
-    }
-    return true
-
-  case <- time.After(WaitDuration):
-    return false
-  }
 }
 
 func (c *BasicMasterComm)Connect(i int, addr peer.ID, init bool) {

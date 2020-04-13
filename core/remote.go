@@ -97,6 +97,7 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
           r.Standard.Push(errors.New("not enough fields"))
           r.Close()
         }
+
         msg := strings.Join(splitted[1:], ",")
 
         fmt.Printf("[Remote] Received %q\n", msg) //--------------------------
@@ -104,7 +105,7 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
         if r.ReceivedHandshakeMessage < r.HandshakeMessage {
           r.ReceivedHandshakeMessage++
           go func() {
-            r.HandshakeChan <- str
+            r.HandshakeChan <- msg
           }()
 
           if r.ReceivedHandshakeMessage == r.HandshakeMessage {
