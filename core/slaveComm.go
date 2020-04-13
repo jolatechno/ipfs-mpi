@@ -124,6 +124,8 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
     host.SetStreamHandler(proto, streamHandler)
   }
 
+  fmt.Println("[SlaveComm] New, Done") //--------------------------
+
   fmt.Fprint(zeroRw, "Done\n")
   zeroRw.Flush()
 
@@ -151,6 +153,8 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
       }(&wg)
     }
   }
+
+  fmt.Println("[SlaveComm] New, Connected") //--------------------------
 
   fmt.Fprint(zeroRw, "Connected\n")
   zeroRw.Flush()
