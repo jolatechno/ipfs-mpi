@@ -72,6 +72,7 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
           inter.Error <- errors.New(strErr)
           inter.Close()
         }
+        return
       }
     }
   }()
@@ -80,12 +81,16 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
   go func(){
     for inter.Check() {
       str, err := reader.ReadString('\n')
+      if str == "" && err == nil {
+        err = errors.New("Received an empty string")
+      }
       if err != nil {
         time.Sleep(SafeWait)
         if inter.Check() {
           inter.Error <- err
           inter.Close()
         }
+        return
       }
 
       splitted := strings.Split(str, ",")
@@ -94,12 +99,14 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
         if len(splitted) != 2 {
           inter.Error <- errors.New("Not enough field")
           inter.Close()
+          return
         }
 
         idx, err := strconv.Atoi(splitted[1][:len(splitted[1]) - 1])
         if err != nil {
           inter.Error <- err
           inter.Close()
+          return
         }
 
         inter.RequestChan <- idx
@@ -109,6 +116,7 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
         if len(splitted) < 2 {
           inter.Error <- errors.New("Not enough field")
           inter.Close()
+          return
         }
 
         log.Print(strings.Join(splitted[1:], ","))
@@ -117,12 +125,14 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
         if len(splitted) < 3 {
           inter.Error <- errors.New("Not enough field")
           inter.Close()
+          return
         }
 
         idx, err := strconv.Atoi(splitted[1])
         if err != nil {
           inter.Error <- err
           inter.Close()
+          return
         }
 
         go func() {
@@ -134,6 +144,7 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
       } else {
         inter.Error <- errors.New("Not understood")
         inter.Close()
+        return
       }
     }
   }()
