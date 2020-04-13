@@ -8,6 +8,7 @@ import (
   "strings"
   "strconv"
   "sync"
+  "time"
 
   "github.com/libp2p/go-libp2p-core/protocol"
   "github.com/libp2p/go-libp2p-core/peer"
@@ -176,13 +177,16 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
 }
 
 func (c *BasicSlaveComm)start() {
-  go func(){
+  go func() {
     outChan := c.Inter.Message()
     for c.Check() && c.Inter.Check() {
-      msg, ok := <- outChan
-
-      if ok {
-        go c.Remote(msg.To).Send(msg.Content)
+      select {
+      case msg, ok := <- outChan:
+        if ok {
+          go c.Remote(msg.To).Send(msg.Content)
+        }
+      case <- time.After(WaitDuration):
+        close(outChan)
       }
     }
   }()
@@ -190,10 +194,13 @@ func (c *BasicSlaveComm)start() {
   go func(){
     requestChan := c.Inter.Request()
     for c.Check() {
-      req, ok := <- requestChan
-
-      if ok {
-        go c.Inter.Push(c.Remote(req).Get())
+      select {
+      case req, ok := <- requestChan:
+        if ok {
+          go c.Inter.Push(c.Remote(req).Get())
+        }
+      case <- time.After(WaitDuration):
+        close(requestChan)
       }
     }
   }()
@@ -202,13 +209,6 @@ func (c *BasicSlaveComm)start() {
     err, ok := <- c.Inter.ErrorChan()
     if c.Check() && ok {
       c.Standard.Push(err)
-      c.Close()
-    }
-  }()
-
-  go func(){
-    <- c.Inter.CloseChan()
-    if c.Check() {
       c.Close()
     }
   }()
@@ -310,7 +310,7 @@ func (c *BasicSlaveComm)Connect(i int, addr peer.ID) error {
   if !ok {
     return errors.New("couldn't convert interface")
   }
-  
+
   c.Remotes[i].Reset(rw)
 
   return nil

@@ -160,9 +160,6 @@ type StdInterface struct {
 func (s *StdInterface)Close() error {
   if s.Check() {
     s.Standard.Close()
-
-    close(s.InChan)
-    close(s.RequestChan)
   }
 
   return nil
