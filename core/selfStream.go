@@ -13,6 +13,7 @@ import (
 
 var (
   StandardTimeout = time.Hour
+  ThrottleDuration = 70 * time.Nanosecond
 )
 
 func NewStream(pid protocol.ID) SelfStream {
@@ -85,6 +86,7 @@ func (b *CloseableBuffer)Read(p []byte) (int, error) {
       if b.ReadBuffer.Len() > len(p) {
         return b.ReadBuffer.Read(p)
       }
+      time.Sleep(ThrottleDuration)
     }
 
     return nil, timeout.TimeOut
