@@ -27,6 +27,7 @@ func main(){
   go func() {
     err, ok := <- store.ErrorChan()
     if ok {
+      fmt.Println(err)
       panic(err)
     }
   }()
