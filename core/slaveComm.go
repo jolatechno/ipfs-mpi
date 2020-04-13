@@ -115,8 +115,8 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
   comm.Remotes[0].Reset(zeroRw)
 
   go func(){
-    err := <- comm.Remotes[0].ErrorChan()
-    if comm.Check() {
+    err, ok := <- comm.Remotes[0].ErrorChan()
+    if comm.Check() && ok {
 
       fmt.Println("[SlaveComm] master remote error : ", err) //--------------------------
 
@@ -217,8 +217,8 @@ func (c *BasicSlaveComm)start() {
   }()
 
   go func(){
-    err := <- c.Inter.ErrorChan()
-    if c.Check() {
+    err, ok := <- c.Inter.ErrorChan()
+    if c.Check() && ok {
 
       fmt.Println("[SlaveComm] interface error : ", err) //--------------------------
 
@@ -238,8 +238,8 @@ func (c *BasicSlaveComm)start() {
   }()
 
   go func(){
-    err := <- c.CommHost.ErrorChan()
-    if c.Check() {
+    err, ok := <- c.CommHost.ErrorChan()
+    if c.Check() && ok {
 
       fmt.Println("[SlaveComm] host error : ", err) //--------------------------
 

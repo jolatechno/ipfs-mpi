@@ -73,11 +73,10 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
         go func() {
           for comm.Check() {
-            err := <- comm.SlaveComm().Remote(i).ErrorChan()
-
-            fmt.Println("[MasterComm] ", i, " error : ", err) //--------------------------
-
-            comm.Reset(i)
+            _, ok := <- comm.SlaveComm().Remote(i).ErrorChan()
+            if ok {
+              comm.Reset(i)
+            }
           }
         }()
 
