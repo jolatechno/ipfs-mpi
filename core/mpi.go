@@ -66,8 +66,6 @@ func NewMpi(ctx context.Context, config Config) (Mpi, error) {
     Ipfs_store: config.Ipfs_store,
     MpiHost: host,
     MpiStore: store,
-    MasterComms: make(map[int]MasterComm),
-    SlaveComms: make(map[string]SlaveComm),
     Id: 0,
     Standard: NewStandardInterface(),
   }
@@ -141,14 +139,11 @@ type BasicMpi struct {
   Ipfs_store string
   MpiHost ExtHost
   MpiStore Store
-  MasterComms map[int]MasterComm
-  SlaveComms map[string]SlaveComm
   Id int
   Standard BasicFunctionsCloser
 }
 
 func (m *BasicMpi)Close() error {
-
   m.Standard.Close()
 
   err := m.Store().Close()
@@ -159,20 +154,6 @@ func (m *BasicMpi)Close() error {
   err = m.Host().Close()
   if err != nil {
     return err
-  }
-
-  for _, comm := range m.SlaveComms {
-    err = comm.Close()
-    if err != nil {
-      return err
-    }
-  }
-
-  for _, comm := range m.MasterComms {
-    err = comm.Close()
-    if err != nil {
-      return err
-    }
   }
 
   return nil
@@ -201,52 +182,37 @@ func (m *BasicMpi)Add(f string) error {
   proto := protocol.ID("/" + f + "/" + string(m.Pid))
   m.Host().Listen(proto, "/" + f + "/" + m.Ipfs_store)
   m.Host().SetStreamHandler(proto, func(stream network.Stream) {
-
-    fmt.Println("[StreamHandler] New, proto : ", proto) //--------------------------
-
     rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
-
-    fmt.Println("[StreamHandler] 0") //--------------------------
 
     str, err := rw.ReadString('\n')
     if err != nil {
       return
     }
 
-    fmt.Println("[StreamHandler] 1") //--------------------------
-
     param, err := ParamFromString(str[:len(str) - 1])
     if err != nil {
       return
     }
-
-    fmt.Println("[StreamHandler] 2") //--------------------------
 
     inter, err := NewInterface(m.Path + f, param.N, param.Idx)
     if err != nil {
       return
     }
 
-    fmt.Println("[StreamHandler] 3") //--------------------------
-
     comm, err := NewSlaveComm(m.Ctx, m.Host(), rw, proto, inter, param)
     if err != nil {
       return
     }
 
-    fmt.Println("[StreamHandler] 4") //--------------------------
-
-    m.SlaveComms[param.Id] = comm
+    go func() {
+      <- m.CloseChan()
+      comm.Close()
+    }()
 
     go func(){
       err := <- comm.ErrorChan()
       m.Standard.Push(err)
       m.Close()
-    }()
-
-    go func(){
-      <- comm.CloseChan()
-      delete(m.SlaveComms, param.Id)
     }()
   })
   return nil
@@ -302,17 +268,15 @@ func (m *BasicMpi)Start(file string, n int, args ...string) error {
     return err
   }
 
-  m.MasterComms[id] = comm
+  go func() {
+    <- m.CloseChan()
+    comm.Close()
+  }()
 
   go func() {
     err := <- comm.ErrorChan()
     m.Standard.Push(err)
     m.Close()
-  }()
-
-  go func() {
-    <- comm.CloseChan()
-    delete(m.MasterComms, id)
   }()
 
   return nil
