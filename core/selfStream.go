@@ -5,6 +5,8 @@ import (
 	"time"
   "io"
 
+  "fmt" //--------------------------
+
   "github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/protocol"
 
@@ -12,6 +14,7 @@ import (
 )
 
 var (
+  StreamClosed = errors.New("Stream closed")
   StandardTimeout = time.Hour
 )
 
@@ -43,7 +46,7 @@ type CloseableBuffer struct {
 
 func (b *CloseableBuffer)Reverse() (SelfStream, error) {
   if b.Closed {
-		return nil, errors.New("Stream closed")
+		return nil, StreamClosed
 	}
   return &CloseableBuffer {
     WritePipe: b.WritePipeReversed,
@@ -72,8 +75,9 @@ func (b *CloseableBuffer)Protocol() protocol.ID {
 
 func (b *CloseableBuffer)Reset() error {
   if b.Closed {
-		return errors.New("Stream closed")
+		return StreamClosed
 	}
+
   b.ReadPipe, b.WritePipe = io.Pipe()
   b.ReadPipeReversed, b.WritePipeReversed = io.Pipe()
   b.WriteTimeout = StandardTimeout
@@ -82,6 +86,13 @@ func (b *CloseableBuffer)Reset() error {
 }
 
 func (b *CloseableBuffer)Read(p []byte) (int, error) {
+
+  fmt.Println("[SelfStream] Read") //--------------------------
+
+  if b.Closed {
+		return 0, StreamClosed
+	}
+
   n, err := timeout.MakeTimeout(func() (interface{}, error) {
     return b.ReadPipe.Read(p)
   }, b.ReadTimeout)
@@ -94,6 +105,13 @@ func (b *CloseableBuffer)Read(p []byte) (int, error) {
 }
 
 func (b *CloseableBuffer) Write(p []byte) (int, error) {
+
+  fmt.Println("[SelfStream] Write") //--------------------------
+
+  if b.Closed {
+		return 0, StreamClosed
+	}
+
   n, err := timeout.MakeTimeout(func() (interface{}, error) {
     return b.WritePipeReversed.Write(p)
   }, b.WriteTimeout)
