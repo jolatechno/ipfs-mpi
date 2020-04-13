@@ -85,7 +85,7 @@ func (p *Param)String() string {
   return fmt.Sprintf("%d,%d,%d,%s,%s", initInt, p.Idx, p.N, p.Id, joinedAddress)
 }
 
-func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, base protocol.ID, inter Interface, param Param) (SlaveComm, error) {
+func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, base protocol.ID, inter Interface, param Param) (_ SlaveComm, err error) {
 
   fmt.Println("[SlaveComm] New") //--------------------------
 
@@ -104,17 +104,17 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
     Remotes: make([]Remote, len(param.Addrs)),
   }
 
-  comm.Remotes[0] = Remote {
-    Sent: []string{},
-    Stream: zeroRw,
-    ResetChan: make(chan bool),
+  comm.Remotes[0], err = NewRemote()
+  if err != nil {
+    return nil, err
   }
 
+  comm.Remotes[0].Reset(zeroRw)
+
   for i := 1; i < len(param.Addrs); i++ {
-    comm.Remotes[i] = Remote {
-      Sent: []string{},
-      Stream: nil,
-      ResetChan: make(chan bool),
+    comm.Remotes[i], err = NewRemote()
+    if err != nil {
+      return nil, err
     }
 
     streamHandler, err := comm.Remotes[i].StreamHandler()
@@ -175,7 +175,7 @@ func (c *BasicSlaveComm)start() {
     for c.Check() && c.Inter.Check() {
       msg := <- outChan
 
-      go c.Send(msg.To, msg.Content)
+      go c.Remote(msg.To).Send(msg.Content)
     }
   }()
 
@@ -185,7 +185,7 @@ func (c *BasicSlaveComm)start() {
       req := <- requestChan
 
       go func() {
-        err := c.Inter.Push(c.Get(req))
+        err := c.Inter.Push(c.Remote(req).Get())
         if err != nil {
 
         }
@@ -294,7 +294,7 @@ func (c *BasicSlaveComm)Host() ExtHost {
 
 func (c *BasicSlaveComm)Connect(i int, addr peer.ID) error {
   rwi, err := timeout.MakeTimeout(func() (interface{}, error) {
-    stream, err := c.CommCommHost.NewStream(c.Ctx, addr, c.Pid)
+    stream, err := c.CommHost.NewStream(c.Ctx, addr, c.Pid)
     if err != nil {
       return nil, err
     }

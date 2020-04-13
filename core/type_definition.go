@@ -68,7 +68,6 @@ type Store interface {
 type MasterComm interface {
   standardFunctionsCloser
 
-  Host() ExtHost
   SlaveComm() SlaveComm
   Connect(int, peer.ID, bool)
   CheckPeer(int) bool
@@ -86,7 +85,8 @@ type SlaveComm interface {
 
 type Remote interface {
   standardFunctionsCloser
-  
+
+  Stream() *bufio.ReadWriter
   Reset(*bufio.ReadWriter)
   Get() string
   Send(string)

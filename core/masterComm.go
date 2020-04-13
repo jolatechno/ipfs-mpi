@@ -56,13 +56,12 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
   for i, addr := range comm.Comm.Addrs {
     if i > 0 {
-      go func(wp *sync.WaitGroup) {
-        comm.Comm.Remotes[i] = Remote{
-          Sent: []string{},
-          Stream: nil,
-          ResetChan: make(chan bool),
-        }
+      comm.Comm.Remotes[i], err = NewRemote()
+      if err != nil {
+        return nil, err
+      }
 
+      go func(wp *sync.WaitGroup) {
         comm.Connect(i, addr, true)
 
         go func() {
@@ -74,7 +73,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
           }
         }()
 
-        str, err := comm.Comm.Remotes[i].Stream.ReadString('\n')
+        str, err := comm.SlaveComm().Remote(i).Stream().ReadString('\n')
         if err != nil || str != "Done\n" {
           comm.Reset(i)
         }
@@ -94,7 +93,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
   for i := 1; i < n; i++ {
     go func(wp *sync.WaitGroup) {
-      str, err := comm.Comm.Remotes[i].Stream.ReadString('\n')
+      str, err := comm.SlaveComm().Remote(i).Stream().ReadString('\n')
       if err != nil || str != "Connected\n" {
         comm.Reset(i)
       }
@@ -113,19 +112,19 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 }
 
 func (c *BasicMasterComm)Close() error {
-  return c.Comm.Close()
+  return c.SlaveComm().Close()
 }
 
 func (c *BasicMasterComm)CloseChan() chan bool {
-  return c.Comm.CloseChan()
+  return c.SlaveComm().CloseChan()
 }
 
 func (c *BasicMasterComm)ErrorChan() chan error {
-  return c.Comm.ErrorChan()
+  return c.SlaveComm().ErrorChan()
 }
 
 func (c *BasicMasterComm)Check() bool {
-  return !c.Comm.Check()
+  return !c.SlaveComm().Check()
 }
 
 func (c *BasicMasterComm)SlaveComm() SlaveComm {
@@ -133,7 +132,7 @@ func (c *BasicMasterComm)SlaveComm() SlaveComm {
 }
 
 func (c *BasicMasterComm)CheckPeer(idx int) bool {
-  if c.Comm.Addrs[idx] == c.Comm.Host.ID() {
+  if c.Comm.Addrs[idx] == c.SlaveComm().Host().ID() {
     return true
   }
 
@@ -170,8 +169,10 @@ func (c *BasicMasterComm)Connect(i int, addr peer.ID, init bool) {
 
     fmt.Println("[MasterComm] Connect 2 : ", p.String()) //--------------------------
 
-    fmt.Fprintf(c.Comm.Remotes[i].Stream, "%s\n", p.String())
-    c.Comm.Remotes[i].Stream.Flush()
+    rw := c.SlaveComm().Remote(i).Stream()
+
+    fmt.Fprintf(rw, "%s\n", p.String())
+    rw.Flush()
   }
 }
 
@@ -179,9 +180,9 @@ func (c *BasicMasterComm)Reset(i int) {
 
   fmt.Println("[MasterComm] reseting ", i) //--------------------------
 
-  addr, err := c.Comm.Host.NewPeer(c.Comm.Base)
+  addr, err := c.SlaveComm().Host().NewPeer(c.Comm.Base)
   if err != nil {
-    c.Comm.Error <- err
+    c.SlaveComm().ErrorChan() <- err
     c.Close()
   }
 

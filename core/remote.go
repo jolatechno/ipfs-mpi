@@ -14,7 +14,7 @@ func NewRemote() (Remote, error) {
     Error: make(chan error),
     ReadChan: make(chan string),
     Sent: []string{},
-    Stream: nil,
+    Rw: nil,
     Offset: 0,
     Received: 0,
   }, nil
@@ -26,7 +26,7 @@ type BasicRemote struct {
   Error chan error
   ReadChan chan string
   Sent []string
-  Stream *bufio.ReadWriter
+  Rw *bufio.ReadWriter
   Offset int
   Received int
 }
@@ -37,8 +37,8 @@ func (r *BasicRemote)Send(msg string) {
 
   r.Sent = append(r.Sent, msg)
 
-  fmt.Fprint(r.Stream, msg)
-  r.Stream.Flush()
+  fmt.Fprint(r.Rw, msg)
+  r.Rw.Flush()
 }
 
 func (r *BasicRemote)Get() string {
@@ -55,11 +55,11 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
 
   fmt.Println("[Remote] reset 0") //--------------------------
 
-  r.Stream = stream
+  r.Rw = stream
   r.Offset = r.Received
   for _, msg := range r.Sent {
-    fmt.Fprint(r.Stream, msg)
-    r.Stream.Flush()
+    fmt.Fprint(r.Rw, msg)
+    r.Rw.Flush()
   }
 
   fmt.Println("[Remote] reset 1") //--------------------------
@@ -67,13 +67,13 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
   go func() {
     for r.Check() {
       for r.Offset > 0 {
-        _, err := r.Stream.ReadString('\n')
+        _, err := r.Rw.ReadString('\n')
         if err == nil {
           r.Offset --
         }
       }
 
-      str, err := r.Stream.ReadString('\n')
+      str, err := r.Rw.ReadString('\n')
       if err != nil {
         return
       }
@@ -93,6 +93,10 @@ func (r *BasicRemote)StreamHandler() (network.StreamHandler, error) {
 
 func (r *BasicRemote)Check() bool {
   return !r.Closed
+}
+
+func (r *BasicRemote)Stream() *bufio.ReadWriter {
+  return r.Rw
 }
 
 
