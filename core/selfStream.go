@@ -3,7 +3,7 @@ package core
 import (
   "errors"
 	"time"
-  "bytes"
+  "io"
 
   "github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/protocol"
@@ -13,13 +13,16 @@ import (
 
 var (
   StandardTimeout = time.Hour
-  ThrottleDuration = 70 * time.Nanosecond
 )
 
 func NewStream(pid protocol.ID) SelfStream {
+  readPipe, writePipe := io.Pipe()
+  readPipeReversed, writePipeReversed := io.Pipe()
   return &CloseableBuffer {
-    WriteBuffer: bytes.NewBuffer([]byte{}),
-    ReadBuffer: bytes.NewBuffer([]byte{}),
+    WritePipe: writePipe,
+    ReadPipe: readPipe,
+    WritePipeReversed: writePipeReversed,
+    ReadPipeReversed: readPipeReversed,
     WriteTimeout: StandardTimeout,
     ReadTimeout: StandardTimeout,
     Closed: false,
@@ -28,8 +31,10 @@ func NewStream(pid protocol.ID) SelfStream {
 }
 
 type CloseableBuffer struct {
-  WriteBuffer *bytes.Buffer
-  ReadBuffer *bytes.Buffer
+  WritePipe *io.PipeWriter
+  ReadPipe *io.PipeReader
+  WritePipeReversed *io.PipeWriter
+  ReadPipeReversed *io.PipeReader
   WriteTimeout time.Duration
   ReadTimeout time.Duration
   Closed bool
@@ -41,8 +46,10 @@ func (b *CloseableBuffer)Reverse() (SelfStream, error) {
 		return nil, errors.New("Stream closed")
 	}
   return &CloseableBuffer {
-    WriteBuffer: b.ReadBuffer,
-    ReadBuffer: b.WriteBuffer,
+    WritePipe: b.WritePipeReversed,
+    ReadPipe: b.ReadPipeReversed,
+    WritePipeReversed: b.WritePipe,
+    ReadPipeReversed: b.ReadPipe,
     WriteTimeout: b.ReadTimeout,
     ReadTimeout: b.WriteTimeout,
     Closed: false,
@@ -67,32 +74,17 @@ func (b *CloseableBuffer)Reset() error {
   if b.Closed {
 		return errors.New("Stream closed")
 	}
-
-  b.WriteBuffer = bytes.NewBuffer([]byte{})
-  b.ReadBuffer = bytes.NewBuffer([]byte{})
+  b.ReadPipe, b.WritePipe = io.Pipe()
+  b.ReadPipeReversed, b.WritePipeReversed = io.Pipe()
   b.WriteTimeout = StandardTimeout
   b.ReadTimeout = StandardTimeout
   return nil
 }
 
 func (b *CloseableBuffer)Read(p []byte) (int, error) {
-  if b.Closed {
-    return 0, errors.New("Stream closed")
-  }
-
-  done := false
   n, err := timeout.MakeTimeout(func() (interface{}, error) {
-    for !done {
-      if b.ReadBuffer.Len() > len(p) {
-        return b.ReadBuffer.Read(p)
-      }
-      time.Sleep(ThrottleDuration)
-    }
-
-    return nil, timeout.TimeOut
+    return b.ReadPipe.Read(p)
   }, b.ReadTimeout)
-
-  done = true
 
   if n == nil {
     n = 0
@@ -102,12 +94,8 @@ func (b *CloseableBuffer)Read(p []byte) (int, error) {
 }
 
 func (b *CloseableBuffer) Write(p []byte) (int, error) {
-  if b.Closed {
-    return 0, errors.New("Stream closed")
-  }
-
   n, err := timeout.MakeTimeout(func() (interface{}, error) {
-    return b.WriteBuffer.Write(p)
+    return b.WritePipeReversed.Write(p)
   }, b.WriteTimeout)
 
   if n == nil {

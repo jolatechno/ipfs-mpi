@@ -208,25 +208,36 @@ func (m *BasicMpi)Add(f string) error {
     fmt.Println("[StreamHandler] New, proto : ", proto) //--------------------------
 
     rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
+
+    fmt.Println("[StreamHandler] 0") //--------------------------
+
     str, err := rw.ReadString('\n')
     if err != nil {
       return
     }
+
+    fmt.Println("[StreamHandler] 1") //--------------------------
 
     param, err := ParamFromString(str[:len(str) - 1])
     if err != nil {
       return
     }
 
+    fmt.Println("[StreamHandler] 2") //--------------------------
+
     inter, err := NewInterface(m.Path + f, param.N, param.Idx)
     if err != nil {
       return
     }
 
+    fmt.Println("[StreamHandler] 3") //--------------------------
+
     comm, err := NewSlaveComm(m.Ctx, m.Host(), rw, proto, inter, param)
     if err != nil {
       return
     }
+
+    fmt.Println("[StreamHandler] 4") //--------------------------
 
     m.SlaveComms[param.Id] = comm
 
