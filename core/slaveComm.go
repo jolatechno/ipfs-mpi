@@ -87,6 +87,9 @@ func (p *Param)String() string {
 }
 
 func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, base protocol.ID, inter Interface, param Param) (SlaveComm, error) {
+  
+  fmt.Println("[SlaveComm] New") //--------------------------
+
   comm := BasicSlaveComm {
     Ctx: ctx,
     Ended: false,

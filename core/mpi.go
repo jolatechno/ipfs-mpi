@@ -204,6 +204,9 @@ func (m *BasicMpi)Add(f string) error {
   proto := protocol.ID("/" + f + "/" + string(m.Pid))
   m.Host().Listen(proto, "/" + f + "/" + m.Ipfs_store)
   m.Host().SetStreamHandler(proto, func(stream network.Stream) {
+
+    fmt.Println("[StreamHandler] New, proto : ", proto) //--------------------------
+
     rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
     str, err := rw.ReadString('\n')
     if err != nil {
