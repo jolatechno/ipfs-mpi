@@ -133,17 +133,15 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
 
   fmt.Println("[SlaveComm] New, Done") //--------------------------
 
-  if param.Init {
-    fmt.Fprint(zeroRw, "Done\n")
-    zeroRw.Flush()
+  fmt.Fprint(zeroRw, "Done\n")
+  zeroRw.Flush()
 
-    str, err := zeroRw.ReadString('\n')
-    if err != nil {
-      return &comm, err
-    }
-    if str != "Connect\n"{
-      return &comm, errors.New("Responce no understood")
-    }
+  str, err := zeroRw.ReadString('\n')
+  if err != nil {
+    return &comm, err
+  }
+  if str != "Connect\n"{
+    return &comm, errors.New("Responce no understood")
   }
 
   var wg sync.WaitGroup
@@ -165,10 +163,8 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
 
   fmt.Println("[SlaveComm] New, Connected") //--------------------------
 
-  if param.Init {
-    fmt.Fprint(zeroRw, "Connected\n")
-    zeroRw.Flush()
-  }
+  fmt.Fprint(zeroRw, "Connected\n")
+  zeroRw.Flush()
 
   comm.start()
 

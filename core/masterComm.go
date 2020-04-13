@@ -73,8 +73,15 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
           }
         }()
 
-        str, err := comm.SlaveComm().Remote(i).Stream().ReadString('\n')
-        if err != nil || str != "Done\n" {
+        go func() {
+          for comm.Check() {
+            <- comm.SlaveComm().Remote(i).ErrorChan()
+            comm.Reset(i)
+          }
+        }()
+
+        str := comm.SlaveComm().Remote(i).Get()
+        if str != "Done\n" {
           comm.Reset(i)
         }
 
@@ -93,8 +100,8 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
   for i := 1; i < n; i++ {
     go func(wp *sync.WaitGroup) {
-      str, err := comm.SlaveComm().Remote(i).Stream().ReadString('\n')
-      if err != nil || str != "Connected\n" {
+      str := comm.SlaveComm().Remote(i).Get()
+      if str != "Connected\n" {
         comm.Reset(i)
       }
 

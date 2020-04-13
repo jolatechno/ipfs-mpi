@@ -16,7 +16,9 @@ func NewRemote(handshakeMessage int) (Remote, error) {
     Sent: []string{},
     Rw: nil,
     Offset: 0,
-    Received: -handshakeMessage,
+    Received: 0,
+    HandshakeMessage: handshakeMessage,
+    ReceivedHandshakeMessage: 0,
   }, nil
 }
 
@@ -29,6 +31,8 @@ type BasicRemote struct {
   Rw *bufio.ReadWriter
   Offset int
   Received int
+  HandshakeMessage int
+  ReceivedHandshakeMessage int
 }
 
 func (r *BasicRemote)Send(msg string) {
@@ -43,8 +47,6 @@ func (r *BasicRemote)Send(msg string) {
 
 func (r *BasicRemote)Get() string {
 
-
-
   fmt.Println("[Remote] Requesting") //--------------------------
 
   return <- r.ReadChan
@@ -53,33 +55,40 @@ func (r *BasicRemote)Get() string {
 
 func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
 
-  fmt.Println("[Remote] reset 0") //--------------------------
+  fmt.Println("[Remote] reset") //--------------------------
 
   r.Rw = stream
   r.Offset = r.Received
+  r.ReceivedHandshakeMessage = 0
   for _, msg := range r.Sent {
     fmt.Fprint(r.Rw, msg)
     r.Rw.Flush()
   }
 
-  fmt.Println("[Remote] reset 1") //--------------------------
-
   go func() {
     for r.Check() {
-      for r.Offset > 0 {
-        _, err := r.Rw.ReadString('\n')
-        if err == nil {
-          r.Offset --
-        }
+      if r.Rw == nil {
+        return
       }
 
       str, err := r.Rw.ReadString('\n')
       if err != nil {
+        r.Error <- err
         return
+      }
+
+      if r.ReceivedHandshakeMessage < r.HandshakeMessage {
+        r.ReceivedHandshakeMessage++
+        r.ReadChan <- str
+      }
+
+      if r.Offset > 0 {
+        r.Offset --
       }
 
       fmt.Printf("[Remote] Received %q\n", str) //--------------------------
 
+      r.Received++
       r.ReadChan <- str
     }
   }()
