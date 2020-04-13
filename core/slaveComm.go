@@ -163,6 +163,8 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
     return &comm, errors.New("Responce no understood")
   }
 
+  fmt.Println("[SlaveComm] New, Connecting") //--------------------------
+
   var wg sync.WaitGroup
 
   if param.Init {
