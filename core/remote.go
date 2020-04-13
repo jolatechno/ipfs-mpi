@@ -66,8 +66,10 @@ func (r *BasicRemote)Send(msg string) {
     r.Sent = append(r.Sent, msg)
   }
 
-  fmt.Fprintf(r.Rw, "Msg,%s", msg)
-  r.Rw.Flush()
+  if r.Rw != nil {
+    fmt.Fprintf(r.Rw, "Msg,%s", msg)
+    r.Rw.Flush()
+  }
 }
 
 func (r *BasicRemote)Get() string {
