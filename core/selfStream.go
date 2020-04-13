@@ -3,7 +3,7 @@ package core
 import (
   "errors"
 	"time"
-  "io"
+  "bytes"
 
   "github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/protocol"
@@ -16,13 +16,9 @@ var (
 )
 
 func NewStream(pid protocol.ID) SelfStream {
-  readPipe, writePipe := io.Pipe()
-  readPipeReversed, writePipeReversed := io.Pipe()
   return &CloseableBuffer {
-    WritePipe: writePipe,
-    ReadPipe: readPipe,
-    WritePipeReversed: writePipeReversed,
-    ReadPipeReversed: readPipeReversed,
+    WriteBuffer: bytes.NewBuffer([]byte{}),
+    ReadBuffer: bytes.NewBuffer([]byte{}),
     WriteTimeout: StandardTimeout,
     ReadTimeout: StandardTimeout,
     Closed: false,
@@ -31,10 +27,8 @@ func NewStream(pid protocol.ID) SelfStream {
 }
 
 type CloseableBuffer struct {
-  WritePipe *io.PipeWriter
-  ReadPipe *io.PipeReader
-  WritePipeReversed *io.PipeWriter
-  ReadPipeReversed *io.PipeReader
+  WriteBuffer *bytes.Buffer
+  ReadBuffer *bytes.Buffer
   WriteTimeout time.Duration
   ReadTimeout time.Duration
   Closed bool
@@ -46,10 +40,8 @@ func (b *CloseableBuffer)Reverse() (SelfStream, error) {
 		return nil, errors.New("Stream closed")
 	}
   return &CloseableBuffer {
-    WritePipe: b.WritePipeReversed,
-    ReadPipe: b.ReadPipeReversed,
-    WritePipeReversed: b.WritePipe,
-    ReadPipeReversed: b.ReadPipe,
+    WriteBuffer: b.ReadBuffer,
+    ReadBuffer: b.WriteBuffer,
     WriteTimeout: b.ReadTimeout,
     ReadTimeout: b.WriteTimeout,
     Closed: false,
@@ -74,17 +66,31 @@ func (b *CloseableBuffer)Reset() error {
   if b.Closed {
 		return errors.New("Stream closed")
 	}
-  b.ReadPipe, b.WritePipe = io.Pipe()
-  b.ReadPipeReversed, b.WritePipeReversed = io.Pipe()
+
+  b.WriteBuffer = bytes.NewBuffer([]byte{})
+  b.ReadBuffer = bytes.NewBuffer([]byte{})
   b.WriteTimeout = StandardTimeout
   b.ReadTimeout = StandardTimeout
   return nil
 }
 
 func (b *CloseableBuffer)Read(p []byte) (int, error) {
+  if b.Closed {
+    return 0, errors.New("Stream closed")
+  }
+
+  done := false
   n, err := timeout.MakeTimeout(func() (interface{}, error) {
-    return b.ReadPipe.Read(p)
+    for !done {
+      if b.ReadBuffer.Len() > len(p) {
+        return b.ReadBuffer.Read(p)
+      }
+    }
+
+    return nil, timeout.TimeOut
   }, b.ReadTimeout)
+
+  done = true
 
   if n == nil {
     n = 0
@@ -94,8 +100,12 @@ func (b *CloseableBuffer)Read(p []byte) (int, error) {
 }
 
 func (b *CloseableBuffer) Write(p []byte) (int, error) {
+  if b.Closed {
+    return 0, errors.New("Stream closed")
+  }
+
   n, err := timeout.MakeTimeout(func() (interface{}, error) {
-    return b.WritePipeReversed.Write(p)
+    return b.WriteBuffer.Write(p)
   }, b.WriteTimeout)
 
   if n == nil {
