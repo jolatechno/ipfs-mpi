@@ -81,9 +81,13 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
           }
         }()
 
-        str := comm.SlaveComm().Remote(i).Get()
-        if str != "Done\n" {
-          comm.Reset(i)
+        for {
+          str := comm.SlaveComm().Remote(i).Get()
+          if str != "Done\n" {
+            comm.Reset(i)
+          } else {
+            break
+          }
         }
 
         wp.Done()

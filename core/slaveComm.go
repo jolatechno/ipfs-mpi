@@ -115,7 +115,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
   comm.Remotes[0].Reset(zeroRw)
 
   for i := 1; i < len(param.Addrs); i++ {
-    comm.Remotes[i], err = NewRemote(n)
+    comm.Remotes[i], err = NewRemote(0)
     if err != nil {
       return nil, err
     }
