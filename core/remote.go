@@ -34,6 +34,9 @@ type BasicRemote struct {
 }
 
 func (r *BasicRemote)Send(msg string) {
+
+  fmt.Printf("[Remote] Sending %q\n", msg) //--------------------------
+
   if r.ReceivedHandshakeMessage >= r.HandshakeMessage { //shouldn't be strictly greater
     r.Sent = append(r.Sent, msg)
   }
@@ -54,26 +57,27 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
   r.Rw = stream
   r.Offset = r.Received
   r.ReceivedHandshakeMessage = 0
-  for _, msg := range r.Sent {
-    fmt.Fprint(r.Rw, msg)
-    r.Rw.Flush()
-  }
 
   go func() {
-    for r.Check() {
-      if r.Rw == nil {
-        return
-      }
-
-      str, err := r.Rw.ReadString('\n')
+    for r.Check() && r.Rw == stream {
+      str, err := stream.ReadString('\n')
       if err != nil {
         r.Standard.Push(err)
         return
       }
 
+      fmt.Printf("[Remote] Received %q\n", str) //--------------------------
+
       if r.ReceivedHandshakeMessage < r.HandshakeMessage {
         r.ReceivedHandshakeMessage++
         r.HandshakeChan <- str
+
+        if r.ReceivedHandshakeMessage == r.HandshakeMessage {
+          for _, msg := range r.Sent {
+            fmt.Fprint(r.Rw, msg)
+            r.Rw.Flush()
+          }
+        }
 
         continue
       }
