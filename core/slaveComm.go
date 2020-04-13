@@ -286,13 +286,7 @@ func (c *BasicSlaveComm)Get(idx int) string {
 
 func (c *BasicSlaveComm)Connect(i int, addr peer.ID) error {
   rwi, err := timeout.MakeTimeout(func() (interface{}, error) {
-
-    fmt.Println("[SlaveComm] Connect 0") //--------------------------
-
     stream, err := c.Host.NewStream(c.Ctx, addr, c.Pid)
-
-    fmt.Println("[SlaveComm] Connect 1") //--------------------------
-
     if err != nil {
       return nil, err
     }
@@ -305,12 +299,8 @@ func (c *BasicSlaveComm)Connect(i int, addr peer.ID) error {
     return err
   }
 
-  fmt.Println("[SlaveComm] Connect 2") //--------------------------
-
   rw := rwi.(*bufio.ReadWriter)
   c.Remotes[i].Reset(rw)
-
-  fmt.Println("[SlaveComm] Connect 3") //--------------------------
 
   return nil
 }
@@ -366,12 +356,18 @@ func (r *Remote)Get() string {
 }
 
 func (r *Remote)Reset(stream *bufio.ReadWriter) {
+
+  fmt.Println("[Remote] reset 0") //--------------------------
+
   r.Stream = stream
   r.Offset = r.Received
   for _, msg := range r.Sent {
     fmt.Fprint(r.Stream, msg)
     r.Stream.Flush()
   }
+
+  fmt.Println("[Remote] reset 1") //--------------------------
+
   r.ResetChan <- true
 }
 
