@@ -55,6 +55,9 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   wg.Add(n - 1)
 
   for i, addr := range comm.Comm.Addrs {
+
+    fmt.Printf("[MasterComm] 1, ", i) //--------------------------
+
     if i > 0 {
       comm.Comm.Remotes[i], err = NewRemote(2)
       if err != nil {
@@ -99,6 +102,9 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   wg2.Add(n - 1)
 
   for i := 1; i < n; i++ {
+
+    fmt.Printf("[MasterComm] 2, ", i) //--------------------------
+
     go func(wp *sync.WaitGroup) {
       str := comm.SlaveComm().Remote(i).Get()
       if str != "Connected\n" {
