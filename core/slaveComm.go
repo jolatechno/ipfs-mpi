@@ -114,6 +114,27 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
 
   comm.Remotes[0].Reset(zeroRw)
 
+  go func(){
+    err := <- comm.Remotes[0].ErrorChan()
+    if comm.Check() {
+
+      fmt.Println("[SlaveComm] master remote error : ", err) //--------------------------
+
+      comm.Standard.Push(err)
+      comm.Close()
+    }
+  }()
+
+  go func(){
+    <- comm.Remotes[0].CloseChan()
+    if comm.Check() {
+
+      fmt.Println("[SlaveComm] master remote closed") //--------------------------
+
+      comm.Close()
+    }
+  }()
+
   for i := 1; i < len(param.Addrs); i++ {
     comm.Remotes[i], err = NewRemote(0)
     if err != nil {
@@ -134,7 +155,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
   fmt.Fprint(zeroRw, "Done\n")
   zeroRw.Flush()
 
-  str, err := zeroRw.ReadString('\n')
+  str := comm.Remotes[0].GetHandshake()
   if err != nil {
     return &comm, err
   }
