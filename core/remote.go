@@ -92,6 +92,9 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
 
 func (r *BasicRemote)StreamHandler() (network.StreamHandler, error) {
   return func(stream network.Stream) {
+
+    fmt.Println("[Remote] Streamhandler called ") //--------------------------
+
     r.Reset(bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream)))
   }, nil
 }
