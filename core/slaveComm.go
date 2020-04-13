@@ -368,7 +368,9 @@ func (r *Remote)Reset(stream *bufio.ReadWriter) {
 
   fmt.Println("[Remote] reset 1") //--------------------------
 
-  r.ResetChan <- true
+  go func() {
+    r.ResetChan <- true
+  }()
 }
 
 func (r *Remote)StreamHandler() (network.StreamHandler, error) {
