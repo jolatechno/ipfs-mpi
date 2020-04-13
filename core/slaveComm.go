@@ -152,8 +152,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
 
   fmt.Println("[SlaveComm] New, Done") //--------------------------
 
-  fmt.Fprint(zeroRw, "Done\n")
-  zeroRw.Flush()
+  comm.Remotes[0].Send("Done\n")
 
   str := comm.Remotes[0].GetHandshake()
   if err != nil {
@@ -184,9 +183,8 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
 
   fmt.Println("[SlaveComm] New, Connected") //--------------------------
 
-  fmt.Fprint(zeroRw, "Connected\n")
-  zeroRw.Flush()
-
+  comm.Remotes[0].Send("Connected\n")
+  
   comm.start()
 
   return &comm, nil

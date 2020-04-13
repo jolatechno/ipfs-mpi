@@ -37,7 +37,9 @@ func (r *BasicRemote)Send(msg string) {
 
   fmt.Printf("[Remote] Sending %q\n", msg) //--------------------------
 
-  r.Sent = append(r.Sent, msg)
+  if r.ReceivedHandshakeMessage == r.HandshakeMessage {
+    r.Sent = append(r.Sent, msg)
+  }
 
   fmt.Fprint(r.Rw, msg)
   r.Rw.Flush()
