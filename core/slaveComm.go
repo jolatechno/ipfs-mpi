@@ -91,9 +91,6 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
 
   comm := BasicSlaveComm {
     Ctx: ctx,
-    Ended: false,
-    EndChan: make(chan bool),
-    Error: make(chan error),
     Inter: inter,
     Id: param.Id,
     Idx: param.Idx,
@@ -102,6 +99,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
     Base: base,
     Pid: protocol.ID(fmt.Sprintf("%d/%s/%s", param.Idx, param.Id, string(base))),
     Remotes: make([]Remote, len(param.Addrs)),
+    Standard: NewStandardInterface(),
   }
 
   n := 0
@@ -189,19 +187,14 @@ func (c *BasicSlaveComm)start() {
     for c.Check() {
       req := <- requestChan
 
-      go func() {
-        err := c.Inter.Push(c.Remote(req).Get())
-        if err != nil {
-
-        }
-      }()
+      go c.Inter.Push(c.Remote(req).Get())
     }
   }()
 
   go func(){
     err := <- c.Inter.ErrorChan()
     if c.Check() {
-      c.Error <- err
+      c.Standard.Push(err)
       c.Close()
     }
   }()
@@ -216,7 +209,7 @@ func (c *BasicSlaveComm)start() {
   go func(){
     err := <- c.CommHost.ErrorChan()
     if c.Check() {
-      c.Error <- err
+      c.Standard.Push(err)
       c.Close()
     }
   }()
@@ -231,9 +224,6 @@ func (c *BasicSlaveComm)start() {
 
 type BasicSlaveComm struct {
   Ctx context.Context
-  Ended bool
-  EndChan chan bool
-  Error chan error
   Inter Interface
   Id string
   Idx int
@@ -242,6 +232,7 @@ type BasicSlaveComm struct {
   Base protocol.ID
   Pid protocol.ID
   Remotes []Remote
+  Standard BasicFunctionsCloser
 }
 
 func (c *BasicSlaveComm)Interface() Interface {
@@ -252,8 +243,8 @@ func (c *BasicSlaveComm)Close() error {
 
   fmt.Printf("[SlaveComm] Closing %d out of %d\n", c.Idx, len(c.Addrs)) //--------------------------
 
-  c.EndChan <- true
-  c.Ended = true
+  c.Standard.Close()
+
   err := c.Inter.Close()
   if err != nil {
     return err
@@ -270,15 +261,15 @@ func (c *BasicSlaveComm)Close() error {
 }
 
 func (c *BasicSlaveComm)CloseChan() chan bool {
-  return c.EndChan
+  return c.Standard.CloseChan()
 }
 
 func (c *BasicSlaveComm)ErrorChan() chan error {
-  return c.Error
+  return c.Standard.ErrorChan()
 }
 
 func (c *BasicSlaveComm)Check() bool {
-  return !c.Ended
+  return c.Standard.Check()
 }
 
 /*func (c *BasicSlaveComm)Send(idx int, msg string) {

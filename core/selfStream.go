@@ -5,8 +5,6 @@ import (
 	"time"
   "io"
 
-  "fmt" //--------------------------
-
   "github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/protocol"
 
@@ -86,9 +84,6 @@ func (b *CloseableBuffer)Reset() error {
 }
 
 func (b *CloseableBuffer)Read(p []byte) (int, error) {
-
-  fmt.Println("[SelfStream] Read") //--------------------------
-
   if b.Closed {
 		return 0, StreamClosed
 	}
@@ -105,9 +100,6 @@ func (b *CloseableBuffer)Read(p []byte) (int, error) {
 }
 
 func (b *CloseableBuffer) Write(p []byte) (int, error) {
-
-  fmt.Println("[SelfStream] Write") //--------------------------
-
   if b.Closed {
 		return 0, StreamClosed
 	}

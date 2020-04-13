@@ -61,17 +61,15 @@ func NewMpi(ctx context.Context, config Config) (Mpi, error) {
   mpi := BasicMpi {
     Ctx:ctx,
     Pid: proto,
-    Ended: false,
     Maxsize: config.Maxsize,
     Path: config.Path,
-    EndChan: make(chan bool),
-    Error: make(chan error),
     Ipfs_store: config.Ipfs_store,
     MpiHost: host,
     MpiStore: store,
     MasterComms: make(map[int]MasterComm),
     SlaveComms: make(map[string]SlaveComm),
     Id: 0,
+    Standard: NewStandardInterface(),
   }
 
   for _, f := range store.List() {
@@ -105,7 +103,7 @@ func NewMpi(ctx context.Context, config Config) (Mpi, error) {
   go func() {
     err := <- store.ErrorChan()
     if mpi.Check() {
-      mpi.Error <- err
+      mpi.Standard.Push(err)
       mpi.Close()
     }
   }()
@@ -120,7 +118,7 @@ func NewMpi(ctx context.Context, config Config) (Mpi, error) {
   go func() {
     err := <- host.ErrorChan()
     if mpi.Check() {
-      mpi.Error <- err
+      mpi.Standard.Push(err)
       mpi.Close()
     }
   }()
@@ -138,22 +136,21 @@ func NewMpi(ctx context.Context, config Config) (Mpi, error) {
 type BasicMpi struct {
   Ctx context.Context
   Pid protocol.ID
-  Ended bool
   Maxsize uint64
   Path string
-  EndChan chan bool
-  Error chan error
   Ipfs_store string
   MpiHost ExtHost
   MpiStore Store
   MasterComms map[int]MasterComm
   SlaveComms map[string]SlaveComm
   Id int
+  Standard BasicFunctionsCloser
 }
 
 func (m *BasicMpi)Close() error {
-  m.EndChan <- true
-  m.Ended = true
+
+  m.Standard.Close()
+
   err := m.Store().Close()
   if err != nil {
     return err
@@ -182,15 +179,15 @@ func (m *BasicMpi)Close() error {
 }
 
 func (m *BasicMpi)CloseChan() chan bool {
-  return m.EndChan
+  return m.Standard.CloseChan()
 }
 
 func (m *BasicMpi)ErrorChan() chan error {
-  return m.Error
+  return m.Standard.ErrorChan()
 }
 
 func (m *BasicMpi)Check() bool {
-  return !m.Ended
+  return m.Standard.Check()
 }
 
 func (m *BasicMpi)Add(f string) error {
@@ -243,7 +240,7 @@ func (m *BasicMpi)Add(f string) error {
 
     go func(){
       err := <- comm.ErrorChan()
-      m.Error <- err
+      m.Standard.Push(err)
       m.Close()
     }()
 
@@ -309,7 +306,7 @@ func (m *BasicMpi)Start(file string, n int, args ...string) error {
 
   go func() {
     err := <- comm.ErrorChan()
-    m.Error <- err
+    m.Standard.Push(err)
     m.Close()
   }()
 

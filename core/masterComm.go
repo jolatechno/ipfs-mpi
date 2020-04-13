@@ -36,9 +36,6 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     N: n,
     Comm: BasicSlaveComm {
       Ctx: ctx,
-      Ended: false,
-      EndChan: make(chan bool),
-      Error: make(chan error),
       Inter: inter,
       Id: id,
       Idx: 0,
@@ -47,6 +44,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
       Base: protocol.ID(fmt.Sprintf("%s/%s", id, string(base))),
       Pid: base,
       Remotes: make([]Remote, n),
+      Standard: NewStandardInterface(),
     },
   }
 
@@ -75,7 +73,10 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
         go func() {
           for comm.Check() {
-            <- comm.SlaveComm().Remote(i).ErrorChan()
+            err := <- comm.SlaveComm().Remote(i).ErrorChan()
+
+            fmt.Println("[MasterComm] ", i, " error : ", err) //--------------------------
+
             comm.Reset(i)
           }
         }()
@@ -189,7 +190,7 @@ func (c *BasicMasterComm)Reset(i int) {
 
   addr, err := c.SlaveComm().Host().NewPeer(c.Comm.Base)
   if err != nil {
-    c.SlaveComm().ErrorChan() <- err
+    c.Comm.Standard.Push(err)
     c.Close()
   }
 

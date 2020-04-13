@@ -9,9 +9,6 @@ import (
 
 func NewRemote(handshakeMessage int) (Remote, error) {
   return &BasicRemote {
-    Closed: false,
-    EndChan: make(chan bool),
-    Error: make(chan error),
     ReadChan: make(chan string),
     Sent: []string{},
     Rw: nil,
@@ -19,13 +16,11 @@ func NewRemote(handshakeMessage int) (Remote, error) {
     Received: 0,
     HandshakeMessage: handshakeMessage,
     ReceivedHandshakeMessage: 0,
+    Standard: NewStandardInterface(),
   }, nil
 }
 
 type BasicRemote struct {
-  Closed bool
-  EndChan chan bool
-  Error chan error
   ReadChan chan string
   Sent []string
   Rw *bufio.ReadWriter
@@ -33,6 +28,7 @@ type BasicRemote struct {
   Received int
   HandshakeMessage int
   ReceivedHandshakeMessage int
+  Standard BasicFunctionsCloser
 }
 
 func (r *BasicRemote)Send(msg string) {
@@ -73,7 +69,7 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
 
       str, err := r.Rw.ReadString('\n')
       if err != nil {
-        r.Error <- err
+        r.Standard.Push(err)
         return
       }
 
@@ -101,7 +97,7 @@ func (r *BasicRemote)StreamHandler() (network.StreamHandler, error) {
 }
 
 func (r *BasicRemote)Check() bool {
-  return !r.Closed
+  return r.Standard.Check()
 }
 
 func (r *BasicRemote)Stream() *bufio.ReadWriter {
@@ -110,15 +106,13 @@ func (r *BasicRemote)Stream() *bufio.ReadWriter {
 
 
 func (r *BasicRemote)Close() error {
-  r.EndChan <- true
-  r.Closed = true
-  return nil
+  return r.Standard.Close()
 }
 
 func (r *BasicRemote)CloseChan() chan bool {
-  return r.EndChan
+  return r.Standard.CloseChan()
 }
 
 func (r *BasicRemote)ErrorChan() chan error {
-  return r.Error
+  return r.Standard.ErrorChan()
 }
