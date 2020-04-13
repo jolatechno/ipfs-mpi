@@ -17,12 +17,10 @@ var (
 
 func NewInterface(file string, n int, i int, args ...string) (Interface, error) {
   inter := StdInterface {
-    Ended: false,
-    EndChan: make(chan bool),
     InChan: make(chan string),
-    Error: make(chan error),
     OutChan: make(chan Message),
     RequestChan: make(chan int),
+    Standard: NewStandardInterface(),
   }
 
   cmdArgs := append([]string{file + "/run.py", fmt.Sprint(n), fmt.Sprint(i)}, args...)
@@ -51,7 +49,7 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
   go func() {
     err := cmd.Wait()
     if err != nil {
-      inter.Error <- err
+      inter.Standard.Push(err)
     }
 
     if inter.Check() {
@@ -69,7 +67,7 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
       if strErr != "" {
         time.Sleep(SafeWait)
         if inter.Check() {
-          inter.Error <- errors.New(strErr)
+          inter.Standard.Push(errors.New(strErr))
           inter.Close()
         }
         return
@@ -87,7 +85,7 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
       if err != nil {
         time.Sleep(SafeWait)
         if inter.Check() {
-          inter.Error <- err
+          inter.Standard.Push(err)
           inter.Close()
         }
         return
@@ -97,14 +95,14 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
 
       if splitted[0] == "Req" {
         if len(splitted) != 2 {
-          inter.Error <- errors.New("Not enough field")
+          inter.Standard.Push(errors.New("Not enough field"))
           inter.Close()
           return
         }
 
         idx, err := strconv.Atoi(splitted[1][:len(splitted[1]) - 1])
         if err != nil {
-          inter.Error <- err
+          inter.Standard.Push(err)
           inter.Close()
           return
         }
@@ -114,7 +112,7 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
 
       } else if splitted[0] == "Log" && i == 0 {
         if len(splitted) < 2 {
-          inter.Error <- errors.New("Not enough field")
+          inter.Standard.Push(errors.New("Not enough field"))
           inter.Close()
           return
         }
@@ -123,14 +121,14 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
 
       } else if splitted[0] == "Send" {
         if len(splitted) < 3 {
-          inter.Error <- errors.New("Not enough field")
+          inter.Standard.Push(errors.New("Not enough field"))
           inter.Close()
           return
         }
 
         idx, err := strconv.Atoi(splitted[1])
         if err != nil {
-          inter.Error <- err
+          inter.Standard.Push(err)
           inter.Close()
           return
         }
@@ -142,7 +140,7 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
           }
         }()
       } else {
-        inter.Error <- errors.New("Not understood")
+        inter.Standard.Push(errors.New("Not understood"))
         inter.Close()
         return
       }
@@ -153,35 +151,33 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
 }
 
 type StdInterface struct {
-  Ended bool
-  EndChan chan bool
   InChan chan string
   OutChan chan Message
-  Error chan error
   RequestChan chan int
+  Standard BasicFunctionsCloser
 }
 
 func (s *StdInterface)Close() error {
-  s.EndChan <- true
-  s.Ended = true
+  if s.Check() {
+    s.Standard.Close()
 
-  close(s.InChan)
-  close(s.OutChan)
-  close(s.EndChan)
+    close(s.InChan)
+    close(s.RequestChan)
+  }
 
   return nil
 }
 
 func (s *StdInterface)CloseChan() chan bool {
-  return s.EndChan
+  return s.Standard.CloseChan()
 }
 
 func (s *StdInterface)ErrorChan() chan error {
-  return s.Error
+  return s.Standard.ErrorChan()
 }
 
 func (s *StdInterface)Check() bool {
-  return !s.Ended
+  return s.Standard.Check()
 }
 
 func (s *StdInterface)Message() chan Message {
@@ -193,7 +189,7 @@ func (s *StdInterface)Request() chan int {
 }
 
 func (s *StdInterface)Push(msg string) error {
-  if s.Ended {
+  if !s.Check() {
     return errors.New("Interface closed")
   }
   s.InChan <- msg

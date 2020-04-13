@@ -144,16 +144,18 @@ type BasicMpi struct {
 }
 
 func (m *BasicMpi)Close() error {
-  m.Standard.Close()
+  if m.Check() {
+    m.Standard.Close()
 
-  err := m.Store().Close()
-  if err != nil {
-    return err
-  }
+    err := m.Store().Close()
+    if err != nil {
+      return err
+    }
 
-  err = m.Host().Close()
-  if err != nil {
-    return err
+    err = m.Host().Close()
+    if err != nil {
+      return err
+    }
   }
 
   return nil

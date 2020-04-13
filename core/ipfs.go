@@ -41,43 +41,41 @@ func NewStore(url string, path string, ipfs_store string) (Store, error) {
   }
 
   return &IpfsShell {
-    Ended: false,
-    EndChan: make(chan bool),
-    Error: make(chan error),
     Shell:Shell,
     Store:store,
     Path:path,
     Ipfs_store:ipfs_store,
+    Standard: NewStandardInterface(),
   }, nil
 }
 
 
 type IpfsShell struct {
-  Ended bool
-  EndChan chan bool
-  Error chan error
   Shell *shell.Shell
   Store []string
   Path string
   Ipfs_store string
+  Standard BasicFunctionsCloser
 }
 
 func (s *IpfsShell)Close() error {
-  s.Ended = true
-  s.EndChan <- true
+  if s.Check() {
+    s.Standard.Close()
+  }
+
   return nil
 }
 
 func (s *IpfsShell)Check() bool {
-  return !s.Ended
+  return s.Standard.Check()
 }
 
 func (s *IpfsShell)CloseChan() chan bool {
-  return s.EndChan
+  return s.Standard.CloseChan()
 }
 
 func (s *IpfsShell)ErrorChan() chan error {
-  return s.Error
+  return s.Standard.ErrorChan()
 }
 
 func (s *IpfsShell)Add(f string) {

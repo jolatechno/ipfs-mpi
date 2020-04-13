@@ -19,17 +19,19 @@ type BasicFunctionsCloser struct {
 }
 
 func (b *BasicFunctionsCloser)Close() error {
-  b.Ended = true
+  if b.Check() {
+    b.Ended = true
 
-  for i := range b.EndChan {
-    go func() {
-      b.EndChan[i] <- true
-      close(b.EndChan[i])
-    }()
-  }
+    for i := range b.EndChan {
+      go func() {
+        b.EndChan[i] <- true
+        close(b.EndChan[i])
+      }()
+    }
 
-  for i := range b.Error {
-    close(b.Error[i])
+    for i := range b.Error {
+      close(b.Error[i])
+    }
   }
 
   return nil

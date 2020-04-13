@@ -125,10 +125,14 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 }
 
 func (c *BasicMasterComm)Close() error {
-
+  
   fmt.Println("[MasterComm] closing ") //--------------------------
 
-  return c.SlaveComm().Close()
+  if c.Check() {
+    c.SlaveComm().Close()
+  }
+
+  return nil
 }
 
 func (c *BasicMasterComm)CloseChan() chan bool {

@@ -129,8 +129,12 @@ type BasicExtHost struct {
 }
 
 func (h *BasicExtHost) Close() error {
-  h.Standard.Close()
-  return h.Host.Close()
+  if h.Check() {
+    h.Standard.Close()
+    return h.Host.Close()
+  }
+
+  return nil
 }
 
 func (h *BasicExtHost)CloseChan() chan bool {

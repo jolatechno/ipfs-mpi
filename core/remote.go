@@ -114,7 +114,10 @@ func (r *BasicRemote)Stream() *bufio.ReadWriter {
 
 
 func (r *BasicRemote)Close() error {
-  return r.Standard.Close()
+  if r.Check() {
+    r.Standard.Close()
+  }
+  return nil
 }
 
 func (r *BasicRemote)CloseChan() chan bool {

@@ -277,23 +277,25 @@ func (c *BasicSlaveComm)Interface() Interface {
 }
 
 func (c *BasicSlaveComm)Close() error {
+  if c.Check() {
+    fmt.Printf("[SlaveComm] Closing %d out of %d\n", c.Idx, len(c.Addrs)) //--------------------------
 
-  fmt.Printf("[SlaveComm] Closing %d out of %d\n", c.Idx, len(c.Addrs)) //--------------------------
+    c.Standard.Close()
 
-  c.Standard.Close()
+    err := c.Inter.Close()
+    if err != nil {
+      return err
+    }
 
-  err := c.Inter.Close()
-  if err != nil {
-    return err
-  }
-
-  for i := range c.Remotes {
-    if i != c.Idx {
-      proto := protocol.ID(fmt.Sprintf("%d/%s", i, string(c.Pid)))
-      c.CommHost.RemoveStreamHandler(proto)
-      c.Remotes[i].Close()
+    for i := range c.Remotes {
+      if i != c.Idx {
+        proto := protocol.ID(fmt.Sprintf("%d/%s", i, string(c.Pid)))
+        c.CommHost.RemoveStreamHandler(proto)
+        c.Remotes[i].Close()
+      }
     }
   }
+
   return nil
 }
 
