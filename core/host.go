@@ -280,6 +280,9 @@ func (h *BasicExtHost)EventBus() event.Bus {
 }
 
 func (h *BasicExtHost)SelfStream(pid ...protocol.ID) (SelfStream, error) {
+
+  fmt.Println("[host] (SelfStream)") //--------------------------
+
   if len(pid) == 0 {
     return nil, errors.New("no protocol given")
   }
@@ -297,6 +300,9 @@ func (h *BasicExtHost)SelfStream(pid ...protocol.ID) (SelfStream, error) {
   h.StreamHandlers.Range(func(key interface{}, value interface{}) bool {
     streamHandlerMatcher, ok := value.(*StreamHandlerMatcher)
     if !ok {
+
+      fmt.Println("[host] (SelfStream) couldn't convert ", key) //--------------------------
+
       return true
     }
 
