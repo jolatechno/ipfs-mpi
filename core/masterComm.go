@@ -118,9 +118,6 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
 func (c *BasicMasterComm)Close() error {
   if c.Check() {
-    for i := range *c.Comm.Remotes {
-      c.SlaveComm().Remote(i).CloseRemote()
-    }
     c.SlaveComm().Close()
   }
 
