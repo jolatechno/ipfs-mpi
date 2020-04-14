@@ -263,8 +263,8 @@ func (m *BasicMpi)Start(file string, n int, args ...string) error {
   id := m.Id
   m.Id++
 
-  proto := protocol.ID(fmt.Sprintf("/%s/%s", file, m.Pid))
-  StringId := fmt.Sprintf("%d/%s", id, m.Host().ID())
+  proto := protocol.ID(fmt.Sprintf("%s/%s", file, m.Pid))
+  StringId := fmt.Sprintf("%d.%s", id, m.Host().ID())
 
   comm, err := NewMasterComm(m.Ctx, m.Host(), n, proto, inter, StringId)
 

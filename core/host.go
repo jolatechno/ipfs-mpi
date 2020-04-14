@@ -20,6 +20,7 @@ import (
   "github.com/libp2p/go-libp2p-core/connmgr"
   "github.com/libp2p/go-libp2p-peerstore/pstoremem"
   "github.com/libp2p/go-libp2p-discovery"
+  "github.com/libp2p/go-libp2p-core/helpers"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
 
   maddr "github.com/multiformats/go-multiaddr"
@@ -63,6 +64,11 @@ func ListIpAdresses() ([]maddr.Multiaddr, error) {
   }
 
 	return returnAddr, nil
+}
+
+type StreamHandlerMatcher struct {
+  Match func(string) bool
+  Handler network.StreamHandler
 }
 
 func NewHost(ctx context.Context, bootstrapPeers ...maddr.Multiaddr) (ExtHost, error) {
@@ -234,12 +240,22 @@ func (h *BasicExtHost)Connect(ctx context.Context, pi peer.AddrInfo) error {
 }
 
 func (h *BasicExtHost)SetStreamHandler(pid protocol.ID, handler network.StreamHandler) {
-  h.StreamHandlers.Store(pid, &handler)
+  match, err := helpers.MultistreamSemverMatcher(pid)
+  if err != nil {
+    panic(err) //shouldn't happend
+  }
+  h.StreamHandlers.Store(pid, &StreamHandlerMatcher{
+    Match: match,
+    Handler: handler,
+  })
   h.Host.SetStreamHandler(pid, handler)
 }
 
 func (h *BasicExtHost)SetStreamHandlerMatch(pid protocol.ID, match func(string) bool, handler network.StreamHandler) {
-  h.StreamHandlers.Store(pid, &handler)
+  h.StreamHandlers.Store(pid, &StreamHandlerMatcher{
+    Match: match,
+    Handler: handler,
+  })
   h.Host.SetStreamHandlerMatch(pid, match, handler)
 }
 
@@ -272,23 +288,25 @@ func (h *BasicExtHost)SelfStream(pid ...protocol.ID) (SelfStream, error) {
     return nil, errors.New("too many protocol given")
   }
 
-  handlerInterface, ok := h.StreamHandlers.Load(pid[0])
-  if !ok {
-    return nil, errors.New("no such protocol")
-  }
-
-  handler, ok := handlerInterface.(*network.StreamHandler)
-  if !ok {
-    return nil, errors.New("couldn't convert interface")
-  }
-
   stream := NewStream(pid[0])
   reversed_stream, err := stream.Reverse()
   if err != nil {
     return nil, err
   }
 
-  go (*handler)(reversed_stream)
+  h.StreamHandlers.Range(func(key interface{}, value interface{}) bool {
+    streamHandlerMatcher, ok := value.(*StreamHandlerMatcher)
+    if !ok {
+      return true
+    }
+
+    if !(*streamHandlerMatcher).Match(string(pid[0])) {
+      return true
+    }
+
+    go (*streamHandlerMatcher).Handler(reversed_stream)
+    return false
+  })
 
   return stream, nil
 }
