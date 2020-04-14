@@ -265,6 +265,9 @@ func (h *BasicExtHost)RemoveStreamHandler(pid protocol.ID) {
 }
 
 func (h *BasicExtHost)NewStream(ctx context.Context, p peer.ID, pids ...protocol.ID) (network.Stream, error) {
+
+    fmt.Println("[Host] NewStream") //--------------------------
+
   if p == h.ID() {
     return h.SelfStream(pids...)
   }
