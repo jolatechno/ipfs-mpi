@@ -28,9 +28,12 @@ func (b *BasicFunctionsCloser)Close() error {
         close(b.EndChan[i])
       }()
     }
+    
     for i := range b.Error {
       go func() {
-        b.Error[i] <- nil
+        for len(b.Error[i]) > 0 {
+          <- b.Error[i]
+        }
         close(b.Error[i])
       }()
     }
@@ -40,7 +43,7 @@ func (b *BasicFunctionsCloser)Close() error {
 }
 
 func (b *BasicFunctionsCloser)Push(err error) {
-  if b.Check() {
+  if b.Check() && err != nil {
     for i := range b.Error {
       go func() {
         b.Error[i] <- err
