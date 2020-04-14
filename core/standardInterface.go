@@ -25,19 +25,15 @@ func (b *BasicFunctionsCloser)Close() error {
   if !b.Ended {
     b.Ended = true
     for i := range b.EndChan {
-      go func() {
-        b.EndChan[i] <- true
-        close(b.EndChan[i])
-      }()
+      b.EndChan[i] <- true
+      close(b.EndChan[i])
     }
 
     for i := range b.Error {
-      go func() {
-        for len(b.Error[i]) > 0 {
-          <- b.Error[i]
-        }
-        close(b.Error[i])
-      }()
+      for len(b.Error[i]) > 0 {
+        <- b.Error[i]
+      }
+      close(b.Error[i])
     }
   }
 
@@ -45,13 +41,13 @@ func (b *BasicFunctionsCloser)Close() error {
 }
 
 func (b *BasicFunctionsCloser)Push(err error) {
-  if b.Check() && err != nil {
-    for i := range b.Error {
-      go func() {
+  go func() {
+    if b.Check() && err != nil {
+      for i := range b.Error {
         b.Error[i] <- err
-      }()
+      }
     }
-  }
+  }()
 }
 
 func (b *BasicFunctionsCloser)Check() bool {
