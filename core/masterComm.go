@@ -86,7 +86,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     comm.SlaveComm().Remote(j).SendHandshake()
 
     go func(wp *sync.WaitGroup, i int) {
-      <- comm.SlaveComm().Remote(j).GetHandshake()
+      <- comm.SlaveComm().Remote(i).GetHandshake()
 
       wp.Done()
     }(&wg2, j)
