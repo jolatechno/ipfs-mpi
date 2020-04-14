@@ -163,6 +163,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
   }
 
   if param.Init {
+    comm.Remote(0).SendHandshake()
     <- comm.Remote(0).GetHandshake()
   }
 

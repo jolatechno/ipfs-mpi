@@ -101,6 +101,10 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     }
   }()
 
+  for j := 1; j < n; j++ {
+    comm.SlaveComm().Remote(j).SendHandshake()
+  }
+
   comm.Comm.start()
 
   return &comm, nil
