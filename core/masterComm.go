@@ -52,7 +52,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
   for j, addr := range *comm.Comm.Addrs {
     if j > 0 {
-      (*comm.Comm.Remotes)[j], err = NewRemote(2)
+      (*comm.Comm.Remotes)[j], err = NewRemote()
       if err != nil {
         return nil, err
       }
@@ -70,12 +70,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
         }()
 
         for {
-          str := comm.SlaveComm().Remote(i).GetHandshake()
-          if str != "Done\n" {
-            comm.Reset(i)
-          } else {
-            break
-          }
+          <- comm.SlaveComm().Remote(i).GetHandshake()
         }
 
         wp.Done()
@@ -90,13 +85,10 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   wg2.Add(n - 1)
 
   for j := 1; j < n; j++ {
-    comm.SlaveComm().Remote(j).Send("Connect\n")
+    comm.SlaveComm().Remote(j).SendHandshake()
 
     go func(wp *sync.WaitGroup, i int) {
-      str := comm.SlaveComm().Remote(i).GetHandshake()
-      if str != "Connected\n" {
-        comm.Reset(i)
-      }
+      <- comm.SlaveComm().Remote(j).GetHandshake()
 
       wp.Done()
     }(&wg2, j)

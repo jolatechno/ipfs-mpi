@@ -12,17 +12,22 @@ import (
   "github.com/jolatechno/go-timeout"
 )
 
-func NewRemote(handshakeMessage int) (Remote, error) {
+var (
+  HandShakeHeader = "HandShake\n"
+  MessageHeader = "Msg"
+  CloseHeader = "Close\n"
+  PingHeader = "Ping\n"
+  PingRespHeader = "PingResp\n"
+)
+
+func NewRemote() (Remote, error) {
   return &BasicRemote {
     PingChan: make(chan bool),
     ReadChan: make(chan string),
-    HandshakeChan: make(chan string),
+    HandshakeChan: make(chan bool),
     Sent: &[]string{},
     Rw: nil,
-    Offset: 0,
     Received: 0,
-    HandshakeMessage: handshakeMessage,
-    ReceivedHandshakeMessage: 0,
     Standard: NewStandardInterface(),
   }, nil
 }
@@ -30,10 +35,9 @@ func NewRemote(handshakeMessage int) (Remote, error) {
 type BasicRemote struct {
   PingChan chan bool
   ReadChan chan string
-  HandshakeChan chan string
+  HandshakeChan chan bool
   Sent *[]string
   Rw *bufio.ReadWriter
-  Offset int
   Received int
   HandshakeMessage int
   ReceivedHandshakeMessage int
@@ -71,28 +75,40 @@ func (r *BasicRemote)Send(msg string) {
 
   fmt.Printf("[Remote] Sending %q\n", msg) //--------------------------
 
-  if r.ReceivedHandshakeMessage >= r.HandshakeMessage { //shouldn't be strictly greater
-    *r.Sent = append(*r.Sent, msg)
-  }
+  *r.Sent = append(*r.Sent, msg)
 
   if r.Rw != nil {
-    fmt.Fprintf(r.Rw, "Msg,%s", msg)
+    fmt.Fprintf(r.Rw, "%s,%s", MessageHeader, msg)
     r.Rw.Flush()
   }
 }
+
+func (r *BasicRemote)SendHandshake() {
+  if r.Rw != nil {
+    fmt.Fprintf(r.Rw, HandShakeHeader)
+    r.Rw.Flush()
+  }
+}
+
 
 func (r *BasicRemote)Get() string {
   return <- r.ReadChan
 }
 
-func (r *BasicRemote)GetHandshake() string {
-  return <- r.HandshakeChan
+func (r *BasicRemote)GetHandshake() chan bool {
+  return r.HandshakeChan
 }
 
 func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
   r.Rw = stream
-  r.Offset = r.Received
-  r.ReceivedHandshakeMessage = 0
+  offset := r.Received
+
+  go func() {
+    for _, msg := range *r.Sent {
+      fmt.Fprintf(stream, "%s,%s", MessageHeader, msg)
+      stream.Flush()
+    }
+  }()
 
   go func() {
     for r.Check() && r.Rw == stream {
@@ -102,8 +118,28 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
         return
       }
 
+      if str == "HandShake\n" {
+        go func() {
+          r.HandshakeChan <- true
+        }()
+
+      } else if str == PingHeader {
+        fmt.Fprint(r.Rw, PingRespHeader)
+        r.Rw.Flush()
+        continue
+
+      } else if str == PingRespHeader {
+        r.PingChan <- true
+        continue
+
+      } else if str == CloseHeader {
+        r.Close()
+        continue
+
+      }
+
       splitted := strings.Split(str, ",")
-      if splitted[0] == "Msg" {
+      if splitted[0] == MessageHeader {
         if len(splitted) <= 1 {
           r.Standard.Push(errors.New("not enough fields"))
           r.Close()
@@ -113,24 +149,8 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
 
         fmt.Printf("[Remote] Received %q\n", msg) //--------------------------
 
-        if r.ReceivedHandshakeMessage < r.HandshakeMessage {
-          r.ReceivedHandshakeMessage++
-          go func() {
-            r.HandshakeChan <- msg
-          }()
-
-          if r.ReceivedHandshakeMessage == r.HandshakeMessage {
-            for _, msg_hist := range *r.Sent {
-              fmt.Fprintf(stream, "Msg,%s", msg_hist)
-              stream.Flush()
-            }
-          }
-
-          continue
-        }
-
-        if r.Offset > 0 {
-          r.Offset --
+        if offset > 0 {
+          offset --
 
           continue
         }
@@ -139,16 +159,6 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
         go func() {
           r.ReadChan <- msg
         }()
-
-      } else if splitted[0] == "Ping\n" {
-        fmt.Fprint(r.Rw, "PingResp\n")
-        r.Rw.Flush()
-
-      } else if splitted[0] == "PingResp\n" {
-        r.PingChan <- true
-
-      } else if splitted[0] == "Close\n" {
-        r.Close()
 
       } else {
         r.Standard.Push(errors.New("command not understood"))

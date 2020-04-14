@@ -102,12 +102,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
     Standard: NewStandardInterface(),
   }
 
-  n := 0
-  if param.Init {
-    n = 1
-  }
-
-  (*comm.Remotes)[0], err = NewRemote(n)
+  (*comm.Remotes)[0], err = NewRemote()
   if err != nil {
     return nil, err
   }
@@ -131,7 +126,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
   }()
 
   for i := 1; i < len(*param.Addrs); i++ {
-    (*comm.Remotes)[i], err = NewRemote(0)
+    (*comm.Remotes)[i], err = NewRemote()
     if err != nil {
       return nil, err
     }
@@ -145,14 +140,9 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
     host.SetStreamHandler(proto, streamHandler)
   }
 
-  comm.Remote(0).Send("Done\n")
-
-  str := comm.Remote(0).GetHandshake()
-  if err != nil {
-    return &comm, err
-  }
-  if str != "Connect\n"{
-    return &comm, errors.New("Responce no understood")
+  if param.Init {
+    comm.Remote(0).SendHandshake()
+    <- comm.Remote(0).GetHandshake()
   }
 
   var wg sync.WaitGroup
@@ -172,7 +162,9 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
     }
   }
 
-  comm.Remote(0).Send("Connected\n")
+  if param.Init {
+    <- comm.Remote(0).GetHandshake()
+  }
 
   comm.start()
 
