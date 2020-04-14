@@ -88,6 +88,9 @@ func (p *Param)String() string {
 }
 
 func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, base protocol.ID, inter Interface, param Param) (_ SlaveComm, err error) {
+
+  fmt.Printf("[SlaveComm] starting %d out of %d\n", param.Idx, len(*param.Addrs)) //--------------------------
+
   remotes := make([]Remote, len(*param.Addrs))
   comm := BasicSlaveComm {
     Ctx: ctx,
@@ -268,6 +271,9 @@ func (c *BasicSlaveComm)Interface() Interface {
 }
 
 func (c *BasicSlaveComm)Close() error {
+
+  fmt.Printf("[SlaveComm] Closing %d out of %d\n", c.Idx, len(*c.Addrs)) //--------------------------
+
   if c.Check() {
     c.Standard.Close()
 
