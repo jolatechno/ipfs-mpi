@@ -183,49 +183,32 @@ func (c *BasicSlaveComm)start() {
   go func() {
     outChan := c.Interface().Message()
     for c.Check() {
-      if c.Interface().Check() {
-        msg, ok := <- outChan
-        if ok {
-          go c.Remote(msg.To).Send(msg.Content)
-        }
-
+      msg, ok := <- outChan
+      if ok && msg.To != -1 {
+        go c.Remote(msg.To).Send(msg.Content)
       } else {
-        select {
-        case msg, ok := <- outChan:
-          if ok {
-            go c.Remote(msg.To).Send(msg.Content)
-          }
-        case <- time.After(WaitDuration):
-          close(outChan)
-        }
-
+        break
       }
+    }
+    
+    if c.Idx == 0 && c.Check() {
+      c.Close()
     }
   }()
 
   go func(){
     requestChan := c.Interface().Request()
     for c.Check() {
-      if c.Interface().Check() {
-        req, ok := <- requestChan
-        if ok {
-          go c.Interface().Push(c.Remote(req).Get())
-        }
-
+      req, ok := <- requestChan
+      if ok && req != -1 {
+        go c.Interface().Push(c.Remote(req).Get())
       } else {
-        select {
-        case req, ok := <- requestChan:
-          if ok {
-            go c.Interface().Push(c.Remote(req).Get())
-          }
-        case <- time.After(WaitDuration):
-          close(requestChan)
-          if c.Idx == 0 {
-            c.Close()
-          }
-        }
-
+        break
       }
+    }
+
+    if c.Idx == 0 && c.Check() {
+      c.Close()
     }
   }()
 

@@ -159,6 +159,18 @@ type StdInterface struct {
 
 func (s *StdInterface)Close() error {
   if s.Check() {
+    go func() {
+      s.OutChan <- Message {
+        To: -1,
+      }
+      close(s.OutChan)
+    }()
+
+    go func() {
+      s.RequestChan <- -1
+      close(s.RequestChan)
+    }()
+
     s.Standard.Close()
   }
 
