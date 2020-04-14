@@ -72,9 +72,6 @@ func (r *BasicRemote)CloseRemote() {
 }
 
 func (r *BasicRemote)Send(msg string) {
-
-  fmt.Printf("[Remote] Sending %q\n", msg) //--------------------------
-
   *r.Sent = append(*r.Sent, msg)
 
   if r.Rw != nil {
@@ -84,9 +81,6 @@ func (r *BasicRemote)Send(msg string) {
 }
 
 func (r *BasicRemote)SendHandshake() {
-
-  fmt.Println("[Remote] Sending Handshake") //--------------------------
-
   if r.Rw != nil {
     fmt.Fprintf(r.Rw, HandShakeHeader)
     r.Rw.Flush()
@@ -122,9 +116,6 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
       }
 
       if str == "HandShake\n" {
-
-        fmt.Println("[Remote] Received Handshake") //--------------------------
-
         go func() {
           r.HandshakeChan <- true
         }()
@@ -143,8 +134,6 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
 
       } else if str == CloseHeader {
 
-        fmt.Println("[Remote] Closing requested") //--------------------------
-
         r.Close()
         continue
 
@@ -153,16 +142,11 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
       splitted := strings.Split(str, ",")
       if splitted[0] == MessageHeader {
         if len(splitted) <= 1 {
-
-          fmt.Println("[Remote] Closing, not enough fields") //--------------------------
-
           r.Standard.Push(errors.New("not enough fields"))
           r.Close()
         }
 
         msg := strings.Join(splitted[1:], ",")
-
-        fmt.Printf("[Remote] Received %q\n", msg) //--------------------------
 
         if offset > 0 {
           offset --
@@ -176,9 +160,6 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
         }()
 
       } else {
-
-        fmt.Println("[Remote] Closing, command not understood") //--------------------------
-
         r.Standard.Push(errors.New("command not understood"))
         r.Close()
 
@@ -189,9 +170,6 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
 
 func (r *BasicRemote)StreamHandler() (network.StreamHandler, error) {
   return func(stream network.Stream) {
-
-    fmt.Println("[Remote] Streamhandler called ") //--------------------------
-
     r.Reset(bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream)))
   }, nil
 }

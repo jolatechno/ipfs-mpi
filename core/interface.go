@@ -16,44 +16,65 @@ var (
 )
 
 func NewInterface(file string, n int, i int, args ...string) (Interface, error) {
+  cmdArgs := append([]string{file + "/run.py", fmt.Sprint(n), fmt.Sprint(i)}, args...)
   inter := StdInterface {
+    Idx: i,
+    Cmd: exec.Command("python3", cmdArgs...),
     InChan: make(chan string),
     OutChan: make(chan Message),
     RequestChan: make(chan int),
     Standard: NewStandardInterface(),
   }
 
-  cmdArgs := append([]string{file + "/run.py", fmt.Sprint(n), fmt.Sprint(i)}, args...)
-  cmd := exec.Command("python3", cmdArgs...)
+  return &inter, nil
+}
 
-  stdin, err := cmd.StdinPipe()
+type StdInterface struct {
+  Idx int
+  Cmd *exec.Cmd
+  InChan chan string
+  OutChan chan Message
+  RequestChan chan int
+  Standard BasicFunctionsCloser
+}
+
+func (s *StdInterface)Start() {
+  stdin, err := s.Cmd.StdinPipe()
 	if err != nil {
-		return nil, err
+    s.Standard.Push(err)
+    s.Close()
+    return
 	}
 
-  stdout, err := cmd.StdoutPipe()
+  stdout, err := s.Cmd.StdoutPipe()
 	if err != nil {
-		return nil, err
+    s.Standard.Push(err)
+    s.Close()
+    return
 	}
 
-  stderr, err := cmd.StderrPipe()
+  stderr, err := s.Cmd.StderrPipe()
 	if err != nil {
-		return nil, err
+    s.Standard.Push(err)
+    s.Close()
+    return
 	}
 
-  err = cmd.Start()
+  err = s.Cmd.Start()
   if err != nil {
-    return nil, err
+    s.Standard.Push(err)
+    s.Close()
+    return
   }
 
   go func() {
-    err := cmd.Wait()
+    err := s.Cmd.Wait()
     if err != nil {
-      inter.Standard.Push(err)
+      s.Standard.Push(err)
     }
 
-    if inter.Check() {
-      inter.Close()
+    if s.Check() {
+      s.Close()
     }
   }()
 
@@ -66,9 +87,9 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
       }
       if strErr != "" {
         time.Sleep(SafeWait)
-        if inter.Check() {
-          inter.Standard.Push(errors.New(strErr))
-          inter.Close()
+        if s.Check() {
+          s.Standard.Push(errors.New(strErr))
+          s.Close()
         }
         return
       }
@@ -77,16 +98,16 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
 
   reader := bufio.NewReader(stdout)
   go func(){
-    for inter.Check() {
+    for s.Check() {
       str, err := reader.ReadString('\n')
       if str == "" && err == nil {
         err = errors.New("Received an empty string")
       }
       if err != nil {
         time.Sleep(SafeWait)
-        if inter.Check() {
-          inter.Standard.Push(err)
-          inter.Close()
+        if s.Check() {
+          s.Standard.Push(err)
+          s.Close()
         }
         return
       }
@@ -95,25 +116,25 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
 
       if splitted[0] == "Req" {
         if len(splitted) != 2 {
-          inter.Standard.Push(errors.New("Not enough field"))
-          inter.Close()
+          s.Standard.Push(errors.New("Not enough field"))
+          s.Close()
           return
         }
 
         idx, err := strconv.Atoi(splitted[1][:len(splitted[1]) - 1])
         if err != nil {
-          inter.Standard.Push(err)
-          inter.Close()
+          s.Standard.Push(err)
+          s.Close()
           return
         }
 
-        inter.RequestChan <- idx
-        go fmt.Fprint(stdin, <- inter.InChan)
+        s.RequestChan <- idx
+        go fmt.Fprint(stdin, <- s.InChan)
 
-      } else if splitted[0] == "Log" && i == 0 {
+      } else if splitted[0] == "Log" && s.Idx == 0 {
         if len(splitted) < 2 {
-          inter.Standard.Push(errors.New("Not enough field"))
-          inter.Close()
+          s.Standard.Push(errors.New("Not enough field"))
+          s.Close()
           return
         }
 
@@ -121,40 +142,31 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
 
       } else if splitted[0] == "Send" {
         if len(splitted) < 3 {
-          inter.Standard.Push(errors.New("Not enough field"))
-          inter.Close()
+          s.Standard.Push(errors.New("Not enough field"))
+          s.Close()
           return
         }
 
         idx, err := strconv.Atoi(splitted[1])
         if err != nil {
-          inter.Standard.Push(err)
-          inter.Close()
+          s.Standard.Push(err)
+          s.Close()
           return
         }
 
         go func() {
-          inter.OutChan <- Message {
+          s.OutChan <- Message {
             To: idx,
             Content: strings.Join(splitted[2:], ","),
           }
         }()
       } else {
-        inter.Standard.Push(errors.New("Not understood"))
-        inter.Close()
+        s.Standard.Push(errors.New("Not understood"))
+        s.Close()
         return
       }
     }
   }()
-
-  return &inter, nil
-}
-
-type StdInterface struct {
-  InChan chan string
-  OutChan chan Message
-  RequestChan chan int
-  Standard BasicFunctionsCloser
 }
 
 func (s *StdInterface)Close() error {

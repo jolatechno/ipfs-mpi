@@ -167,12 +167,25 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
     <- comm.Remote(0).GetHandshake()
   }
 
-  comm.start()
+  comm.Start()
 
   return &comm, nil
 }
 
-func (c *BasicSlaveComm)start() {
+type BasicSlaveComm struct {
+  Ctx context.Context
+  Inter Interface
+  Id string
+  Idx int
+  CommHost ExtHost
+  Addrs *[]peer.ID
+  Base protocol.ID
+  Pid protocol.ID
+  Remotes *[]Remote
+  Standard BasicFunctionsCloser
+}
+
+func (c *BasicSlaveComm)Start() {
   go func() {
     outChan := c.Interface().Message()
     for c.Check() {
@@ -206,7 +219,7 @@ func (c *BasicSlaveComm)start() {
   }()
 
   go func(){
-    err, ok := <- c.Inter.ErrorChan()
+    err, ok := <- c.Interface().ErrorChan()
     if c.Check() && ok {
       c.Standard.Push(err)
       c.Close()
@@ -214,7 +227,7 @@ func (c *BasicSlaveComm)start() {
   }()
 
   go func(){
-    err, ok := <- c.CommHost.ErrorChan()
+    err, ok := <- c.Host().ErrorChan()
     if c.Check() && ok {
       c.Standard.Push(err)
       c.Close()
@@ -222,24 +235,13 @@ func (c *BasicSlaveComm)start() {
   }()
 
   go func(){
-    <- c.CommHost.CloseChan()
+    <- c.Host().CloseChan()
     if c.Check() {
       c.Close()
     }
   }()
-}
 
-type BasicSlaveComm struct {
-  Ctx context.Context
-  Inter Interface
-  Id string
-  Idx int
-  CommHost ExtHost
-  Addrs *[]peer.ID
-  Base protocol.ID
-  Pid protocol.ID
-  Remotes *[]Remote
-  Standard BasicFunctionsCloser
+  c.Interface().Start()
 }
 
 func (c *BasicSlaveComm)Interface() Interface {

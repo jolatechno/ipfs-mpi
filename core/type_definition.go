@@ -77,6 +77,7 @@ type MasterComm interface {
 type SlaveComm interface {
   standardFunctionsCloser
 
+  Start()
   Host() ExtHost
   Interface() Interface
   Remote(int) Remote
@@ -100,6 +101,7 @@ type Remote interface {
 type Interface interface {
   standardFunctionsCloser
 
+  Start()
   Message() chan Message
   Request() chan int
   Push(string) error

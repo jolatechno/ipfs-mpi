@@ -78,8 +78,6 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
   wg.Wait()
 
-  fmt.Println("[MasterComm] Handshake 0") //--------------------------
-
   var wg2 sync.WaitGroup
 
   wg2.Add(n - 1)
@@ -96,8 +94,6 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
   wg2.Wait()
 
-  fmt.Println("[MasterComm] Handshake 1") //--------------------------
-
   go func() {
     <- comm.Comm.CloseChan()
     if comm.Check() {
@@ -109,7 +105,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     comm.SlaveComm().Remote(j).SendHandshake()
   }
 
-  comm.Comm.start()
+  comm.SlaveComm().Start()
 
   return &comm, nil
 }
