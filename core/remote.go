@@ -141,6 +141,9 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
         continue
 
       } else if str == CloseHeader {
+
+        fmt.Println("[Remote] Closing requested") //--------------------------
+
         r.Close()
         continue
 
@@ -149,6 +152,9 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
       splitted := strings.Split(str, ",")
       if splitted[0] == MessageHeader {
         if len(splitted) <= 1 {
+
+          fmt.Println("[Remote] Closing, not enough fields") //--------------------------
+
           r.Standard.Push(errors.New("not enough fields"))
           r.Close()
         }
@@ -169,6 +175,9 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
         }()
 
       } else {
+
+        fmt.Println("[Remote] Closing, command not understood") //--------------------------
+
         r.Standard.Push(errors.New("command not understood"))
         r.Close()
 
@@ -196,9 +205,6 @@ func (r *BasicRemote)Stream() *bufio.ReadWriter {
 
 
 func (r *BasicRemote)Close() error {
-
-  fmt.Println("[Remote] Closing") //--------------------------
-
   if r.Check() {
     r.Standard.Close()
   }
