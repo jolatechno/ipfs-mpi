@@ -100,7 +100,7 @@ func NewMpi(ctx context.Context, config Config) (Mpi, error) {
 
   go func() {
     err, ok := <- store.ErrorChan()
-    if mpi.Check() && ok {
+    if mpi.Check() && ok && err != nil {
       mpi.Standard.Push(err)
       mpi.Close()
     }
@@ -115,7 +115,7 @@ func NewMpi(ctx context.Context, config Config) (Mpi, error) {
 
   go func() {
     err, ok := <- host.ErrorChan()
-    if mpi.Check() && ok {
+    if mpi.Check() && ok && err != nil {
       mpi.Standard.Push(err)
       mpi.Close()
     }
@@ -213,7 +213,7 @@ func (m *BasicMpi)Add(f string) error {
 
     go func() {
       err, ok := <- comm.ErrorChan()
-      if ok {
+      if ok && err != nil {
         m.Standard.Push(err)
         comm.Close()
       }
@@ -279,7 +279,7 @@ func (m *BasicMpi)Start(file string, n int, args ...string) error {
 
   go func() {
     err, ok := <- comm.ErrorChan()
-    if ok {
+    if ok && err != nil {
       m.Standard.Push(err)
       comm.Close()
     }

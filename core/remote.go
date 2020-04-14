@@ -52,7 +52,7 @@ func (r *BasicRemote)Ping(timeoutDuration time.Duration) bool {
       case <- r.PingChan:
         return nil
       case err, ok := <- r.ErrorChan():
-        if ok {
+        if ok && err != nil {
           return err
         }
         continue

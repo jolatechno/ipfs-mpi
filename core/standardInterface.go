@@ -25,6 +25,13 @@ func (b *BasicFunctionsCloser)Close() error {
     for i := range b.EndChan {
       go func() {
         b.EndChan[i] <- true
+        close(b.EndChan[i])
+      }()
+    }
+    for i := range b.Error {
+      go func() {
+        b.Error[i] <- nil
+        close(b.Error[i])
       }()
     }
   }

@@ -193,6 +193,7 @@ func (c *BasicSlaveComm)Start() {
       if ok && msg.To != -1 {
         go c.Remote(msg.To).Send(msg.Content)
       } else {
+        close(outChan)
         break
       }
     }
@@ -209,6 +210,7 @@ func (c *BasicSlaveComm)Start() {
       if ok && req != -1 {
         go c.Interface().Push(c.Remote(req).Get())
       } else {
+        close(requestChan)
         break
       }
     }
