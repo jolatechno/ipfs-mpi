@@ -154,7 +154,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
   }
 
   for i, addr := range *comm.Addrs {
-    if i > 0 && (i > param.Idx || !param.Init) {
+    if i > 0 && (i > param.Idx || !param.Init) && i != param.Idx {
       go func(wp *sync.WaitGroup) {
         comm.Connect(i, addr)
         wp.Done()
@@ -251,7 +251,7 @@ func (c *BasicSlaveComm)Interface() Interface {
 func (c *BasicSlaveComm)Close() error {
   if c.Check() {
 
-    fmt.Printf("[SlaveComm] Closing %d out of %d\n", c.Idx, len(*c.Addrs)) //--------------------------
+    //fmt.Printf("[SlaveComm] Closing %d out of %d\n", c.Idx, len(*c.Addrs)) //--------------------------
 
     c.Standard.Close()
 
@@ -298,7 +298,7 @@ func (c *BasicSlaveComm)Host() ExtHost {
 
 func (c *BasicSlaveComm)Connect(i int, addr peer.ID) error {
 
-  fmt.Printf("[SlaveComm] %d connecting to %d out of %d\n", c.Idx, i, len(*c.Addrs)) //--------------------------
+  //fmt.Printf("[SlaveComm] %d connecting to %d out of %d\n", c.Idx, i, len(*c.Addrs)) //--------------------------
 
   rwi, err := timeout.MakeTimeout(func() (interface{}, error) {
     stream, err := c.CommHost.NewStream(c.Ctx, addr, c.Pid)
