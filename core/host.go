@@ -301,6 +301,9 @@ func (h *BasicExtHost)SelfStream(pid ...protocol.ID) (SelfStream, error) {
     }
 
     if !(*streamHandlerMatcher).Match(string(pid[0])) {
+
+      fmt.Println("[host] (SelfStream) not a match for ", key, " and ", pid[0]) //--------------------------
+
       return true
     }
 
