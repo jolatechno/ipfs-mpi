@@ -244,7 +244,7 @@ func (h *BasicExtHost)SetStreamHandler(pid protocol.ID, handler network.StreamHa
   if err != nil {
     panic(err) //shouldn't happend
   }
-  h.StreamHandlers.Store(pid, &StreamHandlerMatcher{
+  h.StreamHandlers.Store(pid, &StreamHandlerMatcher {
     Match: match,
     Handler: handler,
   })
@@ -252,7 +252,7 @@ func (h *BasicExtHost)SetStreamHandler(pid protocol.ID, handler network.StreamHa
 }
 
 func (h *BasicExtHost)SetStreamHandlerMatch(pid protocol.ID, match func(string) bool, handler network.StreamHandler) {
-  h.StreamHandlers.Store(pid, &StreamHandlerMatcher{
+  h.StreamHandlers.Store(pid, &StreamHandlerMatcher {
     Match: match,
     Handler: handler,
   })
@@ -299,9 +299,12 @@ func (h *BasicExtHost)SelfStream(pid ...protocol.ID) (SelfStream, error) {
 
   h.StreamHandlers.Range(func(key interface{}, value interface{}) bool {
     streamHandlerMatcher, ok := value.(*StreamHandlerMatcher)
+
+    fmt.Println("[host] (SelfStream) ", key) //--------------------------
+
     if !ok {
 
-      fmt.Println("[host] (SelfStream) couldn't convert ", key) //--------------------------
+      fmt.Println("[host] (SelfStream) couldn't convert ") //--------------------------
 
       return true
     }
