@@ -84,6 +84,9 @@ func (r *BasicRemote)Send(msg string) {
 }
 
 func (r *BasicRemote)SendHandshake() {
+
+  fmt.Println("[Remote] Sending Handshake") //--------------------------
+
   if r.Rw != nil {
     fmt.Fprintf(r.Rw, HandShakeHeader)
     r.Rw.Flush()
