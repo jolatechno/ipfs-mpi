@@ -215,7 +215,7 @@ func (m *BasicMpi)Add(f string) error {
       err, ok := <- comm.ErrorChan()
       if ok {
         m.Standard.Push(err)
-        m.Close()
+        comm.Close()
       }
     }()
   })
@@ -281,7 +281,7 @@ func (m *BasicMpi)Start(file string, n int, args ...string) error {
     err, ok := <- comm.ErrorChan()
     if ok {
       m.Standard.Push(err)
-      m.Close()
+      comm.Close()
     }
   }()
 

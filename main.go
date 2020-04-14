@@ -7,6 +7,7 @@ import (
   "strconv"
   "os"
   "fmt"
+  "time"
 
   "github.com/jolatechno/ipfs-mpi/core"
 )
@@ -25,10 +26,15 @@ func main(){
   }
 
   go func() {
-    err, ok := <- store.ErrorChan()
-    if ok {
-      fmt.Println(err)
-      panic(err)
+    for {
+      err, ok := <- store.ErrorChan()
+      if ok {
+        time.Sleep(time.Second)
+        if !store.Check() {
+          fmt.Println(err)
+          panic(err)
+        }
+      }
     }
   }()
 

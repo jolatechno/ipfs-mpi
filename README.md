@@ -22,20 +22,20 @@ Wich will give an output ressembling :
 added QmYjH4sibLpCSNCVbHXhfCZY78Ckj2aDDMWFwup7NGJ3JD interpreter/dummy/init.py
 added Qmb5jKmyFQFDceBXLCkjdfQbJrJ5fQ6KLGJHESTJ8E5mZo interpreter/dummy/run.py
 added QmYjH4sibLpCSNCVbHXhfCZY78Ckj2aDDMWFwup7NGJ3JD interpreter/echo/init.py
-added Qmccr1oeWtn2kumHvQScsVhCRqvTECsv9oBZu9i2QscUvY interpreter/echo/run.py
+added QmWYeLF3UP7gNVi7shwdCHARM6QSH4Ls4QHm7FDtXbwqCt interpreter/echo/run.py
 added QmYjH4sibLpCSNCVbHXhfCZY78Ckj2aDDMWFwup7NGJ3JD interpreter/multi_echo/init.py
-added QmTcxaF2K1CrcZ4H6GT1GXU814tRwGbUEu6rNFXohR98R5 interpreter/multi_echo/run.py
+added QmWVaQKHMTgjY2xkhL5b9GpAJtURmfeCymUB5GmPLYihxt interpreter/multi_echo/run.py
 added QmYjH4sibLpCSNCVbHXhfCZY78Ckj2aDDMWFwup7NGJ3JD interpreter/round_echo/init.py
-added QmQVR7biYJP8578BADqmR2GKJrDMJAU8hmPzcd4ZJDjumt interpreter/round_echo/run.py
+added QmbHiQDxwkYBQyMK7AtXo28ch1RqkfqnUCjTejqjzmGmW6 interpreter/round_echo/run.py
 added QmUQT4c4btHFZGgcrSzzxXTstFWSe3eS32YhVCJYGqtut7 interpreter/dummy
-added QmT29r7Pgba1q2crW8MW4dKwaGw3Wg72E6uLRTp17rFFyC interpreter/echo
-added QmQyvtdRGSS6dq3dyDLRJNGsMoadKjC59wykyJHFTLRBiW interpreter/multi_echo
-added Qme4447ijhvXDEqBNaRqPBpMgCCFNSzKRr2DshWrjD39vL interpreter/round_echo
-added QmQvghovY96ujyrFGgPPRu6UKXuEBLiZrNuQePLCigCWKS interpreter
- 1.90 KiB / 1.90 KiB [=========================================================================] 100.00%
+added QmPfUkJEyjGMCHcTki22pNtkydonF9X57mNKGhpjpwCjFj interpreter/echo
+added QmfNDPyCE3HUy6hVrD77yXnXW6p2X7xyzLjEDkoUchgxHe interpreter/multi_echo
+added Qma2E2hHzQm33btHhPqCLFpmt2XK4RdRSE3YqSNL1Xzppt interpreter/round_echo
+added QmU5pbUzwuE5GmiF8S96VGHJL3mTEPg9TTLsXf9vo4jTNm interpreter
+ 3.00 KiB / 3.00 KiB [=========================================================================] 100.00%
  ```
 
-Where the line corresponding to the whole directory is `added QmQvghovY96ujyrFGgPPRu6UKXuEBLiZrNuQePLCigCWKS interpreter`, so the ipfs-store that you should use will be `QmPL9GyMFUZmgVmgNrSGDQaQQzSmivu2K8sNVYPNp4LAw3/`
+Where the line corresponding to the whole directory is `added QmU5pbUzwuE5GmiF8S96VGHJL3mTEPg9TTLsXf9vo4jTNm interpreter`, so the ipfs-store that you should use will be `QmU5pbUzwuE5GmiF8S96VGHJL3mTEPg9TTLsXf9vo4jTNm/`
 
 ## How to build ?
 

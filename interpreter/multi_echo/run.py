@@ -1,5 +1,14 @@
 import sys
-import base64
+import signal
+
+timeout = 5 # timeout duration
+
+class TimeoutException(Exception):
+    pass
+
+def Timeout(signum, frame):
+    print("Log,Timed-out")
+    raise TimeoutException()
 
 if __name__ == "__main__":
     n, i = int(sys.argv[1]), int(sys.argv[2])
@@ -18,8 +27,14 @@ if __name__ == "__main__":
             print(f"Send,{j},{msg}")
 
         for j in range(1, n):
+            signal.signal(signal.SIGALRM, Timeout) #link the SIGALRM signal to the handler
+            signal.alarm(timeout) #create an alarm of timeout second
+
             resp = input(f"Req,{j}\n")
             print(f"Log,{j} responded: {resp}")
+
+            signal.alarm(0) #reinitiate the alarm
+            
     else:
         msg = input("Req,0\n")
         print(f"Send,0,{msg} {msg}")

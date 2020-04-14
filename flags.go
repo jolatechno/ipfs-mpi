@@ -16,7 +16,7 @@ func ParseFlag() (core.Config, error) {
 
 	flag.StringVar(&config.Url, "ipfs-api", "/ip4/127.0.0.1/tcp/5001", "Local ipfs daemon url")
 	flag.StringVar(&config.Path, "path", "interpreter/", "path to the interpretor directory")
-	flag.StringVar(&config.Ipfs_store, "ipfs-store", "QmQvghovY96ujyrFGgPPRu6UKXuEBLiZrNuQePLCigCWKS/",
+	flag.StringVar(&config.Ipfs_store, "ipfs-store", "QmU5pbUzwuE5GmiF8S96VGHJL3mTEPg9TTLsXf9vo4jTNm/",
 		"Unique string to identify the ipfs store you are using")
 	flag.Uint64Var(&config.Maxsize, "maxsize", 10000000, "Set the max use space, default to 10MB")
   flag.Var(&config.BootstrapPeers, "peer", "Adds a peer multiaddress to the bootstrap list")
