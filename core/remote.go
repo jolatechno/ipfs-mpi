@@ -196,6 +196,9 @@ func (r *BasicRemote)Stream() *bufio.ReadWriter {
 
 
 func (r *BasicRemote)Close() error {
+
+  fmt.Println("[Remote] Closing") //--------------------------
+
   if r.Check() {
     r.Standard.Close()
   }
