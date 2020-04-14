@@ -47,10 +47,10 @@ func ParamFromString(msg string) (Param, error) {
   }
 
   addrs := strings.Split(splitted[4], ";")
-  param.Addrs = make([]peer.ID, len(addrs))
+  list := make([]peer.ID, len(addrs))
 
   for i, addr := range addrs {
-    param.Addrs[i], err = peer.IDB58Decode(addr)
+    list[i], err = peer.IDB58Decode(addr)
     if err != nil {
       return param, err
     }
@@ -59,6 +59,7 @@ func ParamFromString(msg string) (Param, error) {
   param.Idx = idx
   param.N = n
   param.Id = splitted[3]
+  param.Addrs = &list
 
   return param, nil
 }
@@ -68,12 +69,12 @@ type Param struct {
   Idx int
   N int
   Id string
-  Addrs []peer.ID
+  Addrs *[]peer.ID
 }
 
 func (p *Param)String() string {
-  addrs := make([]string, len(p.Addrs))
-  for i, addr := range p.Addrs {
+  addrs := make([]string, len(*p.Addrs))
+  for i, addr := range *p.Addrs {
     addrs[i] = peer.IDB58Encode(addr)
   }
 
@@ -87,6 +88,7 @@ func (p *Param)String() string {
 }
 
 func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, base protocol.ID, inter Interface, param Param) (_ SlaveComm, err error) {
+  remotes := make([]Remote, len(*param.Addrs))
   comm := BasicSlaveComm {
     Ctx: ctx,
     Inter: inter,
@@ -96,7 +98,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
     Addrs: param.Addrs,
     Base: base,
     Pid: protocol.ID(fmt.Sprintf("%d/%s/%s", param.Idx, param.Id, string(base))),
-    Remotes: make([]Remote, len(param.Addrs)),
+    Remotes: &remotes,
     Standard: NewStandardInterface(),
   }
 
@@ -105,15 +107,15 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
     n = 1
   }
 
-  comm.Remotes[0], err = NewRemote(n)
+  (*comm.Remotes)[0], err = NewRemote(n)
   if err != nil {
     return nil, err
   }
 
-  comm.Remotes[0].Reset(zeroRw)
+  comm.Remote(0).Reset(zeroRw)
 
   go func(){
-    <- comm.Remotes[0].CloseChan()
+    <- comm.Remote(0).CloseChan()
     if comm.Check() {
       comm.Close()
     }
@@ -122,19 +124,19 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
   go func(){
     for comm.Check() {
       time.Sleep(WaitDuration)
-      if !comm.Remotes[0].Ping(WaitDuration) {
+      if !comm.Remote(0).Ping(WaitDuration) {
         comm.Close()
       }
     }
   }()
 
-  for i := 1; i < len(param.Addrs); i++ {
-    comm.Remotes[i], err = NewRemote(0)
+  for i := 1; i < len(*param.Addrs); i++ {
+    (*comm.Remotes)[i], err = NewRemote(0)
     if err != nil {
       return nil, err
     }
 
-    streamHandler, err := comm.Remotes[i].StreamHandler()
+    streamHandler, err := comm.Remote(i).StreamHandler()
     if err != nil {
       return nil, err
     }
@@ -143,9 +145,9 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
     host.SetStreamHandler(proto, streamHandler)
   }
 
-  comm.Remotes[0].Send("Done\n")
+  comm.Remote(0).Send("Done\n")
 
-  str := comm.Remotes[0].GetHandshake()
+  str := comm.Remote(0).GetHandshake()
   if err != nil {
     return &comm, err
   }
@@ -156,12 +158,12 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
   var wg sync.WaitGroup
 
   if param.Init {
-    wg.Add(len(param.Addrs) - param.Idx - 1)
+    wg.Add(len(*param.Addrs) - param.Idx - 1)
   } else {
-    wg.Add(len(param.Addrs) - 1)
+    wg.Add(len(*param.Addrs) - 1)
   }
 
-  for i, addr := range comm.Addrs {
+  for i, addr := range *comm.Addrs {
     if i > 0 && (i > param.Idx || !param.Init) {
       go func(wp *sync.WaitGroup) {
         comm.Connect(i, addr)
@@ -170,7 +172,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
     }
   }
 
-  comm.Remotes[0].Send("Connected\n")
+  comm.Remote(0).Send("Connected\n")
 
   comm.start()
 
@@ -254,10 +256,10 @@ type BasicSlaveComm struct {
   Id string
   Idx int
   CommHost ExtHost
-  Addrs []peer.ID
+  Addrs *[]peer.ID
   Base protocol.ID
   Pid protocol.ID
-  Remotes []Remote
+  Remotes *[]Remote
   Standard BasicFunctionsCloser
 }
 
@@ -274,11 +276,11 @@ func (c *BasicSlaveComm)Close() error {
       return err
     }
 
-    for i := range c.Remotes {
+    for i := range *c.Remotes {
       if i != c.Idx {
         proto := protocol.ID(fmt.Sprintf("%d/%s", i, string(c.Pid)))
         c.CommHost.RemoveStreamHandler(proto)
-        c.Remotes[i].Close()
+        c.Remote(i).Close()
       }
     }
   }
@@ -299,7 +301,7 @@ func (c *BasicSlaveComm)Check() bool {
 }
 
 func (c *BasicSlaveComm)Remote(idx int) Remote {
-  return c.Remotes[idx]
+  return (*c.Remotes)[idx]
 }
 
 func (c *BasicSlaveComm)Host() ExtHost {
@@ -312,10 +314,6 @@ func (c *BasicSlaveComm)Connect(i int, addr peer.ID) error {
     if err != nil {
       return nil, err
     }
-
-    if c.Idx != 0 && i != 0 { //--------------------------
-      fmt.Println("[SlaveComm] Connected") //--------------------------
-    } //--------------------------
 
     rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
     return rw, nil
@@ -330,7 +328,7 @@ func (c *BasicSlaveComm)Connect(i int, addr peer.ID) error {
     return errors.New("couldn't convert interface")
   }
 
-  c.Remotes[i].Reset(rw)
+  c.Remote(i).Reset(rw)
 
   return nil
 }

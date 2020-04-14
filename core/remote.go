@@ -17,7 +17,7 @@ func NewRemote(handshakeMessage int) (Remote, error) {
     PingChan: make(chan bool),
     ReadChan: make(chan string),
     HandshakeChan: make(chan string),
-    Sent: []string{},
+    Sent: &[]string{},
     Rw: nil,
     Offset: 0,
     Received: 0,
@@ -31,7 +31,7 @@ type BasicRemote struct {
   PingChan chan bool
   ReadChan chan string
   HandshakeChan chan string
-  Sent []string
+  Sent *[]string
   Rw *bufio.ReadWriter
   Offset int
   Received int
@@ -72,7 +72,7 @@ func (r *BasicRemote)Send(msg string) {
   fmt.Printf("[Remote] Sending %q\n", msg) //--------------------------
 
   if r.ReceivedHandshakeMessage >= r.HandshakeMessage { //shouldn't be strictly greater
-    r.Sent = append(r.Sent, msg)
+    *r.Sent = append(*r.Sent, msg)
   }
 
   if r.Rw != nil {
@@ -120,7 +120,7 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
           }()
 
           if r.ReceivedHandshakeMessage == r.HandshakeMessage {
-            for _, msg_hist := range r.Sent {
+            for _, msg_hist := range *r.Sent {
               fmt.Fprintf(stream, "Msg,%s", msg_hist)
               stream.Flush()
             }

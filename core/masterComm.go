@@ -29,6 +29,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     }
   }
 
+  remotes := make([]Remote, n)
   comm := BasicMasterComm {
     N: n,
     Comm: BasicSlaveComm {
@@ -37,10 +38,10 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
       Id: id,
       Idx: 0,
       CommHost: host,
-      Addrs: Addrs,
+      Addrs: &Addrs,
       Base: protocol.ID(fmt.Sprintf("%s/%s", id, string(base))),
       Pid: base,
-      Remotes: make([]Remote, n),
+      Remotes: &remotes,
       Standard: NewStandardInterface(),
     },
   }
@@ -49,9 +50,9 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
   wg.Add(n - 1)
 
-  for j, addr := range comm.Comm.Addrs {
+  for j, addr := range *comm.Comm.Addrs {
     if j > 0 {
-      comm.Comm.Remotes[j], err = NewRemote(2)
+      (*comm.Comm.Remotes)[j], err = NewRemote(2)
       if err != nil {
         return nil, err
       }
@@ -110,7 +111,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
 func (c *BasicMasterComm)Close() error {
   if c.Check() {
-    for i := range c.Comm.Remotes {
+    for i := range *c.Comm.Remotes {
       c.SlaveComm().Remote(i).CloseRemote()
     }
     c.SlaveComm().Close()
