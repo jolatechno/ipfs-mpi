@@ -113,14 +113,6 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
   comm.Remotes[0].Reset(zeroRw)
 
   go func(){
-    err, ok := <- comm.Remotes[0].ErrorChan()
-    if comm.Check() && ok {
-      comm.Standard.Push(err)
-      comm.Close()
-    }
-  }()
-
-  go func(){
     <- comm.Remotes[0].CloseChan()
     if comm.Check() {
       comm.Close()

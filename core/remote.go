@@ -43,8 +43,17 @@ type BasicRemote struct {
 func (r *BasicRemote)Ping(timeoutDuration time.Duration) bool {
   err := timeout.MakeSimpleTimeout(func () error {
     fmt.Fprint(r.Rw, "Ping\n")
-    <- r.PingChan
-    return nil
+    for {
+      select {
+      case <- r.PingChan:
+        return nil
+      case err, ok := <- r.ErrorChan():
+        if ok {
+          return err
+        }
+        continue
+      }
+    }
   }, timeoutDuration)
 
   if err != nil {
@@ -112,8 +121,8 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
 
           if r.ReceivedHandshakeMessage == r.HandshakeMessage {
             for _, msg_hist := range r.Sent {
-              fmt.Fprintf(r.Rw, "Msg,%s", msg_hist)
-              r.Rw.Flush()
+              fmt.Fprintf(stream, "Msg,%s", msg_hist)
+              stream.Flush()
             }
           }
 
