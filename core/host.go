@@ -116,7 +116,7 @@ func NewHost(ctx context.Context, bootstrapPeers ...maddr.Multiaddr) (ExtHost, e
     Host: h,
     StreamHandlers: streamHandlers,
     Routing: routingDiscovery,
-    PeerStores: make(map[protocol.ID]peerstore.Peerstore),
+    PeerStores: make(map[protocol.ID] peerstore.Peerstore),
     Standard: NewStandardInterface(),
   }, nil
 }
@@ -126,7 +126,7 @@ type BasicExtHost struct {
   Host host.Host
   StreamHandlers sync.Map
   Routing *discovery.RoutingDiscovery
-  PeerStores map[protocol.ID]peerstore.Peerstore
+  PeerStores map[protocol.ID] peerstore.Peerstore
   Standard BasicFunctionsCloser
 }
 
@@ -234,12 +234,12 @@ func (h *BasicExtHost)Connect(ctx context.Context, pi peer.AddrInfo) error {
 }
 
 func (h *BasicExtHost)SetStreamHandler(pid protocol.ID, handler network.StreamHandler) {
-  h.StreamHandlers.Store(pid, handler)
+  h.StreamHandlers.Store(pid, &handler)
   h.Host.SetStreamHandler(pid, handler)
 }
 
 func (h *BasicExtHost)SetStreamHandlerMatch(pid protocol.ID, match func(string) bool, handler network.StreamHandler) {
-  h.StreamHandlers.Store(pid, handler)
+  h.StreamHandlers.Store(pid, &handler)
   h.Host.SetStreamHandlerMatch(pid, match, handler)
 }
 
@@ -277,7 +277,7 @@ func (h *BasicExtHost)SelfStream(pid ...protocol.ID) (SelfStream, error) {
     return nil, errors.New("no such protocol")
   }
 
-  handler, ok := handlerInterface.(network.StreamHandler)
+  handler, ok := handlerInterface.(*network.StreamHandler)
   if !ok {
     return nil, errors.New("couldn't convert interface")
   }
@@ -288,7 +288,7 @@ func (h *BasicExtHost)SelfStream(pid ...protocol.ID) (SelfStream, error) {
     return nil, err
   }
 
-  go handler(reversed_stream)
+  go (*handler)(reversed_stream)
 
   return stream, nil
 }
