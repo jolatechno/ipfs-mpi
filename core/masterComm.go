@@ -104,6 +104,13 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
   wg2.Wait()
 
+  go func() {
+    <- comm.Comm.CloseChan()
+    if comm.Check() {
+      comm.Close()
+    }
+  }()
+
   comm.Comm.start()
 
   return &comm, nil

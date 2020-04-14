@@ -265,9 +265,6 @@ func (h *BasicExtHost)RemoveStreamHandler(pid protocol.ID) {
 }
 
 func (h *BasicExtHost)NewStream(ctx context.Context, p peer.ID, pids ...protocol.ID) (network.Stream, error) {
-
-    fmt.Println("[Host] NewStream") //--------------------------
-
   if p == h.ID() {
     return h.SelfStream(pids...)
   }
@@ -283,9 +280,6 @@ func (h *BasicExtHost)EventBus() event.Bus {
 }
 
 func (h *BasicExtHost)SelfStream(pid ...protocol.ID) (SelfStream, error) {
-
-  fmt.Println("[host] (SelfStream)") //--------------------------
-
   if len(pid) == 0 {
     return nil, errors.New("no protocol given")
   }
@@ -303,19 +297,11 @@ func (h *BasicExtHost)SelfStream(pid ...protocol.ID) (SelfStream, error) {
   h.StreamHandlers.Range(func(key interface{}, value interface{}) bool {
     streamHandlerMatcher, ok := value.(*StreamHandlerMatcher)
 
-    fmt.Println("[host] (SelfStream) ", key) //--------------------------
-
     if !ok {
-
-      fmt.Println("[host] (SelfStream) couldn't convert ") //--------------------------
-
       return true
     }
 
     if !(*streamHandlerMatcher).Match(string(pid[0])) {
-
-      fmt.Println("[host] (SelfStream) not a match for ", key, " and ", pid[0]) //--------------------------
-
       return true
     }
 
