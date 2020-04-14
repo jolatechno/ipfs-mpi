@@ -69,9 +69,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
           }
         }()
 
-        for {
-          <- comm.SlaveComm().Remote(i).GetHandshake()
-        }
+        <- comm.SlaveComm().Remote(i).GetHandshake()
 
         wp.Done()
       }(&wg, j)

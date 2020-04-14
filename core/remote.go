@@ -119,6 +119,9 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
       }
 
       if str == "HandShake\n" {
+
+        fmt.Printf("[Remote] Received Handshake") //--------------------------
+
         go func() {
           r.HandshakeChan <- true
         }()
