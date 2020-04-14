@@ -50,6 +50,9 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
   wg.Add(n - 1)
 
+  state := 0
+  reseted := make([]bool, n)
+
   for j, addr := range *comm.Comm.Addrs {
     if j > 0 {
       (*comm.Comm.Remotes)[j], err = NewRemote()
@@ -61,38 +64,70 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
         comm.Connect(i, addr, true)
 
         go func() {
-          for comm.Check() {
-            time.Sleep(WaitDuration)
+          for comm.Check() && state == 0 {
             if !comm.SlaveComm().Remote(i).Ping(WaitDuration) {
+              reseted[i] = true
               comm.Reset(i)
+
+              wp.Done()
+              return
             }
           }
         }()
 
         <- comm.SlaveComm().Remote(i).GetHandshake()
 
-        wp.Done()
+        if !reseted[i] {
+          wp.Done()
+        }
       }(&wg, j)
     }
   }
 
   wg.Wait()
 
+  state = 1
+  N := 0
+  for _, s := range reseted {
+    if !s {
+      N++
+    }
+  }
+
   var wg2 sync.WaitGroup
 
-  wg2.Add(n - 1)
+  wg2.Add(N - 1)
 
   for j := 1; j < n; j++ {
-    comm.SlaveComm().Remote(j).SendHandshake()
+    if !reseted[j] {
+      comm.SlaveComm().Remote(j).SendHandshake()
 
-    go func(wp *sync.WaitGroup, i int) {
-      <- comm.SlaveComm().Remote(i).GetHandshake()
+      go func(wp *sync.WaitGroup, i int) {
 
-      wp.Done()
-    }(&wg2, j)
+        go func() {
+          for comm.Check() && state == 1 {
+            if !comm.SlaveComm().Remote(i).Ping(WaitDuration) {
+              reseted[i] = true
+              comm.Reset(i)
+
+              wp.Done()
+              return
+            }
+          }
+        }()
+
+        <- comm.SlaveComm().Remote(i).GetHandshake()
+
+        if !reseted[i] {
+          wp.Done()
+        }
+      }(&wg2, j)
+    }
   }
 
   wg2.Wait()
+
+  state = 2
 
   go func() {
     <- comm.Comm.CloseChan()
@@ -102,7 +137,18 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   }()
 
   for j := 1; j < n; j++ {
-    comm.SlaveComm().Remote(j).SendHandshake()
+    if !reseted[j] {
+      comm.SlaveComm().Remote(j).SendHandshake()
+    }
+
+    go func(i int) {
+      for comm.Check() {
+        time.Sleep(WaitDuration)
+        if !comm.SlaveComm().Remote(i).Ping(WaitDuration) {
+          comm.Reset(i)
+        }
+      }
+    }(j)
   }
 
   comm.SlaveComm().Start()
