@@ -7,16 +7,16 @@ import (
 func NewStandardInterface() BasicFunctionsCloser {
   return BasicFunctionsCloser {
     Ended: false,
-    EndChan: []chan bool{},
-    Error: []chan error{},
+    EndChan: [] *SafeChannelBool{},
+    Error: [] *SafeChannelError{},
   }
 }
 
 type BasicFunctionsCloser struct {
   Mutex sync.Mutex
   Ended bool
-  EndChan []chan bool
-  Error []chan error
+  EndChan [] *SafeChannelBool
+  Error [] *SafeChannelError
 }
 
 func (b *BasicFunctionsCloser)Close() error {
@@ -24,16 +24,22 @@ func (b *BasicFunctionsCloser)Close() error {
   defer b.Mutex.Unlock()
   if !b.Ended {
     b.Ended = true
+
     for i := range b.EndChan {
-      b.EndChan[i] <- true
-      close(b.EndChan[i])
+      go func() {
+        b.EndChan[i].Send(true)
+        b.EndChan[i].SafeClose()
+      }()
+
     }
 
     for i := range b.Error {
-      for len(b.Error[i]) > 0 {
-        <- b.Error[i]
-      }
-      close(b.Error[i])
+      go func() {
+        for len(b.Error[i].C) > 0 {
+          <- b.Error[i].C
+        }
+        b.Error[i].SafeClose()
+      }()
     }
   }
 
@@ -41,13 +47,11 @@ func (b *BasicFunctionsCloser)Close() error {
 }
 
 func (b *BasicFunctionsCloser)Push(err error) {
-  go func() {
-    if b.Check() && err != nil {
-      for i := range b.Error {
-        b.Error[i] <- err
-      }
+  if b.Check() && err != nil {
+    for i := range b.Error {
+      go b.Error[i].Send(err)
     }
-  }()
+  }
 }
 
 func (b *BasicFunctionsCloser)Check() bool {
@@ -57,13 +61,13 @@ func (b *BasicFunctionsCloser)Check() bool {
 }
 
 func (b *BasicFunctionsCloser)CloseChan() chan bool {
-  EndChan := make(chan bool)
+  EndChan := NewChannelBool()
   b.EndChan = append(b.EndChan, EndChan)
-  return EndChan
+  return EndChan.C
 }
 
 func (b *BasicFunctionsCloser)ErrorChan() chan error {
-  Error := make(chan error)
+  Error := NewChannelError()
   b.Error = append(b.Error, Error)
-  return Error
+  return Error.C
 }

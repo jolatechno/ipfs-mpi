@@ -20,9 +20,9 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
   inter := StdInterface {
     Idx: i,
     Cmd: exec.Command("python3", cmdArgs...),
-    InChan: make(chan string),
-    OutChan: make(chan Message),
-    RequestChan: make(chan int),
+    InChan: NewChannelString(),
+    OutChan: NewChannelMessage(),
+    RequestChan: NewChannelInt(),
     Standard: NewStandardInterface(),
   }
 
@@ -32,9 +32,9 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
 type StdInterface struct {
   Idx int
   Cmd *exec.Cmd
-  InChan chan string
-  OutChan chan Message
-  RequestChan chan int
+  InChan *SafeChannelString
+  OutChan *SafeChannelMessage
+  RequestChan *SafeChannelInt
   Standard BasicFunctionsCloser
 }
 
@@ -99,6 +99,7 @@ func (s *StdInterface)Start() {
   reader := bufio.NewReader(stdout)
   go func(){
     for s.Check() {
+
       str, err := reader.ReadString('\n')
       if str == "" && err == nil {
         err = errors.New("Received an empty string")
@@ -128,8 +129,8 @@ func (s *StdInterface)Start() {
           return
         }
 
-        s.RequestChan <- idx
-        go fmt.Fprint(stdin, <- s.InChan)
+        s.RequestChan.Send(idx)
+        go fmt.Fprint(stdin, <- s.InChan.C)
 
       } else if splitted[0] == "Log" && s.Idx == 0 {
         if len(splitted) < 2 {
@@ -155,10 +156,10 @@ func (s *StdInterface)Start() {
         }
 
         go func() {
-          s.OutChan <- Message {
+          s.OutChan.Send(Message {
             To: idx,
             Content: strings.Join(splitted[2:], ","),
-          }
+          })
         }()
       } else {
         s.Standard.Push(errors.New("Not understood"))
@@ -172,14 +173,20 @@ func (s *StdInterface)Start() {
 func (s *StdInterface)Close() error {
   if s.Check() {
     go func() {
-      s.OutChan <- Message {
+      s.OutChan.Send(Message {
         To: -1,
-      }
+      })
+
+      s.OutChan.SafeClose()
     }()
 
     go func() {
-      s.RequestChan <- -1
+      s.RequestChan.Send(-1)
+
+      s.RequestChan.SafeClose()
     }()
+
+    s.InChan.SafeClose()
 
     s.Standard.Close()
   }
@@ -200,17 +207,17 @@ func (s *StdInterface)Check() bool {
 }
 
 func (s *StdInterface)Message() chan Message {
-  return s.OutChan
+  return s.OutChan.C
 }
 
 func (s *StdInterface)Request() chan int {
-  return s.RequestChan
+  return s.RequestChan.C
 }
 
 func (s *StdInterface)Push(msg string) error {
   if !s.Check() {
     return errors.New("Interface closed")
   }
-  s.InChan <- msg
+  s.InChan.Send(msg)
   return nil
 }

@@ -22,9 +22,9 @@ var (
 
 func NewRemote() (Remote, error) {
   return &BasicRemote {
-    PingChan: make(chan bool),
-    ReadChan: make(chan string),
-    HandshakeChan: make(chan bool),
+    PingChan: NewChannelBool(),
+    ReadChan: NewChannelString(),
+    HandshakeChan: NewChannelBool(),
     Sent: &[]string{},
     Rw: nil,
     Received: 0,
@@ -33,9 +33,9 @@ func NewRemote() (Remote, error) {
 }
 
 type BasicRemote struct {
-  PingChan chan bool
-  ReadChan chan string
-  HandshakeChan chan bool
+  PingChan *SafeChannelBool
+  ReadChan *SafeChannelString
+  HandshakeChan *SafeChannelBool
   Sent *[]string
   Rw *bufio.ReadWriter
   Received int
@@ -49,7 +49,7 @@ func (r *BasicRemote)Ping(timeoutDuration time.Duration) bool {
     fmt.Fprint(r.Rw, "Ping\n")
     for {
       select {
-      case <- r.PingChan:
+      case <- r.PingChan.C:
         return nil
       case err, ok := <- r.ErrorChan():
         if !ok {
@@ -91,11 +91,11 @@ func (r *BasicRemote)SendHandshake() {
 
 
 func (r *BasicRemote)Get() string {
-  return <- r.ReadChan
+  return <- r.ReadChan.C
 }
 
 func (r *BasicRemote)GetHandshake() chan bool {
-  return r.HandshakeChan
+  return r.HandshakeChan.C
 }
 
 func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
@@ -119,7 +119,7 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
 
       if str == "HandShake\n" {
         go func() {
-          r.HandshakeChan <- true
+          r.HandshakeChan.Send(true)
         }()
         continue
 
@@ -130,7 +130,7 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
 
       } else if str == PingRespHeader {
         go func() {
-          r.PingChan <- true
+          r.PingChan.Send(true)
         }()
         continue
 
@@ -158,7 +158,7 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
 
         r.Received++
         go func() {
-          r.ReadChan <- msg
+          r.ReadChan.Send(msg)
         }()
 
       } else {
@@ -187,6 +187,10 @@ func (r *BasicRemote)Stream() *bufio.ReadWriter {
 
 func (r *BasicRemote)Close() error {
   if r.Check() {
+    r.PingChan.SafeClose()
+    r.HandshakeChan.SafeClose()
+    r.ReadChan.SafeClose()
+
     r.Standard.Close()
   }
   return nil
