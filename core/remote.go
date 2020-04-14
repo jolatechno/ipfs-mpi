@@ -127,12 +127,14 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
         }()
 
       } else if str == PingHeader {
-        fmt.Fprint(r.Rw, PingRespHeader)
-        r.Rw.Flush()
+        fmt.Fprint(stream, PingRespHeader)
+        stream.Flush()
         continue
 
       } else if str == PingRespHeader {
-        r.PingChan <- true
+        go func() {
+          r.PingChan <- true
+        }()
         continue
 
       } else if str == CloseHeader {

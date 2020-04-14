@@ -145,8 +145,6 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
     <- comm.Remote(0).GetHandshake()
   }
 
-  fmt.Println("[SlaveComm] Handshake 0") //--------------------------
-
   var wg sync.WaitGroup
 
   if param.Init {
@@ -163,8 +161,6 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
       }(&wg)
     }
   }
-
-  fmt.Println("[SlaveComm] Handshake 1") //--------------------------
 
   if param.Init {
     comm.Remote(0).SendHandshake()
