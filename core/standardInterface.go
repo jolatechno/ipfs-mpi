@@ -1,7 +1,7 @@
 package core
 
 import (
-
+  "sync"
 )
 
 func NewStandardInterface() BasicFunctionsCloser {
@@ -13,13 +13,14 @@ func NewStandardInterface() BasicFunctionsCloser {
 }
 
 type BasicFunctionsCloser struct {
+  Once sync.Once
   Ended bool
   EndChan []chan bool
   Error []chan error
 }
 
 func (b *BasicFunctionsCloser)Close() error {
-  if b.Check() {
+  b.Once.Do(func() {
     b.Ended = true
 
     for i := range b.EndChan {
@@ -28,7 +29,7 @@ func (b *BasicFunctionsCloser)Close() error {
         close(b.EndChan[i])
       }()
     }
-    
+
     for i := range b.Error {
       go func() {
         for len(b.Error[i]) > 0 {
@@ -37,7 +38,7 @@ func (b *BasicFunctionsCloser)Close() error {
         close(b.Error[i])
       }()
     }
-  }
+  })
 
   return nil
 }
