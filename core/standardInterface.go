@@ -13,16 +13,17 @@ func NewStandardInterface() BasicFunctionsCloser {
 }
 
 type BasicFunctionsCloser struct {
-  Once sync.Once
+  Mutex sync.Mutex
   Ended bool
   EndChan []chan bool
   Error []chan error
 }
 
 func (b *BasicFunctionsCloser)Close() error {
-  b.Once.Do(func() {
+  b.Mutex.Lock()
+  defer b.Mutex.Unlock()
+  if !b.Ended {
     b.Ended = true
-
     for i := range b.EndChan {
       go func() {
         b.EndChan[i] <- true
@@ -38,7 +39,7 @@ func (b *BasicFunctionsCloser)Close() error {
         close(b.Error[i])
       }()
     }
-  })
+  }
 
   return nil
 }
@@ -54,6 +55,8 @@ func (b *BasicFunctionsCloser)Push(err error) {
 }
 
 func (b *BasicFunctionsCloser)Check() bool {
+  b.Mutex.Lock()
+  defer b.Mutex.Unlock()
   return !b.Ended
 }
 
