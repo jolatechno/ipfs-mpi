@@ -190,7 +190,7 @@ func (c *BasicSlaveComm)Start() {
     outChan := c.Interface().Message()
     for c.Check() {
       msg, ok := <- outChan
-      if ok && msg.To != -1 {
+      if ok {
         go c.Remote(msg.To).Send(msg.Content)
       } else {
         break
@@ -206,7 +206,7 @@ func (c *BasicSlaveComm)Start() {
     requestChan := c.Interface().Request()
     for c.Check() {
       req, ok := <- requestChan
-      if ok && req != -1 {
+      if ok {
         go c.Interface().Push(c.Remote(req).Get())
       } else {
         break

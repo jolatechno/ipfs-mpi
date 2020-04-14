@@ -187,9 +187,9 @@ func (r *BasicRemote)Stream() *bufio.ReadWriter {
 
 func (r *BasicRemote)Close() error {
   if r.Check() {
-    r.PingChan.SafeClose()
-    r.HandshakeChan.SafeClose()
-    r.ReadChan.SafeClose()
+    go r.PingChan.SafeClose(true)
+    go r.HandshakeChan.SafeClose(true)
+    go r.ReadChan.SafeClose(false)
 
     r.Standard.Close()
   }

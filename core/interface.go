@@ -172,21 +172,9 @@ func (s *StdInterface)Start() {
 
 func (s *StdInterface)Close() error {
   if s.Check() {
-    go func() {
-      s.OutChan.Send(Message {
-        To: -1,
-      })
-
-      s.OutChan.SafeClose()
-    }()
-
-    go func() {
-      s.RequestChan.Send(-1)
-
-      s.RequestChan.SafeClose()
-    }()
-
-    s.InChan.SafeClose()
+    go s.OutChan.SafeClose(false)
+    go s.RequestChan.SafeClose(false)
+    go s.InChan.SafeClose(true)
 
     s.Standard.Close()
   }

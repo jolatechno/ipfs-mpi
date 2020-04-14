@@ -28,18 +28,13 @@ func (b *BasicFunctionsCloser)Close() error {
     for i := range b.EndChan {
       go func() {
         b.EndChan[i].Send(true)
-        b.EndChan[i].SafeClose()
+        b.EndChan[i].SafeClose(true)
       }()
 
     }
 
     for i := range b.Error {
-      go func() {
-        for len(b.Error[i].C) > 0 {
-          <- b.Error[i].C
-        }
-        b.Error[i].SafeClose()
-      }()
+      go b.Error[i].SafeClose(true)
     }
   }
 
