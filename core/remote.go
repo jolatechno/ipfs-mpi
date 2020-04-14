@@ -128,6 +128,7 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
         go func() {
           r.HandshakeChan <- true
         }()
+        continue
 
       } else if str == PingHeader {
         fmt.Fprint(stream, PingRespHeader)
