@@ -50,9 +50,11 @@ func ParamFromString(msg string) (Param, error) {
   list := make([]peer.ID, len(addrs))
 
   for i, addr := range addrs {
-    list[i], err = peer.IDB58Decode(addr)
-    if err != nil {
-      return param, err
+    if addr != "" {
+      list[i], err = peer.IDB58Decode(addr)
+      if err != nil {
+        return param, err
+      }
     }
   }
 
@@ -75,7 +77,9 @@ type Param struct {
 func (p *Param)String() string {
   addrs := make([]string, len(*p.Addrs))
   for i, addr := range *p.Addrs {
-    addrs[i] = peer.IDB58Encode(addr)
+    if i != p.Idx && (!p.Init || i > p.Idx) {
+      addrs[i] = peer.IDB58Encode(addr)
+    }
   }
 
   initInt := 0
@@ -100,7 +104,6 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     Id: param.Id,
     Idx: param.Idx,
     CommHost: host,
-    Addrs: param.Addrs,
     Base: base,
     Pid: protocol.ID(fmt.Sprintf("%d/%s/%s", param.Idx, param.Id, string(base))),
     Remotes: &remotes,
@@ -160,7 +163,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     wg.Add(len(*param.Addrs) - 1)
   }
 
-  for i, addr := range *comm.Addrs {
+  for i, addr := range *param.Addrs {
     if i > 0 && (i > param.Idx || !param.Init) && i != param.Idx {
       go func(wp *sync.WaitGroup) {
         comm.Connect(i, addr)
@@ -185,7 +188,6 @@ type BasicSlaveComm struct {
   Id string
   Idx int
   CommHost ExtHost
-  Addrs *[]peer.ID
   Base protocol.ID
   Pid protocol.ID
   Remotes *[]Remote
@@ -194,7 +196,7 @@ type BasicSlaveComm struct {
 
 func (c *BasicSlaveComm)Start() {
 
-  fmt.Printf("[SlaveComm] Starting %d out of %d\n", c.Idx, len(*c.Addrs)) //--------------------------
+  fmt.Printf("[SlaveComm] Starting %d\n", c.Idx) //--------------------------
 
   c.Interface().SetMessageHandler(func(to int, content string) {
 
@@ -230,7 +232,7 @@ func (c *BasicSlaveComm)Interface() Interface {
 func (c *BasicSlaveComm)Close() error {
   if c.Check() {
 
-    fmt.Printf("[SlaveComm] Closing %d out of %d\n", c.Idx, len(*c.Addrs)) //--------------------------
+    fmt.Printf("[SlaveComm] Closing %d\n", c.Idx) //--------------------------
 
     c.Standard.Close()
 

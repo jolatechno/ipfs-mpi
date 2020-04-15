@@ -31,6 +31,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
   remotes := make([]Remote, n)
   comm := BasicMasterComm {
+    Addrs: &Addrs,
     N: n,
     Comm: BasicSlaveComm {
       Ctx: ctx,
@@ -38,7 +39,6 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
       Id: id,
       Idx: 0,
       CommHost: host,
-      Addrs: &Addrs,
       Base: protocol.ID(fmt.Sprintf("%s/%s", id, string(base))),
       Pid: base,
       Remotes: &remotes,
@@ -63,7 +63,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   state := 0
   reseted := make([]bool, n)
 
-  for j, addr := range *comm.Comm.Addrs {
+  for j, addr := range *comm.Addrs {
     if j > 0 {
       (*comm.Comm.Remotes)[j], err = NewRemote()
       if err != nil {
@@ -160,6 +160,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 }
 
 type BasicMasterComm struct {
+  Addrs *[]peer.ID
   Ctx context.Context
   N int
   Comm BasicSlaveComm
@@ -204,7 +205,7 @@ func (c *BasicMasterComm)Connect(i int, addr peer.ID, init bool) {
       Idx: i,
       N: c.N,
       Id: c.Comm.Id,
-      Addrs: c.Comm.Addrs,
+      Addrs: c.Addrs,
     }
 
     writer := bufio.NewWriter(c.SlaveComm().Remote(i).Stream())
@@ -223,5 +224,6 @@ func (c *BasicMasterComm)Reset(i int) {
     c.Raise(err)
   }
 
+  (*c.Addrs)[i] = addr
   c.Connect(i, addr, false)
 }
