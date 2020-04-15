@@ -194,10 +194,16 @@ type BasicSlaveComm struct {
 
 func (c *BasicSlaveComm)Start() {
   c.Interface().SetMessageHandler(func(to int, content string) {
+
+    fmt.Printf("[SlaveComm] %d sending %q to %d\n", c.Idx, content, to) //--------------------------
+
     c.Remote(to).Send(content)
   })
 
   c.Interface().SetRequestHandler(func(i int) {
+
+    fmt.Printf("[SlaveComm] %d requesting from %d\n", c.Idx, i) //--------------------------
+
     c.Interface().Push(c.Remote(i).Get())
   })
 
@@ -221,7 +227,7 @@ func (c *BasicSlaveComm)Interface() Interface {
 func (c *BasicSlaveComm)Close() error {
   if c.Check() {
 
-    //fmt.Printf("[SlaveComm] Closing %d out of %d\n", c.Idx, len(*c.Addrs)) //--------------------------
+    fmt.Printf("[SlaveComm] Closing %d out of %d\n", c.Idx, len(*c.Addrs)) //--------------------------
 
     c.Standard.Close()
 
