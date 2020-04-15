@@ -104,8 +104,8 @@ func (s *StdInterface)Start() {
         err = errors.New("Received an empty string")
       }
       if err != nil {
-        s.Raise(err)
-        continue
+        s.Close()
+        return
       }
 
       splitted := strings.Split(str, ",")
