@@ -17,15 +17,10 @@ var (
 )
 
 func NewInterface(file string, n int, i int, args ...string) (Interface, error) {
-  nilMessageHandler := func(i int, s string) {}
-  nilRequestHandler :=  func(i int) {}
-
   cmdArgs := append([]string{file + "/run.py", fmt.Sprint(n), fmt.Sprint(i)}, args...)
   inter := StdInterface {
     Idx: i,
     Cmd: exec.Command("python3", cmdArgs...),
-    MessageHandler: &nilMessageHandler,
-    RequestHandler: &nilRequestHandler,
   }
 
   return &inter, nil
@@ -121,7 +116,9 @@ func (s *StdInterface)Start() {
           continue
         }
 
-        (*s.RequestHandler)(idx)
+        if s.RequestHandler != nil {
+          (*s.RequestHandler)(idx)
+        }
       } else if splitted[0] == "Log" && s.Idx == 0 {
         if len(splitted) < 2 {
           s.Raise(errors.New("Not enough field"))
@@ -142,7 +139,9 @@ func (s *StdInterface)Start() {
           continue
         }
 
-        (*s.MessageHandler)(idx, strings.Join(splitted[2:], ","))
+        if s.MessageHandler != nil {
+          (*s.MessageHandler)(idx, strings.Join(splitted[2:], ","))
+        }
       } else {
         s.Raise(errors.New("Not understood"))
         continue
@@ -153,7 +152,6 @@ func (s *StdInterface)Start() {
 
 func (s *StdInterface)Close() error {
   if s.Check() {
-
     s.Standard.Close()
   }
 
