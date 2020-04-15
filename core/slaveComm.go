@@ -218,12 +218,6 @@ func (c *BasicSlaveComm)Start() {
     c.Raise(err)
   })
 
-  /*c.Interface().SetCloseHandler(func() {
-    if c.Check() {
-      c.Close()
-    }
-  })*/
-
   c.Interface().Start()
 }
 
@@ -237,11 +231,6 @@ func (c *BasicSlaveComm)Close() error {
     fmt.Printf("[SlaveComm] Closing %d\n", c.Idx) //--------------------------
 
     c.Standard.Close()
-
-    err := c.Inter.Close()
-    if err != nil {
-      return err
-    }
 
     for i := range *c.Remotes {
       if i != c.Idx {
