@@ -193,6 +193,9 @@ type BasicSlaveComm struct {
 }
 
 func (c *BasicSlaveComm)Start() {
+
+  fmt.Printf("[SlaveComm] Starting %d out of %d\n", c.Idx, len(*c.Addrs)) //--------------------------
+
   c.Interface().SetMessageHandler(func(to int, content string) {
 
     fmt.Printf("[SlaveComm] %d sending %q to %d\n", c.Idx, content, to) //--------------------------

@@ -1,6 +1,7 @@
   package core
 
 import (
+  "sync"
   "errors"
   "context"
   "fmt"
@@ -98,6 +99,18 @@ func NewMpi(ctx context.Context, config Config) (Mpi, error) {
     }
   }()
 
+  mpi.SetCloseHandler(func() {
+    mpi.Host().Close()
+    mpi.Store().Close()
+    mpi.ToClose.Range(func(k interface{}, value interface{}) bool {
+      closer, ok := value.(standardFunctionsCloser)
+      if ok {
+        closer.Close()
+      }
+      return true
+    })
+  })
+
   store.SetErrorHandler(func(err error) {
     mpi.Raise(err)
     mpi.Close()
@@ -120,6 +133,7 @@ func NewMpi(ctx context.Context, config Config) (Mpi, error) {
 }
 
 type BasicMpi struct {
+  ToClose sync.Map
   Ctx context.Context
   Pid protocol.ID
   Maxsize uint64
@@ -193,9 +207,16 @@ func (m *BasicMpi)Add(f string) error {
       return
     }
 
+    stringId := string(param.Idx) + "/" + param.Id
+    m.ToClose.Store(stringId, comm)
+
     comm.SetErrorHandler(func(err error) {
       comm.Close()
       m.Raise(err)
+    })
+
+    comm.SetCloseHandler(func() {
+      m.ToClose.Delete(stringId)
     })
   })
   return nil
@@ -238,17 +259,23 @@ func (m *BasicMpi)Start(file string, n int, args ...string) error {
   m.Id++
 
   proto := protocol.ID(fmt.Sprintf("/%s/%s", file, m.Pid))
-  StringId := fmt.Sprintf("%d.%s", id, m.Host().ID())
+  stringId := fmt.Sprintf("%d.%s", id, m.Host().ID())
 
-  comm, err := NewMasterComm(m.Ctx, m.Host(), n, proto, StringId, m.Path + file, args...)
+  comm, err := NewMasterComm(m.Ctx, m.Host(), n, proto, stringId, m.Path + file, args...)
 
   if err != nil {
     return err
   }
 
+  m.ToClose.Store(stringId, comm)
+
   comm.SetErrorHandler(func(err error) {
     comm.Close()
     m.Raise(err)
+  })
+
+  comm.SetCloseHandler(func() {
+    m.ToClose.Delete(stringId)
   })
 
   return nil
