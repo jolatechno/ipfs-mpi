@@ -1,7 +1,7 @@
 package core
 
 import (
-  "bufio"
+  "io"
   "time"
 
   "github.com/libp2p/go-libp2p-core/peerstore"
@@ -15,8 +15,7 @@ import (
 
 type standardFunctionsCloser interface {
   standardFunctions
-
-  Close() error
+  io.Closer
 }
 
 type standardFunctions interface {
@@ -85,8 +84,8 @@ type Remote interface {
 
   CloseRemote()
   Ping(time.Duration) bool
-  Stream() *bufio.ReadWriter
-  Reset(*bufio.ReadWriter)
+  Stream() io.ReadWriteCloser
+  Reset(io.ReadWriteCloser)
   Get() string
   GetHandshake() chan bool
   Send(string)

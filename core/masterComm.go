@@ -5,6 +5,7 @@ import (
   "context"
   "time"
   "sync"
+  "bufio"
 
   "github.com/libp2p/go-libp2p-core/protocol"
   "github.com/libp2p/go-libp2p-core/peer"
@@ -206,10 +207,10 @@ func (c *BasicMasterComm)Connect(i int, addr peer.ID, init bool) {
       Addrs: c.Comm.Addrs,
     }
 
-    rw := c.SlaveComm().Remote(i).Stream()
+    writer := bufio.NewWriter(c.SlaveComm().Remote(i).Stream())
 
-    fmt.Fprintf(rw, "%s\n", p.String())
-    rw.Flush()
+    fmt.Fprintf(writer, "%s\n", p.String())
+    writer.Flush()
   }
 }
 

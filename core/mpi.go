@@ -6,6 +6,7 @@ import (
   "context"
   "fmt"
   "bufio"
+  "io"
   "time"
   "strings"
 
@@ -103,7 +104,7 @@ func NewMpi(ctx context.Context, config Config) (Mpi, error) {
     mpi.Host().Close()
     mpi.Store().Close()
     mpi.ToClose.Range(func(k interface{}, value interface{}) bool {
-      closer, ok := value.(standardFunctionsCloser)
+      closer, ok := value.(io.Closer)
       if ok {
         closer.Close()
       }
@@ -190,9 +191,9 @@ func (m *BasicMpi)Add(f string) error {
   proto := protocol.ID("/" + f + "/" + string(m.Pid))
   m.Host().Listen(proto, "/" + f + "/" + m.Ipfs_store)
   m.Host().SetStreamHandler(proto, func(stream network.Stream) {
-    rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
+    reader := bufio.NewReader(stream)
 
-    str, err := rw.ReadString('\n')
+    str, err := reader.ReadString('\n')
     if err != nil {
       return
     }
@@ -202,7 +203,7 @@ func (m *BasicMpi)Add(f string) error {
       return
     }
 
-    comm, err := NewSlaveComm(m.Ctx, m.Host(), rw, proto, param, m.Path + f, param.N, param.Idx)
+    comm, err := NewSlaveComm(m.Ctx, m.Host(), stream.(io.ReadWriteCloser), proto, param, m.Path + f, param.N, param.Idx)
     if err != nil {
       return
     }

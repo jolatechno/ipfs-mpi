@@ -2,6 +2,7 @@ package core
 
 import (
   "bufio"
+  "io"
   "fmt"
   "errors"
   "strings"
@@ -37,7 +38,7 @@ type BasicRemote struct {
   ReadChan chan string
   HandshakeChan chan bool
   Sent *[]string
-  Rw *bufio.ReadWriter
+  Rw io.ReadWriteCloser
   Received int
   HandshakeMessage int
   ReceivedHandshakeMessage int
@@ -58,23 +59,31 @@ func (r *BasicRemote)Ping(timeoutDuration time.Duration) bool {
 }
 
 func (r *BasicRemote)CloseRemote() {
-  fmt.Fprint(r.Rw, "Close\n")
-  r.Rw.Flush()
+  if r.Rw != nil {
+    writer := bufio.NewWriter(r.Rw)
+
+    fmt.Fprint(writer, "Close\n")
+    writer.Flush()
+  }
 }
 
 func (r *BasicRemote)Send(msg string) {
   *r.Sent = append(*r.Sent, msg)
 
   if r.Rw != nil {
-    fmt.Fprintf(r.Rw, "%s,%s", MessageHeader, msg)
-    r.Rw.Flush()
+    writer := bufio.NewWriter(r.Rw)
+
+    fmt.Fprintf(writer, "%s,%s", MessageHeader, msg)
+    writer.Flush()
   }
 }
 
 func (r *BasicRemote)SendHandshake() {
   if r.Rw != nil {
-    fmt.Fprintf(r.Rw, HandShakeHeader)
-    r.Rw.Flush()
+    writer := bufio.NewWriter(r.Rw)
+
+    fmt.Fprintf(writer, HandShakeHeader)
+    writer.Flush()
   }
 }
 
@@ -87,20 +96,23 @@ func (r *BasicRemote)GetHandshake() chan bool {
   return r.HandshakeChan
 }
 
-func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
+func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
   r.Rw = stream
   offset := r.Received
 
+  writer := bufio.NewWriter(stream)
+  reader := bufio.NewReader(stream)
+
   go func() {
     for _, msg := range *r.Sent {
-      fmt.Fprintf(stream, "%s,%s", MessageHeader, msg)
-      stream.Flush()
+      fmt.Fprintf(writer, "%s,%s", MessageHeader, msg)
+      writer.Flush()
     }
   }()
 
   go func() {
     for r.Check() && r.Rw == stream {
-      str, err := stream.ReadString('\n')
+      str, err := reader.ReadString('\n')
       if err != nil {
         r.Raise(err)
         return
@@ -111,8 +123,8 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
         continue
 
       } else if str == PingHeader {
-        fmt.Fprint(stream, PingRespHeader)
-        stream.Flush()
+        fmt.Fprint(writer, PingRespHeader)
+        writer.Flush()
         continue
 
       } else if str == PingRespHeader {
@@ -160,7 +172,7 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
 
 func (r *BasicRemote)StreamHandler() (network.StreamHandler, error) {
   return func(stream network.Stream) {
-    r.Reset(bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream)))
+    r.Reset(stream.(io.ReadWriteCloser))
   }, nil
 }
 
@@ -168,13 +180,16 @@ func (r *BasicRemote)Check() bool {
   return r.Standard.Check()
 }
 
-func (r *BasicRemote)Stream() *bufio.ReadWriter {
+func (r *BasicRemote)Stream() io.ReadWriteCloser {
   return r.Rw
 }
 
 
 func (r *BasicRemote)Close() error {
   if r.Check() {
+    if r.Rw != nil {
+      r.Rw.Close()
+    }
 
     r.Standard.Close()
   }

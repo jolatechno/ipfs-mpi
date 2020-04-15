@@ -1,7 +1,7 @@
 package core
 
 import (
-  "bufio"
+  "io"
   "fmt"
   "errors"
   "context"
@@ -87,7 +87,7 @@ func (p *Param)String() string {
   return fmt.Sprintf("%d,%d,%d,%s,%s", initInt, p.Idx, p.N, p.Id, joinedAddress)
 }
 
-func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, base protocol.ID, param Param, file string, n int, i int) (_ SlaveComm, err error) {
+func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, base protocol.ID, param Param, file string, n int, i int) (_ SlaveComm, err error) {
   inter, err := NewInterface(file, n, i)
   if err != nil {
     return nil, err
@@ -289,20 +289,19 @@ func (c *BasicSlaveComm)Connect(i int, addr peer.ID) error {
       return nil, err
     }
 
-    rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
-    return rw, nil
+    return stream, nil
   }, WaitDuration)
 
   if err != nil {
     return err
   }
 
-  rw, ok := rwi.(*bufio.ReadWriter)
+  rwc, ok := rwi.(io.ReadWriteCloser)
   if !ok {
     return errors.New("couldn't convert interface")
   }
 
-  c.Remote(i).Reset(rw)
+  c.Remote(i).Reset(rwc)
 
   return nil
 }
