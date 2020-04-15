@@ -17,12 +17,15 @@ var (
 )
 
 func NewInterface(file string, n int, i int, args ...string) (Interface, error) {
+  nilMessageHandler := func(int, string) {}
+  nilRequestHandler := func(int) {}
+
   cmdArgs := append([]string{file + "/run.py", fmt.Sprint(n), fmt.Sprint(i)}, args...)
   inter := StdInterface {
     Idx: i,
     Cmd: exec.Command("python3", cmdArgs...),
-    MessageHandler: func(int, string) {},
-    RequestHandler: func(int) {},
+    MessageHandler: nilMessageHandler,
+    RequestHandler: nilRequestHandler,
   }
 
   return &inter, nil

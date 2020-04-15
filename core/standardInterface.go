@@ -5,9 +5,12 @@ import (
 )
 
 func NewStandardInterface() standardFunctionsCloser {
+  nilEndHandler := func() {}
+  nilErrorHandler := func(error) {}
+
   return &BasicFunctionsCloser {
-    EndHandler: func() {},
-    ErrorHandler: func(error) {},
+    EndHandler: nilEndHandler,
+    ErrorHandler: nilErrorHandler,
   }
 }
 
