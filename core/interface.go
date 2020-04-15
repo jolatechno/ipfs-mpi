@@ -8,12 +8,7 @@ import (
   "strings"
   "strconv"
   "errors"
-  "time"
   "io"
-)
-
-var (
-  SafeWait = 10 * time.Millisecond
 )
 
 func NewInterface(file string, n int, i int, args ...string) (Interface, error) {
@@ -84,14 +79,12 @@ func (s *StdInterface)Start() {
     for {
       strErr, err := errReader.ReadString('\n')
       if err != nil {
+        s.Close()
         return
       }
       if strErr != "" {
-        time.Sleep(SafeWait)
-        if s.Check() {
-          s.Raise(errors.New(strErr))
-        }
-        return
+        s.Raise(errors.New(strErr))
+        continue
       }
     }
   }()
