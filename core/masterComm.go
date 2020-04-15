@@ -17,7 +17,7 @@ type BasicMasterComm struct {
 }
 
 func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, id string, file string, args ...string) (_ MasterComm, err error) {
-  inter, err := NewInterface(file, 0, n, args...)
+  inter, err := NewInterface(file, n, 0, args...)
   if err != nil {
     return nil, err
   }
