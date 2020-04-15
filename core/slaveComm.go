@@ -198,6 +198,14 @@ func (c *BasicSlaveComm)Start() {
 
   fmt.Printf("[SlaveComm] Starting %d\n", c.Idx) //--------------------------
 
+  c.Interface().SetErrorHandler(func(err error) {
+    c.Raise(err)
+  })
+
+  c.Interface().SetCloseHandler(func() {
+    c.Close()
+  })
+
   c.Interface().SetMessageHandler(func(to int, content string) {
     c.Remote(to).Send(content)
   })

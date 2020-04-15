@@ -1,14 +1,20 @@
 package main
 
 import (
+  "errors"
   "context"
   "bufio"
   "strings"
   "strconv"
   "os"
   "fmt"
+  "time"
 
   "github.com/jolatechno/ipfs-mpi/core"
+)
+
+const (
+  ErrorFormat = "\033[31m%s\033[0m\n"
 )
 
 func main(){
@@ -26,7 +32,7 @@ func main(){
 
   store.SetErrorHandler(func(err error) {
     if !quiet {
-      fmt.Println(err)
+      fmt.Printf(ErrorFormat, err.Error())
     }
   })
 
@@ -59,21 +65,26 @@ func main(){
       }
     } else if splitted[0] == "Start" {
       if len(splitted) < 3 {
-        panic("No size given")
+        store.Raise(errors.New("No size given"))
+        continue
       }
 
       n, err := strconv.Atoi(splitted[2])
       if err != nil {
-        panic(err)
+        store.Raise(err)
       }
 
       go func() {
-        store.Start(splitted[1], n, splitted[3:]...)
+        err := store.Start(splitted[1], n, splitted[3:]...)
+        if err != nil {
+          store.Raise(err)
+        }
       }()
     } else if splitted[0] == "Add" {
 
       if len(splitted) < 2 {
-        panic("No file given")
+        store.Raise(errors.New("No file given"))
+        continue
       }
 
       for _, f := range splitted[1:] {
@@ -84,7 +95,7 @@ func main(){
 
     } else if splitted[0] == "Del" {
       if len(splitted) < 2 {
-        panic("No file given")
+        store.Raise(errors.New("No file given"))
       }
 
       for _, f := range splitted[1:] {
@@ -95,10 +106,11 @@ func main(){
 
     } else if splitted[0] == "exit" {
       go store.Close()
+      time.Sleep(10 * time.Second)
       break
 
     } else {
-      panic("Command not understood")
+      store.Raise(errors.New("Command not understood"))
     }
   }
 }
