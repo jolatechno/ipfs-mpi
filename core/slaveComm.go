@@ -223,11 +223,15 @@ func (c *BasicSlaveComm)Interface() Interface {
 func (c *BasicSlaveComm)Close() error {
   if c.Check() {
 
-    fmt.Printf("[SlaveComm] Closing %d\n", c.Idx) //--------------------------
+    fmt.Printf("[SlaveComm] Closing %d, 0\n", c.Idx) //--------------------------
 
     c.Standard.Close()
 
+    fmt.Printf("[SlaveComm] Closing %d, 1\n", c.Idx) //--------------------------
+
     c.Interface().Close()
+
+    fmt.Printf("[SlaveComm] Closing %d, 2\n", c.Idx) //--------------------------
 
     for i := range *c.Remotes {
       if i != c.Idx {

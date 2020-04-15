@@ -47,7 +47,7 @@ type BasicRemote struct {
 
 func (r *BasicRemote)Ping(timeoutDuration time.Duration) bool {
   err := timeout.MakeSimpleTimeout(func () error {
-    fmt.Fprint(r.Rw, "Ping\n")
+    fmt.Fprint(r.Rw, PingHeader)
     _, ok := <- r.PingChan
     if !ok {
       return errors.New("Channel Closed")
@@ -63,9 +63,12 @@ func (r *BasicRemote)Ping(timeoutDuration time.Duration) bool {
 
 func (r *BasicRemote)CloseRemote() {
   if r.Rw != nil {
+
+    fmt.Println("[Remote] CloseRemote") //--------------------------
+
     writer := bufio.NewWriter(r.Rw)
 
-    fmt.Fprint(writer, "Close\n")
+    fmt.Fprint(writer, CloseHeader)
     writer.Flush()
   }
 }
@@ -123,7 +126,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
 
       fmt.Printf("[Remote] Received %q\n", str) //--------------------------
 
-      if str == "HandShake\n" {
+      if str == HandShakeHeader {
         r.HandshakeChan <- true
         continue
 
