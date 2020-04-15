@@ -130,9 +130,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     for comm.Check() {
       time.Sleep(WaitDuration)
       if !comm.Remote(0).Ping(WaitDuration) {
-        if comm.Check() {
-          comm.Close()
-        }
+        comm.Close()
       }
     }
   }()
@@ -201,9 +199,6 @@ func (c *BasicSlaveComm)Start() {
   fmt.Printf("[SlaveComm] Starting %d\n", c.Idx) //--------------------------
 
   c.Interface().SetMessageHandler(func(to int, content string) {
-
-    fmt.Printf("[SlaveComm] %d sending %q to %d\n", c.Idx, content, to) //--------------------------
-
     c.Remote(to).Send(content)
   })
 

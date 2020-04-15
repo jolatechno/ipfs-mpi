@@ -121,6 +121,8 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
         return
       }
 
+      fmt.Printf("[Remote] Received %q\n", str) //--------------------------
+
       if str == "HandShake\n" {
         r.HandshakeChan <- true
         continue
@@ -190,6 +192,9 @@ func (r *BasicRemote)Stream() io.ReadWriteCloser {
 
 func (r *BasicRemote)Close() error {
   if r.Check() {
+
+    fmt.Println("[Remote] Closing") //--------------------------
+
     if r.Rw != nil {
       r.Rw.Close()
     }
