@@ -10,12 +10,6 @@ import (
   "github.com/libp2p/go-libp2p-core/peer"
 )
 
-type BasicMasterComm struct {
-  Ctx context.Context
-  N int
-  Comm BasicSlaveComm
-}
-
 func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, id string, file string, args ...string) (_ MasterComm, err error) {
   inter, err := NewInterface(file, n, 0, args...)
   if err != nil {
@@ -162,6 +156,12 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   comm.SlaveComm().Start()
 
   return &comm, nil
+}
+
+type BasicMasterComm struct {
+  Ctx context.Context
+  N int
+  Comm BasicSlaveComm
 }
 
 func (c *BasicMasterComm)Close() error {

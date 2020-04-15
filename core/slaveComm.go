@@ -88,7 +88,7 @@ func (p *Param)String() string {
 }
 
 func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, base protocol.ID, param Param, file string, n int, i int) (_ SlaveComm, err error) {
-  inter, err := NewInterface(file, i, n)
+  inter, err := NewInterface(file, n, i)
   if err != nil {
     return nil, err
   }
