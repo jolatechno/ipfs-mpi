@@ -66,11 +66,11 @@ func (r *BasicRemote)Ping(timeoutDuration time.Duration) bool {
 }
 
 func (r *BasicRemote)CloseRemote() {
-  if r.Rw != nil {
+  if stream := r.Rw; stream != nil {
 
     fmt.Println("[Remote] CloseRemote") //--------------------------
 
-    writer := bufio.NewWriter(r.Rw)
+    writer := bufio.NewWriter(stream)
 
     fmt.Fprint(writer, CloseHeader)
     writer.Flush()
@@ -80,8 +80,8 @@ func (r *BasicRemote)CloseRemote() {
 func (r *BasicRemote)Send(msg string) {
   *r.Sent = append(*r.Sent, msg)
 
-  if r.Rw != nil {
-    writer := bufio.NewWriter(r.Rw)
+  if stream := r.Rw; stream != nil {
+    writer := bufio.NewWriter(stream)
 
     fmt.Fprintf(writer, "%s,%s", MessageHeader, msg)
     writer.Flush()
@@ -89,8 +89,8 @@ func (r *BasicRemote)Send(msg string) {
 }
 
 func (r *BasicRemote)SendHandshake() {
-  if r.Rw != nil {
-    writer := bufio.NewWriter(r.Rw)
+  if stream := r.Rw; stream != nil {
+    writer := bufio.NewWriter(stream)
 
     fmt.Fprintf(writer, HandShakeHeader)
     writer.Flush()
