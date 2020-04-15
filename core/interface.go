@@ -145,7 +145,7 @@ func (s *StdInterface)Start() {
       } else {
         s.Raise(errors.New("Not understood"))
         continue
-        
+
       }
     }
   }()

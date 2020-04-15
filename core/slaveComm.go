@@ -278,7 +278,7 @@ func (c *BasicSlaveComm)Host() ExtHost {
 
 func (c *BasicSlaveComm)Connect(i int, addr peer.ID) error {
 
-  fmt.Printf("[SlaveComm] %d connecting to %d\n", c.Idx, i) //--------------------------
+  //fmt.Printf("[SlaveComm] %d connecting to %d\n", c.Idx, i) //--------------------------
 
   rwi, err := timeout.MakeTimeout(func() (interface{}, error) {
     stream, err := c.CommHost.NewStream(c.Ctx, addr, c.Pid)
