@@ -26,6 +26,7 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
     Cmd: exec.Command("python3", cmdArgs...),
     MessageHandler: &nilMessageHandler,
     RequestHandler: &nilRequestHandler,
+    Standard: NewStandardInterface(),
   }
 
   return &inter, nil
@@ -37,7 +38,7 @@ type StdInterface struct {
   RequestHandler *func(int)
   Idx int
   Cmd *exec.Cmd
-  Standard BasicFunctionsCloser
+  Standard standardFunctionsCloser
 }
 
 func (s *StdInterface)Start() {
