@@ -7,7 +7,6 @@ import (
   "strconv"
   "os"
   "fmt"
-  "time"
 
   "github.com/jolatechno/ipfs-mpi/core"
 )
@@ -25,18 +24,9 @@ func main(){
     panic(err)
   }
 
-  go func() {
-    for {
-      err, ok := <- store.ErrorChan()
-      if ok {
-        time.Sleep(time.Second)
-        if !store.Check() {
-          fmt.Println(err)
-          panic(err)
-        }
-      }
-    }
-  }()
+  store.SetErrorHandler(func(err error) {
+    fmt.Println(err)
+  })
 
   fmt.Println("Our adress is ", store.Host().ID())
 
