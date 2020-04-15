@@ -21,13 +21,9 @@ type standardFunctionsCloser interface {
 
 type standardFunctions interface {
   Check() bool
-  CloseChan() chan bool
-  ErrorChan() chan error
-}
-
-type Message struct {
-  To int
-  Content string
+  Raise(error)
+  SetCloseHandler(func())
+  SetErrorHandler(func(error))
 }
 
 //-------
@@ -102,8 +98,8 @@ type Interface interface {
   standardFunctionsCloser
 
   Start()
-  Message() chan Message
-  Request() chan int
+  SetMessageHandler(func(int, string))
+  SetRequestHandler(func(int))
   Push(string) error
 }
 

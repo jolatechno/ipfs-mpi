@@ -55,7 +55,7 @@ type IpfsShell struct {
   Store []string
   Path string
   Ipfs_store string
-  Standard BasicFunctionsCloser
+  Standard standardFunctionsCloser
 }
 
 func (s *IpfsShell)Close() error {
@@ -70,12 +70,16 @@ func (s *IpfsShell)Check() bool {
   return s.Standard.Check()
 }
 
-func (s *IpfsShell)CloseChan() chan bool {
-  return s.Standard.CloseChan()
+func (s *IpfsShell)SetErrorHandler(handler func(error)) {
+  s.Standard.SetErrorHandler(handler)
 }
 
-func (s *IpfsShell)ErrorChan() chan error {
-  return s.Standard.ErrorChan()
+func (s *IpfsShell)SetCloseHandler(handler func()) {
+  s.Standard.SetCloseHandler(handler)
+}
+
+func (s *IpfsShell)Raise(err error) {
+  s.Standard.Raise(err)
 }
 
 func (s *IpfsShell)Add(f string) {

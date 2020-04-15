@@ -9,6 +9,7 @@ import (
   "strconv"
   "errors"
   "time"
+  "io"
 )
 
 var (
@@ -20,57 +21,53 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
   inter := StdInterface {
     Idx: i,
     Cmd: exec.Command("python3", cmdArgs...),
-    InChan: NewChannelString(),
-    OutChan: NewChannelMessage(),
-    RequestChan: NewChannelInt(),
-    Standard: NewStandardInterface(),
+    InChan: make(chan string),
   }
 
   return &inter, nil
 }
 
 type StdInterface struct {
+  Stdin io.Writer
+  MessageHandler *func(int, string)
+  RequestHandler *func(int)
   Idx int
   Cmd *exec.Cmd
-  InChan *SafeChannelString
-  OutChan *SafeChannelMessage
-  RequestChan *SafeChannelInt
+  InChan chan string
   Standard BasicFunctionsCloser
 }
 
 func (s *StdInterface)Start() {
-  stdin, err := s.Cmd.StdinPipe()
+  var err error
+
+  s.Stdin, err = s.Cmd.StdinPipe()
 	if err != nil {
-    s.Standard.Push(err)
-    s.Close()
+    s.Raise(err)
     return
 	}
 
   stdout, err := s.Cmd.StdoutPipe()
 	if err != nil {
-    s.Standard.Push(err)
-    s.Close()
+    s.Raise(err)
     return
 	}
 
   stderr, err := s.Cmd.StderrPipe()
 	if err != nil {
-    s.Standard.Push(err)
-    s.Close()
+    s.Raise(err)
     return
 	}
 
   err = s.Cmd.Start()
   if err != nil {
-    s.Standard.Push(err)
-    s.Close()
+    s.Raise(err)
     return
   }
 
   go func() {
     err := s.Cmd.Wait()
     if err != nil {
-      s.Standard.Push(err)
+      s.Raise(err)
     }
 
     if s.Check() {
@@ -88,8 +85,7 @@ func (s *StdInterface)Start() {
       if strErr != "" {
         time.Sleep(SafeWait)
         if s.Check() {
-          s.Standard.Push(errors.New(strErr))
-          s.Close()
+          s.Raise(errors.New(strErr))
         }
         return
       }
@@ -105,66 +101,48 @@ func (s *StdInterface)Start() {
         err = errors.New("Received an empty string")
       }
       if err != nil {
-        time.Sleep(SafeWait)
-        if s.Check() {
-          s.Standard.Push(err)
-          s.Close()
-        }
-        return
+        s.Raise(err)
+        continue
       }
 
       splitted := strings.Split(str, ",")
 
       if splitted[0] == "Req" {
         if len(splitted) != 2 {
-          s.Standard.Push(errors.New("Not enough field"))
-          s.Close()
-          return
+          s.Raise(errors.New("Not enough field"))
         }
 
         idx, err := strconv.Atoi(splitted[1][:len(splitted[1]) - 1])
         if err != nil {
-          s.Standard.Push(err)
-          s.Close()
-          return
+          s.Raise(err)
+          continue
         }
 
-        s.RequestChan.Send(idx)
-        go fmt.Fprint(stdin, <- s.InChan.C)
-
+        (*s.RequestHandler)(idx)
       } else if splitted[0] == "Log" && s.Idx == 0 {
         if len(splitted) < 2 {
-          s.Standard.Push(errors.New("Not enough field"))
-          s.Close()
-          return
+          s.Raise(errors.New("Not enough field"))
+          continue
         }
 
         log.Print(strings.Join(splitted[1:], ","))
 
       } else if splitted[0] == "Send" {
         if len(splitted) < 3 {
-          s.Standard.Push(errors.New("Not enough field"))
-          s.Close()
-          return
+          s.Raise(errors.New("Not enough field"))
+          continue
         }
 
         idx, err := strconv.Atoi(splitted[1])
         if err != nil {
-          s.Standard.Push(err)
-          s.Close()
-          return
+          s.Raise(err)
+          continue
         }
 
-        go func() {
-          s.OutChan.Send(Message {
-            To: idx,
-            Content: strings.Join(splitted[2:], ","),
-          })
-        }()
+        (*s.MessageHandler)(idx, strings.Join(splitted[2:], ","))
       } else {
-        s.Standard.Push(errors.New("Not understood"))
-        s.Close()
-        return
+        s.Raise(errors.New("Not understood"))
+        continue
       }
     }
   }()
@@ -172,9 +150,6 @@ func (s *StdInterface)Start() {
 
 func (s *StdInterface)Close() error {
   if s.Check() {
-    go s.OutChan.SafeClose(false)
-    go s.RequestChan.SafeClose(false)
-    go s.InChan.SafeClose(true)
 
     s.Standard.Close()
   }
@@ -182,30 +157,34 @@ func (s *StdInterface)Close() error {
   return nil
 }
 
-func (s *StdInterface)CloseChan() chan bool {
-  return s.Standard.CloseChan()
+func (s *StdInterface)SetErrorHandler(handler func(error)) {
+  s.Standard.SetErrorHandler(handler)
 }
 
-func (s *StdInterface)ErrorChan() chan error {
-  return s.Standard.ErrorChan()
+func (s *StdInterface)SetCloseHandler(handler func()) {
+  s.Standard.SetCloseHandler(handler)
+}
+
+func (s *StdInterface)Raise(err error) {
+  s.Standard.Raise(err)
 }
 
 func (s *StdInterface)Check() bool {
   return s.Standard.Check()
 }
 
-func (s *StdInterface)Message() chan Message {
-  return s.OutChan.C
+func (s *StdInterface)SetMessageHandler(handler func(int, string)) {
+  s.MessageHandler = &handler
 }
 
-func (s *StdInterface)Request() chan int {
-  return s.RequestChan.C
+func (s *StdInterface)SetRequestHandler(handler func(int)) {
+  s.RequestHandler = &handler
 }
 
 func (s *StdInterface)Push(msg string) error {
   if !s.Check() {
     return errors.New("Interface closed")
   }
-  s.InChan.Send(msg)
+  fmt.Fprint(s.Stdin, msg)
   return nil
 }

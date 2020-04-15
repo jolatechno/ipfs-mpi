@@ -22,9 +22,9 @@ var (
 
 func NewRemote() (Remote, error) {
   return &BasicRemote {
-    PingChan: NewChannelBool(),
-    ReadChan: NewChannelString(),
-    HandshakeChan: NewChannelBool(),
+    PingChan: make(chan bool),
+    ReadChan: make(chan string),
+    HandshakeChan: make(chan bool),
     Sent: &[]string{},
     Rw: nil,
     Received: 0,
@@ -33,33 +33,22 @@ func NewRemote() (Remote, error) {
 }
 
 type BasicRemote struct {
-  PingChan *SafeChannelBool
-  ReadChan *SafeChannelString
-  HandshakeChan *SafeChannelBool
+  PingChan chan bool
+  ReadChan chan string
+  HandshakeChan chan bool
   Sent *[]string
   Rw *bufio.ReadWriter
   Received int
   HandshakeMessage int
   ReceivedHandshakeMessage int
-  Standard BasicFunctionsCloser
+  Standard standardFunctionsCloser
 }
 
 func (r *BasicRemote)Ping(timeoutDuration time.Duration) bool {
   err := timeout.MakeSimpleTimeout(func () error {
     fmt.Fprint(r.Rw, "Ping\n")
-    for {
-      select {
-      case <- r.PingChan.C:
-        return nil
-      case err, ok := <- r.ErrorChan():
-        if !ok {
-          break
-        } else {
-          return err
-        }
-        continue
-      }
-    }
+    <- r.PingChan
+    return nil
   }, timeoutDuration)
 
   if err != nil {
@@ -91,11 +80,11 @@ func (r *BasicRemote)SendHandshake() {
 
 
 func (r *BasicRemote)Get() string {
-  return <- r.ReadChan.C
+  return <- r.ReadChan
 }
 
 func (r *BasicRemote)GetHandshake() chan bool {
-  return r.HandshakeChan.C
+  return r.HandshakeChan
 }
 
 func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
@@ -113,14 +102,12 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
     for r.Check() && r.Rw == stream {
       str, err := stream.ReadString('\n')
       if err != nil {
-        r.Standard.Push(err)
+        r.Raise(err)
         return
       }
 
       if str == "HandShake\n" {
-        go func() {
-          r.HandshakeChan.Send(true)
-        }()
+        r.HandshakeChan <- true
         continue
 
       } else if str == PingHeader {
@@ -129,9 +116,7 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
         continue
 
       } else if str == PingRespHeader {
-        go func() {
-          r.PingChan.Send(true)
-        }()
+        r.PingChan <- true
         continue
 
       } else if str == CloseHeader {
@@ -144,8 +129,8 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
       splitted := strings.Split(str, ",")
       if splitted[0] == MessageHeader {
         if len(splitted) <= 1 {
-          r.Standard.Push(errors.New("not enough fields"))
-          r.Close()
+          r.Raise(errors.New("not enough fields"))
+          continue
         }
 
         msg := strings.Join(splitted[1:], ",")
@@ -157,17 +142,20 @@ func (r *BasicRemote)Reset(stream *bufio.ReadWriter) {
         }
 
         r.Received++
-        go func() {
-          r.ReadChan.Send(msg)
-        }()
+        r.ReadChan <- msg
 
       } else {
-        r.Standard.Push(errors.New("command not understood"))
-        r.Close()
+        r.Raise(errors.New("command not understood"))
+        continue
 
       }
     }
   }()
+  if !r.Check() {
+    close(r.PingChan)
+    close(r.ReadChan)
+    close(r.HandshakeChan)
+  }
 }
 
 func (r *BasicRemote)StreamHandler() (network.StreamHandler, error) {
@@ -187,19 +175,20 @@ func (r *BasicRemote)Stream() *bufio.ReadWriter {
 
 func (r *BasicRemote)Close() error {
   if r.Check() {
-    go r.PingChan.SafeClose(true)
-    go r.HandshakeChan.SafeClose(true)
-    go r.ReadChan.SafeClose(false)
 
     r.Standard.Close()
   }
   return nil
 }
 
-func (r *BasicRemote)CloseChan() chan bool {
-  return r.Standard.CloseChan()
+func (r *BasicRemote)SetErrorHandler(handler func(error)) {
+  r.Standard.SetErrorHandler(handler)
 }
 
-func (r *BasicRemote)ErrorChan() chan error {
-  return r.Standard.ErrorChan()
+func (r *BasicRemote)SetCloseHandler(handler func()) {
+  r.Standard.SetCloseHandler(handler)
+}
+
+func (r *BasicRemote)Raise(err error) {
+  r.Standard.Raise(err)
 }

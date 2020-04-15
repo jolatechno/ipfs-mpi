@@ -98,35 +98,23 @@ func NewMpi(ctx context.Context, config Config) (Mpi, error) {
     }
   }()
 
-  go func() {
-    err, ok := <- store.ErrorChan()
-    if mpi.Check() && ok {
-      mpi.Standard.Push(err)
-      mpi.Close()
-    }
-  }()
+  store.SetErrorHandler(func(err error) {
+    mpi.Raise(err)
+    mpi.Close()
+  })
 
-  go func() {
-    <- store.CloseChan()
-    if mpi.Check() {
-      mpi.Close()
-    }
-  }()
+  store.SetCloseHandler(func() {
+    mpi.Close()
+  })
 
-  go func() {
-    err, ok := <- host.ErrorChan()
-    if mpi.Check() && ok {
-      mpi.Standard.Push(err)
-      mpi.Close()
-    }
-  }()
+  host.SetErrorHandler(func(err error) {
+    mpi.Raise(err)
+    mpi.Close()
+  })
 
-  go func() {
-    <- host.CloseChan()
-    if mpi.Check() {
-      mpi.Close()
-    }
-  }()
+  host.SetCloseHandler(func() {
+    mpi.Close()
+  })
 
   return &mpi, nil
 }
@@ -140,7 +128,7 @@ type BasicMpi struct {
   MpiHost ExtHost
   MpiStore Store
   Id int
-  Standard BasicFunctionsCloser
+  Standard standardFunctionsCloser
 }
 
 func (m *BasicMpi)Close() error {
@@ -161,12 +149,16 @@ func (m *BasicMpi)Close() error {
   return nil
 }
 
-func (m *BasicMpi)CloseChan() chan bool {
-  return m.Standard.CloseChan()
+func (m *BasicMpi)SetCloseHandler(handler func()) {
+  m.Standard.SetCloseHandler(handler)
 }
 
-func (m *BasicMpi)ErrorChan() chan error {
-  return m.Standard.ErrorChan()
+func (m *BasicMpi)SetErrorHandler(handler func(error)) {
+  m.Standard.SetErrorHandler(handler)
+}
+
+func (m *BasicMpi)Raise(err error) {
+  m.Standard.Raise(err)
 }
 
 func (m *BasicMpi)Check() bool {
@@ -196,28 +188,15 @@ func (m *BasicMpi)Add(f string) error {
       return
     }
 
-    inter, err := NewInterface(m.Path + f, param.N, param.Idx)
+    comm, err := NewSlaveComm(m.Ctx, m.Host(), rw, proto, param, m.Path + f, param.N, param.Idx)
     if err != nil {
       return
     }
 
-    comm, err := NewSlaveComm(m.Ctx, m.Host(), rw, proto, inter, param)
-    if err != nil {
-      return
-    }
-
-    go func() {
-      <- m.CloseChan()
+    comm.SetErrorHandler(func(err error) {
       comm.Close()
-    }()
-
-    go func() {
-      err, ok := <- comm.ErrorChan()
-      if ok {
-        m.Standard.Push(err)
-        comm.Close()
-      }
-    }()
+      m.Raise(err)
+    })
   })
   return nil
 }
@@ -255,35 +234,22 @@ func (m *BasicMpi)Start(file string, n int, args ...string) error {
     return errors.New("no such file")
   }
 
-  inter, err := NewInterface(m.Path + file, n, 0, args...)
-  if err != nil {
-    return err
-  }
-
   id := m.Id
   m.Id++
 
   proto := protocol.ID(fmt.Sprintf("/%s/%s", file, m.Pid))
   StringId := fmt.Sprintf("%d.%s", id, m.Host().ID())
 
-  comm, err := NewMasterComm(m.Ctx, m.Host(), n, proto, inter, StringId)
+  comm, err := NewMasterComm(m.Ctx, m.Host(), n, proto, StringId, m.Path + file, args...)
 
   if err != nil {
     return err
   }
 
-  go func() {
-    <- m.CloseChan()
+  comm.SetErrorHandler(func(err error) {
     comm.Close()
-  }()
-
-  go func() {
-    err, ok := <- comm.ErrorChan()
-    if ok {
-      m.Standard.Push(err)
-      comm.Close()
-    }
-  }()
+    m.Raise(err)
+  })
 
   return nil
 }

@@ -133,10 +133,10 @@ type BasicExtHost struct {
   StreamHandlers sync.Map
   Routing *discovery.RoutingDiscovery
   PeerStores map[protocol.ID] peerstore.Peerstore
-  Standard BasicFunctionsCloser
+  Standard standardFunctionsCloser
 }
 
-func (h *BasicExtHost) Close() error {
+func (h *BasicExtHost)Close() error {
   if h.Check() {
     h.Standard.Close()
     return h.Host.Close()
@@ -145,12 +145,16 @@ func (h *BasicExtHost) Close() error {
   return nil
 }
 
-func (h *BasicExtHost)CloseChan() chan bool {
-  return h.Standard.CloseChan()
+func (h *BasicExtHost)SetCloseHandler(handler func()) {
+  h.Standard.SetCloseHandler(handler)
 }
 
-func (h *BasicExtHost)ErrorChan() chan error {
-  return h.Standard.ErrorChan()
+func (h *BasicExtHost)SetErrorHandler(handler func(error)) {
+  h.Standard.SetErrorHandler(handler)
+}
+
+func (h *BasicExtHost)Raise(err error) {
+  h.Standard.Raise(err)
 }
 
 func (h *BasicExtHost) Check() bool {

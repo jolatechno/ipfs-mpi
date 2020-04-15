@@ -16,7 +16,12 @@ type BasicMasterComm struct {
   Comm BasicSlaveComm
 }
 
-func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, inter Interface, id string) (_ MasterComm, err error) {
+func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, id string, file string, args ...string) (_ MasterComm, err error) {
+  inter, err := NewInterface(file, 0, n, args...)
+  if err != nil {
+    return nil, err
+  }
+
   Addrs := make([]peer.ID, n)
   for i, _ := range Addrs {
     if i == 0 {
@@ -45,6 +50,16 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
       Standard: NewStandardInterface(),
     },
   }
+
+  comm.Comm.SetErrorHandler(func(err error) {
+    comm.Raise(err)
+  })
+
+  comm.Comm.SetCloseHandler(func() {
+    if comm.Check() {
+      comm.Close()
+    }
+  })
 
   var wg sync.WaitGroup
 
@@ -129,13 +144,6 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
   state = 2
 
-  go func() {
-    <- comm.Comm.CloseChan()
-    if comm.Check() {
-      comm.Close()
-    }
-  }()
-
   for j := 1; j < n; j++ {
     if !reseted[j] {
       comm.SlaveComm().Remote(j).SendHandshake()
@@ -157,19 +165,23 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 }
 
 func (c *BasicMasterComm)Close() error {
-  if c.Check() {
+  if c.SlaveComm().Check() {
     c.SlaveComm().Close()
   }
 
   return nil
 }
 
-func (c *BasicMasterComm)CloseChan() chan bool {
-  return c.SlaveComm().CloseChan()
+func (c *BasicMasterComm)SetErrorHandler(handler func(error)) {
+  c.SlaveComm().SetErrorHandler(handler)
 }
 
-func (c *BasicMasterComm)ErrorChan() chan error {
-  return c.SlaveComm().ErrorChan()
+func (c *BasicMasterComm)SetCloseHandler(handler func()) {
+  c.SlaveComm().SetCloseHandler(handler)
+}
+
+func (c *BasicMasterComm)Raise(err error) {
+  c.SlaveComm().Raise(err)
 }
 
 func (c *BasicMasterComm)Check() bool {
@@ -207,8 +219,7 @@ func (c *BasicMasterComm)Reset(i int) {
 
   addr, err := c.SlaveComm().Host().NewPeer(c.Comm.Pid)
   if err != nil {
-    c.Comm.Standard.Push(err)
-    c.Close()
+    c.Raise(err)
   }
 
   c.Connect(i, addr, false)

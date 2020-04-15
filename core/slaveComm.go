@@ -87,7 +87,12 @@ func (p *Param)String() string {
   return fmt.Sprintf("%d,%d,%d,%s,%s", initInt, p.Idx, p.N, p.Id, joinedAddress)
 }
 
-func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, base protocol.ID, inter Interface, param Param) (_ SlaveComm, err error) {
+func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, base protocol.ID, param Param, file string, n int, i int) (_ SlaveComm, err error) {
+  inter, err := NewInterface(file, i, n)
+  if err != nil {
+    return nil, err
+  }
+
   remotes := make([]Remote, len(*param.Addrs))
   comm := BasicSlaveComm {
     Ctx: ctx,
@@ -109,12 +114,14 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw *bufio.ReadWriter, b
 
   comm.Remote(0).Reset(zeroRw)
 
-  go func(){
-    <- comm.Remote(0).CloseChan()
-    if comm.Check() {
-      comm.Close()
-    }
-  }()
+  comm.Remote(0).SetErrorHandler(func(err error) {
+    comm.Raise(err)
+    comm.Close()
+  })
+
+  comm.Remote(0).SetCloseHandler(func() {
+    comm.Close()
+  })
 
   go func(){
     for comm.Check() {
@@ -182,64 +189,27 @@ type BasicSlaveComm struct {
   Base protocol.ID
   Pid protocol.ID
   Remotes *[]Remote
-  Standard BasicFunctionsCloser
+  Standard standardFunctionsCloser
 }
 
 func (c *BasicSlaveComm)Start() {
-  go func() {
-    outChan := c.Interface().Message()
-    for c.Check() {
-      msg, ok := <- outChan
-      if ok {
-        go c.Remote(msg.To).Send(msg.Content)
-      } else {
-        break
-      }
-    }
+  c.Interface().SetMessageHandler(func(to int, content string) {
+    c.Remote(to).Send(content)
+  })
 
-    if c.Idx == 0 && c.Check() {
-      c.Close()
-    }
-  }()
+  c.Interface().SetRequestHandler(func(i int) {
+    c.Interface().Push(c.Remote(i).Get())
+  })
 
-  go func(){
-    requestChan := c.Interface().Request()
-    for c.Check() {
-      req, ok := <- requestChan
-      if ok {
-        go c.Interface().Push(c.Remote(req).Get())
-      } else {
-        break
-      }
-    }
+  c.Interface().SetErrorHandler(func(err error) {
+    c.Raise(err)
+  })
 
-    if c.Idx == 0 && c.Check() {
-      c.Close()
-    }
-  }()
-
-  go func(){
-    err, ok := <- c.Interface().ErrorChan()
-    if c.Check() && ok {
-      c.Standard.Push(err)
-      c.Close()
-    }
-  }()
-
-  go func(){
-    err, ok := <- c.Host().ErrorChan()
-    if c.Check() && ok {
-      c.Standard.Push(err)
-      c.Close()
-    }
-  }()
-
-  go func(){
-    <- c.Host().CloseChan()
+  c.Interface().SetCloseHandler(func() {
     if c.Check() {
       c.Close()
     }
-  }()
+  })
 
   c.Interface().Start()
 }
@@ -276,12 +246,16 @@ func (c *BasicSlaveComm)Close() error {
   return nil
 }
 
-func (c *BasicSlaveComm)CloseChan() chan bool {
-  return c.Standard.CloseChan()
+func (c *BasicSlaveComm)SetErrorHandler(handler func(error)) {
+  c.Standard.SetErrorHandler(handler)
 }
 
-func (c *BasicSlaveComm)ErrorChan() chan error {
-  return c.Standard.ErrorChan()
+func (c *BasicSlaveComm)SetCloseHandler(handler func()) {
+  c.Standard.SetCloseHandler(handler)
+}
+
+func (c *BasicSlaveComm)Raise(err error) {
+  c.Standard.Raise(err)
 }
 
 func (c *BasicSlaveComm)Check() bool {
