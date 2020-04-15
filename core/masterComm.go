@@ -46,6 +46,14 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     },
   }
 
+  inter.SetErrorHandler(func(err error) {
+    comm.Raise(err)
+  })
+
+  inter.SetCloseHandler(func() {
+    comm.Close()
+  })
+
   comm.Comm.SetErrorHandler(func(err error) {
     comm.Raise(err)
   })
