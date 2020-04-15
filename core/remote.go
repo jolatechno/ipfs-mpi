@@ -200,6 +200,7 @@ func (r *BasicRemote)Close() error {
 
     if r.Rw != nil {
       r.Rw.Close()
+      r.Rw = nil
     }
 
     r.Standard.Close()
