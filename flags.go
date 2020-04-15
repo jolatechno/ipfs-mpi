@@ -9,7 +9,7 @@ import (
 
 )
 
-func ParseFlag() (core.Config, error) {
+func ParseFlag() (core.Config, bool, error) {
   config := core.Config{}
 
   config.Base = "libp2p-mpi/1.0.0" //set to the libp2p-mpi version
@@ -20,11 +20,16 @@ func ParseFlag() (core.Config, error) {
 		"Unique string to identify the ipfs store you are using")
 	flag.Uint64Var(&config.Maxsize, "maxsize", 10000000, "Set the max use space, default to 10MB")
   flag.Var(&config.BootstrapPeers, "peer", "Adds a peer multiaddress to the bootstrap list")
+
+  quiet := flag.Bool("q", false, "start on quiet mode")
+
 	flag.Parse()
 
   if len(config.BootstrapPeers) == 0 {
     config.BootstrapPeers = dht.DefaultBootstrapPeers
   }
 
-  return config, nil
+
+
+  return config, *quiet, nil
 }

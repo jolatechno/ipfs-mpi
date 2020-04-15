@@ -216,11 +216,11 @@ func (c *BasicSlaveComm)Start() {
     c.Raise(err)
   })
 
-  c.Interface().SetCloseHandler(func() {
+  /*c.Interface().SetCloseHandler(func() {
     if c.Check() {
       c.Close()
     }
-  })
+  })*/
 
   c.Interface().Start()
 }

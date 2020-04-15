@@ -14,7 +14,7 @@ import (
 func main(){
   ctx := context.Background()
 
-  config, err := ParseFlag()
+  config, quiet, err := ParseFlag()
   if err != nil {
     panic(err)
   }
@@ -25,7 +25,9 @@ func main(){
   }
 
   store.SetErrorHandler(func(err error) {
-    fmt.Println(err)
+    if !quiet {
+      fmt.Println(err)
+    }
   })
 
   fmt.Println("Our adress is ", store.Host().ID())

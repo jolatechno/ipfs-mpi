@@ -4,6 +4,7 @@ import (
   "errors"
 	"time"
   "io"
+  "sync"
 
   "github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/protocol"
@@ -26,8 +27,8 @@ func NewStream(pid protocol.ID) SelfStream {
     ReadPipeReversed: readPipeReversed,
     WriteTimeout: StandardTimeout,
     ReadTimeout: StandardTimeout,
-    Closed: false,
 		Pid: pid,
+
   }
 }
 
@@ -39,6 +40,7 @@ type CloseableBuffer struct {
   WriteTimeout time.Duration
   ReadTimeout time.Duration
   Closed bool
+  Mutex sync.Mutex
 	Pid protocol.ID
 }
 
@@ -59,6 +61,9 @@ func (b *CloseableBuffer)Reverse() (SelfStream, error) {
 }
 
 func (b *CloseableBuffer)Close() error {
+  b.Mutex.Lock()
+  defer b.Mutex.Unlock()
+
   b.Closed = true
   return nil
 }
@@ -72,6 +77,9 @@ func (b *CloseableBuffer)Protocol() protocol.ID {
 }
 
 func (b *CloseableBuffer)Reset() error {
+  b.Mutex.Lock()
+  defer b.Mutex.Unlock()
+
   if b.Closed {
 		return StreamClosed
 	}
@@ -84,6 +92,9 @@ func (b *CloseableBuffer)Reset() error {
 }
 
 func (b *CloseableBuffer)Read(p []byte) (int, error) {
+  b.Mutex.Lock()
+  defer b.Mutex.Unlock()
+
   if b.Closed {
 		return 0, StreamClosed
 	}
@@ -100,6 +111,9 @@ func (b *CloseableBuffer)Read(p []byte) (int, error) {
 }
 
 func (b *CloseableBuffer) Write(p []byte) (int, error) {
+  b.Mutex.Lock()
+  defer b.Mutex.Unlock()
+
   if b.Closed {
 		return 0, StreamClosed
 	}
