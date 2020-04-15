@@ -227,21 +227,20 @@ func (c *BasicSlaveComm)Close() error {
 
     c.Standard.Close()
 
-    fmt.Printf("[SlaveComm] Closing %d, 1\n", c.Idx) //--------------------------
-
-    c.Interface().Close()
-
-    fmt.Printf("[SlaveComm] Closing %d, 2\n", c.Idx) //--------------------------
+    go c.Interface().Close()
 
     for i := range *c.Remotes {
       if i != c.Idx {
         proto := protocol.ID(fmt.Sprintf("%d/%s", i, string(c.Pid)))
         c.CommHost.RemoveStreamHandler(proto)
 
-        if c.Idx == 0 {
-          c.Remote(i).CloseRemote()
-        }
-        c.Remote(i).Close()
+        go func() {
+          if c.Idx == 0 {
+            c.Remote(i).CloseRemote()
+          }
+          c.Remote(i).Close()
+        }()
+
       }
     }
   }

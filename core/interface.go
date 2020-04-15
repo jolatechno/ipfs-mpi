@@ -99,7 +99,6 @@ func (s *StdInterface)Start() {
   reader := bufio.NewReader(stdout)
   go func(){
     for s.Check() {
-
       str, err := reader.ReadString('\n')
       if str == "" && err == nil {
         err = errors.New("Received an empty string")
