@@ -130,7 +130,9 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     for comm.Check() {
       time.Sleep(WaitDuration)
       if !comm.Remote(0).Ping(WaitDuration) {
-        comm.Close()
+        if comm.Check() {
+          comm.Close()
+        }
       }
     }
   }()
