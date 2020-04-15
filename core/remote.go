@@ -48,7 +48,10 @@ type BasicRemote struct {
 func (r *BasicRemote)Ping(timeoutDuration time.Duration) bool {
   err := timeout.MakeSimpleTimeout(func () error {
     fmt.Fprint(r.Rw, "Ping\n")
-    <- r.PingChan
+    _, ok := <- r.PingChan
+    if !ok {
+      return errors.New("Channel Closed")
+    }
     return nil
   }, timeoutDuration)
 

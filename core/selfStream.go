@@ -13,7 +13,7 @@ import (
 )
 
 var (
-  StreamClosed = errors.New("Stream closed")
+  StreamEnded = errors.New("Stream closed")
   StandardTimeout = time.Hour
 )
 
@@ -39,14 +39,14 @@ type CloseableBuffer struct {
   ReadPipeReversed *io.PipeReader
   WriteTimeout time.Duration
   ReadTimeout time.Duration
-  Closed bool
+  Ended bool
   Mutex sync.Mutex
 	Pid protocol.ID
 }
 
 func (b *CloseableBuffer)Reverse() (SelfStream, error) {
-  if b.Closed {
-		return nil, StreamClosed
+  if b.Ended {
+		return nil, StreamEnded
 	}
   return &CloseableBuffer {
     WritePipe: b.WritePipeReversed,
@@ -55,16 +55,23 @@ func (b *CloseableBuffer)Reverse() (SelfStream, error) {
     ReadPipeReversed: b.ReadPipe,
     WriteTimeout: b.ReadTimeout,
     ReadTimeout: b.WriteTimeout,
-    Closed: false,
+    Ended: false,
 		Pid: b.Pid,
   }, nil
+}
+
+func (b *CloseableBuffer)check() bool {
+  b.Mutex.Lock()
+  defer b.Mutex.Unlock()
+
+  return !b.Ended
 }
 
 func (b *CloseableBuffer)Close() error {
   b.Mutex.Lock()
   defer b.Mutex.Unlock()
 
-  b.Closed = true
+  b.Ended = true
   return nil
 }
 
@@ -77,11 +84,8 @@ func (b *CloseableBuffer)Protocol() protocol.ID {
 }
 
 func (b *CloseableBuffer)Reset() error {
-  b.Mutex.Lock()
-  defer b.Mutex.Unlock()
-
-  if b.Closed {
-		return StreamClosed
+  if !b.check() {
+		return StreamEnded
 	}
 
   b.ReadPipe, b.WritePipe = io.Pipe()
@@ -92,11 +96,8 @@ func (b *CloseableBuffer)Reset() error {
 }
 
 func (b *CloseableBuffer)Read(p []byte) (int, error) {
-  b.Mutex.Lock()
-  defer b.Mutex.Unlock()
-
-  if b.Closed {
-		return 0, StreamClosed
+  if !b.check() {
+		return 0, StreamEnded
 	}
 
   n, err := timeout.MakeTimeout(func() (interface{}, error) {
@@ -111,11 +112,8 @@ func (b *CloseableBuffer)Read(p []byte) (int, error) {
 }
 
 func (b *CloseableBuffer) Write(p []byte) (int, error) {
-  b.Mutex.Lock()
-  defer b.Mutex.Unlock()
-
-  if b.Closed {
-		return 0, StreamClosed
+  if !b.check() {
+		return 0, StreamEnded
 	}
 
   n, err := timeout.MakeTimeout(func() (interface{}, error) {
