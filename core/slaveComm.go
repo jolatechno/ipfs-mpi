@@ -157,8 +157,6 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     <- comm.Remote(0).GetHandshake()
   }
 
-  fmt.Println("[SlaveComm] Handshake 0 ") //--------------------------
-
   var wg sync.WaitGroup
 
   if param.Init {
@@ -180,8 +178,6 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     comm.Remote(0).SendHandshake()
     <- comm.Remote(0).GetHandshake()
   }
-
-  fmt.Println("[SlaveComm] Handshake 1 ") //--------------------------
 
   comm.Start()
 
@@ -235,6 +231,8 @@ func (c *BasicSlaveComm)Close() error {
     fmt.Printf("[SlaveComm] Closing %d\n", c.Idx) //--------------------------
 
     c.Standard.Close()
+
+    c.Interface().Close()
 
     for i := range *c.Remotes {
       if i != c.Idx {
