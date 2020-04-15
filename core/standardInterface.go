@@ -5,23 +5,25 @@ import (
 )
 
 func NewStandardInterface() standardFunctionsCloser {
-  return &BasicFunctionsCloser {}
+  return &BasicFunctionsCloser {
+    EndHandler: func() {},
+    ErrorHandler: func(error) {},
+  }
 }
 
 type BasicFunctionsCloser struct {
   Mutex sync.Mutex
   Ended bool
-  EndHandler *func()
-  ErrorHandler *func(error)
+  EndHandler func()
+  ErrorHandler func(error)
 }
 
 func (b *BasicFunctionsCloser)Close() error {
   b.Mutex.Lock()
   defer b.Mutex.Unlock()
   if !b.Ended {
-    if b.EndHandler != nil {
-      (*b.EndHandler)()
-    }
+    b.EndHandler()
+
     b.Ended = true
   }
 
@@ -29,9 +31,7 @@ func (b *BasicFunctionsCloser)Close() error {
 }
 
 func (b *BasicFunctionsCloser)Raise(err error) {
-  if b.ErrorHandler != nil {
-    (*b.ErrorHandler)(err)
-  }
+  b.ErrorHandler(err)
 }
 
 func (b *BasicFunctionsCloser)Check() bool {
@@ -41,9 +41,9 @@ func (b *BasicFunctionsCloser)Check() bool {
 }
 
 func (b *BasicFunctionsCloser)SetErrorHandler(handler func(error)) {
-  b.ErrorHandler = &handler
+  b.ErrorHandler = handler
 }
 
 func (b *BasicFunctionsCloser)SetCloseHandler(handler func()) {
-  b.EndHandler = &handler
+  b.EndHandler = handler
 }

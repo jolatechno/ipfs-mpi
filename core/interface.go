@@ -21,6 +21,8 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
   inter := StdInterface {
     Idx: i,
     Cmd: exec.Command("python3", cmdArgs...),
+    MessageHandler: func(int, string) {},
+    RequestHandler: func(int) {},
   }
 
   return &inter, nil
@@ -28,8 +30,8 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
 
 type StdInterface struct {
   Stdin io.Writer
-  MessageHandler *func(int, string)
-  RequestHandler *func(int)
+  MessageHandler func(int, string)
+  RequestHandler func(int)
   Idx int
   Cmd *exec.Cmd
   Standard BasicFunctionsCloser
@@ -116,9 +118,8 @@ func (s *StdInterface)Start() {
           continue
         }
 
-        if s.RequestHandler != nil {
-          (*s.RequestHandler)(idx)
-        }
+        s.RequestHandler(idx)
+
       } else if splitted[0] == "Log" && s.Idx == 0 {
         if len(splitted) < 2 {
           s.Raise(errors.New("Not enough field"))
@@ -139,12 +140,12 @@ func (s *StdInterface)Start() {
           continue
         }
 
-        if s.MessageHandler != nil {
-          (*s.MessageHandler)(idx, strings.Join(splitted[2:], ","))
-        }
+        s.MessageHandler(idx, strings.Join(splitted[2:], ","))
+
       } else {
         s.Raise(errors.New("Not understood"))
         continue
+        
       }
     }
   }()
@@ -175,11 +176,11 @@ func (s *StdInterface)Check() bool {
 }
 
 func (s *StdInterface)SetMessageHandler(handler func(int, string)) {
-  s.MessageHandler = &handler
+  s.MessageHandler = handler
 }
 
 func (s *StdInterface)SetRequestHandler(handler func(int)) {
-  s.RequestHandler = &handler
+  s.RequestHandler = handler
 }
 
 func (s *StdInterface)Push(msg string) error {
