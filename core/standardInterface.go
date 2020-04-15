@@ -5,7 +5,13 @@ import (
 )
 
 func NewStandardInterface() standardFunctionsCloser {
-  return &BasicFunctionsCloser {}
+  nilEndHandler := func() {}
+  nilErrorHandler := func(err error) {}
+
+  return &BasicFunctionsCloser {
+    EndHandler: &nilEndHandler,
+    ErrorHandler: &nilErrorHandler,
+  }
 }
 
 type BasicFunctionsCloser struct {
