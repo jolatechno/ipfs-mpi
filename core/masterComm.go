@@ -104,6 +104,8 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
   wg.Wait()
 
+  fmt.Println("[MasterComm] Handshake 0 ") //--------------------------
+
   state = 1
   N := 0
   for _, s := range reseted {
@@ -144,6 +146,8 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   }
 
   wg2.Wait()
+
+  fmt.Println("[MasterComm] Handshake 1 ") //--------------------------
 
   state = 2
 

@@ -157,6 +157,8 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     <- comm.Remote(0).GetHandshake()
   }
 
+  fmt.Println("[SlaveComm] Handshake 0 ") //--------------------------
+
   var wg sync.WaitGroup
 
   if param.Init {
@@ -178,6 +180,8 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     comm.Remote(0).SendHandshake()
     <- comm.Remote(0).GetHandshake()
   }
+
+  fmt.Println("[SlaveComm] Handshake 1 ") //--------------------------
 
   comm.Start()
 
@@ -274,7 +278,7 @@ func (c *BasicSlaveComm)Host() ExtHost {
 
 func (c *BasicSlaveComm)Connect(i int, addr peer.ID) error {
 
-  //fmt.Printf("[SlaveComm] %d connecting to %d out of %d\n", c.Idx, i, len(*c.Addrs)) //--------------------------
+  fmt.Printf("[SlaveComm] %d connecting to %d\n", c.Idx, i) //--------------------------
 
   rwi, err := timeout.MakeTimeout(func() (interface{}, error) {
     stream, err := c.CommHost.NewStream(c.Ctx, addr, c.Pid)
