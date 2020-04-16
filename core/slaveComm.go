@@ -102,6 +102,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     Ctx: ctx,
     Inter: inter,
     Id: param.Id,
+    N: param.N,
     Idx: param.Idx,
     CommHost: host,
     Base: base,
@@ -126,7 +127,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     comm.Close()
   })
 
-  for j := 1; j < param.N; j++ {
+  for j := 1; j < comm.N; j++ {
     i := j
 
     (*comm.Remotes)[i], err = NewRemote()
@@ -166,10 +167,10 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
 
   j := 1
   if param.Init {
-    j = param.Idx + 1
+    j = comm.Idx + 1
   }
 
-  for ;j < param.N; j++ {
+  for ;j < comm.N; j++ {
     i := j
 
     if i != param.Idx {
@@ -194,6 +195,7 @@ type BasicSlaveComm struct {
   Ctx context.Context
   Inter Interface
   Id string
+  N int
   Idx int
   CommHost ExtHost
   Base protocol.ID
@@ -247,7 +249,9 @@ func (c *BasicSlaveComm)Close() error {
 
     go c.Interface().Close()
 
-    for i := range *c.Remotes {
+    for j := 0; j < c.N; j++ {
+      i := j
+      
       if i != c.Idx {
         proto := protocol.ID(fmt.Sprintf("%d/%s", i, string(c.Pid)))
         c.CommHost.RemoveStreamHandler(proto)
