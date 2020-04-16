@@ -168,8 +168,6 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     host.SetStreamHandler(proto, streamHandler)
   }
 
-  fmt.Printf("[SlaveComm] %d Handshake 0\n", comm.Idx) //--------------------------
-
   if param.Init {
     comm.Remote(0).SendHandshake()
     <- comm.Remote(0).GetHandshake()
@@ -192,13 +190,15 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
       continue
     }
 
+    fmt.Printf("[SlaveComm] %d Connecting to %d\n", comm.Idx, i) //--------------------------
+
     go func(wp *sync.WaitGroup) {
       comm.Connect(i, (*param.Addrs)[i])
       wp.Done()
     }(&wg)
   }
 
-  fmt.Printf("[SlaveComm] %d Handshake 1\n", comm.Idx) //--------------------------
+  wg.Wait()
 
   if param.Init {
     comm.Remote(0).SendHandshake()
