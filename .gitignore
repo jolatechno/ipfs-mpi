@@ -2,9 +2,3 @@
 !/**/
 !*.*
 !**/LICENSE
-
-**/interpreter
-**/interpreter/**
-
-!interpreter
-!interpreter/**

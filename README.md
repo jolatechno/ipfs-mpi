@@ -21,21 +21,30 @@ Wich will give an output ressembling :
 ```
 added QmYjH4sibLpCSNCVbHXhfCZY78Ckj2aDDMWFwup7NGJ3JD interpreter/dummy/init.py
 added Qmb5jKmyFQFDceBXLCkjdfQbJrJ5fQ6KLGJHESTJ8E5mZo interpreter/dummy/run.py
+added QmNYxkata4t7Pp4xvYyaQWEtZKNfUMQ9i1WUQ5p43cvbzq interpreter/echo/__pycache__/utils.cpython-37.pyc
 added QmYjH4sibLpCSNCVbHXhfCZY78Ckj2aDDMWFwup7NGJ3JD interpreter/echo/init.py
-added QmWYeLF3UP7gNVi7shwdCHARM6QSH4Ls4QHm7FDtXbwqCt interpreter/echo/run.py
+added QmURFGfqZor5j5MY3XQMMyhJWpqzfWV7ZDpC2FvrDipuLU interpreter/echo/run.py
+added QmXHjtA4485CKau2sr3nsjwmBfEuB7PajDY3tkf6oM6WTK interpreter/echo/utils.py
+added QmYtMkhCXQr25NWdSK5cMBmv67ZsjDFPPHkJfksnD887tE interpreter/multi_echo/__pycache__/utils.cpython-37.pyc
 added QmYjH4sibLpCSNCVbHXhfCZY78Ckj2aDDMWFwup7NGJ3JD interpreter/multi_echo/init.py
-added QmWVaQKHMTgjY2xkhL5b9GpAJtURmfeCymUB5GmPLYihxt interpreter/multi_echo/run.py
+added QmWNp1x7CoT9gKP6ekFALhmYNNHyUq8DjbtDHKz42nCnKD interpreter/multi_echo/run.py
+added QmXHjtA4485CKau2sr3nsjwmBfEuB7PajDY3tkf6oM6WTK interpreter/multi_echo/utils.py
+added QmYHjsqkopRxojbRreAsG6EDC2sfWc9okQ8X2B4hcRHYtj interpreter/round_echo/__pycache__/utils.cpython-37.pyc
 added QmYjH4sibLpCSNCVbHXhfCZY78Ckj2aDDMWFwup7NGJ3JD interpreter/round_echo/init.py
-added QmbHiQDxwkYBQyMK7AtXo28ch1RqkfqnUCjTejqjzmGmW6 interpreter/round_echo/run.py
+added QmZtWPvv8sQWXpPvdbNvjyXcRbmcnqDVRo7gfwohqYKFLp interpreter/round_echo/run.py
+added QmXHjtA4485CKau2sr3nsjwmBfEuB7PajDY3tkf6oM6WTK interpreter/round_echo/utils.py
 added QmUQT4c4btHFZGgcrSzzxXTstFWSe3eS32YhVCJYGqtut7 interpreter/dummy
-added QmPfUkJEyjGMCHcTki22pNtkydonF9X57mNKGhpjpwCjFj interpreter/echo
-added QmfNDPyCE3HUy6hVrD77yXnXW6p2X7xyzLjEDkoUchgxHe interpreter/multi_echo
-added Qma2E2hHzQm33btHhPqCLFpmt2XK4RdRSE3YqSNL1Xzppt interpreter/round_echo
-added QmU5pbUzwuE5GmiF8S96VGHJL3mTEPg9TTLsXf9vo4jTNm interpreter
- 3.00 KiB / 3.00 KiB [=========================================================================] 100.00%
+added QmbTf6m59E2EfQBGoqJ3vHYcaoGFgBPAskS6UDyTjGpBoV interpreter/echo/__pycache__
+added QmbU4m7qVx9hF4NSH1bgLyyhS1HEhoE72fVKqC6ZrCfRBU interpreter/echo
+added QmeQfhcDropaiaTYHMSoabpzssckt9aQfyuYkm6xSdo1U2 interpreter/multi_echo/__pycache__
+added QmW8ETYBnHeR82JeLBdXWDbHX7oZipG8zA3ojovsmzrvMK interpreter/multi_echo
+added QmU7BWPUfBbPKf4Ex4dkNSi8soDM1hRvF7mLfpmTqrPJ7N interpreter/round_echo/__pycache__
+added QmVkY4hE9yWRx6otwpTkR9PHXJmGsx5VnYcC3R6BK3Zaiy interpreter/round_echo
+added QmR7CHExUVmzAnSw6NyTCgGt8cAALxC8pyyDDHiEgU7uxE interpreter
+ 7.89 KiB / 7.89 KiB [====================================================================================================================================================================================] 100.00%
  ```
 
-Where the line corresponding to the whole directory is `added QmU5pbUzwuE5GmiF8S96VGHJL3mTEPg9TTLsXf9vo4jTNm interpreter`, so the ipfs-store that you should use will be `QmU5pbUzwuE5GmiF8S96VGHJL3mTEPg9TTLsXf9vo4jTNm/`
+Where the line corresponding to the whole directory is `added QmR7CHExUVmzAnSw6NyTCgGt8cAALxC8pyyDDHiEgU7uxE interpreter`, so the ipfs-store that you should use will be `QmR7CHExUVmzAnSw6NyTCgGt8cAALxC8pyyDDHiEgU7uxE/`
 
 ## How to build ?
 

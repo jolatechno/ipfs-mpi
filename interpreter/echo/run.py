@@ -1,38 +1,25 @@
-import sys
-import signal
-
-timeout = 5 # timeout duration
-
-class TimeoutException(Exception):
-    pass
-
-def Timeout(signum, frame):
-    print("Log,Timed-out")
-    raise TimeoutException()
+import utils
+import time
 
 if __name__ == "__main__":
-    n, i = int(sys.argv[1]), int(sys.argv[2])
+    i, n, args = utils.Init()
 
     assert n == 2, "size not understood"
-    assert 0 <= i <= 2, "index not understood"
 
     if i == 0:
-        if len(sys.argv) == 4:
-            msg = sys.argv[3]
+        if len(args) >= 1:
+            msg = " ".join(args)
         else:
             msg = "sending"
 
-        print("Log," + msg)
-        print(f"Send,1,{msg}")
-
-        signal.signal(signal.SIGALRM, Timeout) #link the SIGALRM signal to the handler
-        signal.alarm(timeout) #create an alarm of timeout second
-
-        resp = input(f"Req,1\n")
-        print(f"Log,responded: {resp}")
-
-        signal.alarm(0) #reinitiate the alarm
+        utils.Log(f"sending \"{ msg }\"")
+        utils.Send(1, msg)
+        resp = utils.Read(1, 5)
+        utils.Log(f"Responded :\"{ resp }\"")
 
     else:
-        msg = input("Req,0\n")
-        print(f"Send,0,{msg} {msg}")
+        msg = resp = utils.Read(0)
+
+        time.sleep(2)
+
+        utils.Send(0, f"{msg} {msg}")
