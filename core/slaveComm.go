@@ -257,7 +257,7 @@ func (c *BasicSlaveComm)Interface() Interface {
 func (c *BasicSlaveComm)Close() error {
   if c.Check() {
 
-    fmt.Printf("[SlaveComm] Closing %d, 0\n", c.Idx) //--------------------------
+    fmt.Println("[SlaveComm] Closing ", c.Idx) //--------------------------
 
     c.Standard.Close()
 

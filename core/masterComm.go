@@ -37,6 +37,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
       Ctx: ctx,
       Inter: inter,
       Id: id,
+      N: n,
       Idx: 0,
       CommHost: host,
       Base: protocol.ID(fmt.Sprintf("%s/%s", id, string(base))),
@@ -60,7 +61,6 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
   wg.Add(n - 1)
 
-  state := 0
   reseted := make([]bool, n)
 
   for j := 1; j < n; j++ {
@@ -77,10 +77,8 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
     go func(wp *sync.WaitGroup) {
       comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
-        if state == 0 {
-          reseted[i] = true
-          wp.Done()
-        }
+        reseted[i] = true
+        wp.Done()
 
         comm.Reset(i)
 
@@ -101,7 +99,6 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
   wg.Wait()
 
-  state = 1
   N := 0
   for _, s := range reseted {
     if !s {
@@ -124,10 +121,8 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
     go func(wp *sync.WaitGroup) {
       comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
-        if state == 1 {
-          reseted[i] = true
-          wp.Done()
-        }
+        reseted[i] = true
+        wp.Done()
 
         comm.Reset(i)
 
@@ -146,11 +141,9 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
   wg2.Wait()
 
-  state = 2
-
   for j := 1; j < n; j++ {
     i := j
-    
+
     comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
       comm.Reset(i)
     })
