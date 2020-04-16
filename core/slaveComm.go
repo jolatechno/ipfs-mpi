@@ -75,11 +75,19 @@ type Param struct {
 }
 
 func (p *Param)String() string {
-  addrs := make([]string, len(*p.Addrs))
-  for i, addr := range *p.Addrs {
-    if i != p.Idx && (!p.Init || i > p.Idx) {
-      addrs[i] = peer.IDB58Encode(addr)
+  addrs := make([]string, p.N)
+
+  i := 1
+  if p.Init {
+    i = p.Idx + 1
+  }
+
+  for ;i < p.N; i++ {
+    if i == p.Idx {
+      continue
     }
+
+    addrs[i] = peer.IDB58Encode((*p.Addrs)[i])
   }
 
   initInt := 0
@@ -130,6 +138,10 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
   for j := 1; j < comm.N; j++ {
     i := j
 
+    if i == comm.Idx {
+      continue
+    }
+
     (*comm.Remotes)[i], err = NewRemote()
     if err != nil {
       return nil, err
@@ -173,12 +185,14 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
   for ;j < comm.N; j++ {
     i := j
 
-    if i != param.Idx {
-      go func(wp *sync.WaitGroup) {
-        comm.Connect(i, (*param.Addrs)[i])
-        wp.Done()
-      }(&wg)
+    if i == comm.Idx {
+      continue
     }
+
+    go func(wp *sync.WaitGroup) {
+      comm.Connect(i, (*param.Addrs)[i])
+      wp.Done()
+    }(&wg)
   }
 
   if param.Init {
@@ -251,22 +265,26 @@ func (c *BasicSlaveComm)Close() error {
 
     for j := 0; j < c.N; j++ {
       i := j
-      
-      if i != c.Idx {
+
+      if i == c.Idx {
+        continue
+      }
+
+      if i != 0 {
         proto := protocol.ID(fmt.Sprintf("%d/%s", i, string(c.Pid)))
         c.CommHost.RemoveStreamHandler(proto)
 
         c.Remote(i).SetErrorHandler(func(err error) {})
         c.Remote(i).SetCloseHandler(func() {})
-
-        go func() {
-          if c.Idx == 0 {
-            c.Remote(i).CloseRemote()
-          }
-          c.Remote(i).Close()
-        }()
-
       }
+
+      go func() {
+        if c.Idx == 0 {
+          c.Remote(i).CloseRemote()
+        }
+        c.Remote(i).Close()
+      }()
+
     }
   }
 

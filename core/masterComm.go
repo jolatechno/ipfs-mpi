@@ -117,29 +117,31 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     i := j
 
     if !reseted[i] {
-      comm.SlaveComm().Remote(i).SendHandshake()
+      continue
+    }
 
-      go func(wp *sync.WaitGroup) {
-        comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
-          if state == 1 {
-            reseted[i] = true
-            wp.Done()
-          }
+    comm.SlaveComm().Remote(i).SendHandshake()
 
-          comm.Reset(i)
-
-          comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
-            comm.Reset(i)
-          })
-        })
-
-        <- comm.SlaveComm().Remote(i).GetHandshake()
-
-        if !reseted[i] {
+    go func(wp *sync.WaitGroup) {
+      comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
+        if state == 1 {
+          reseted[i] = true
           wp.Done()
         }
-      }(&wg2)
-    }
+
+        comm.Reset(i)
+
+        comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
+          comm.Reset(i)
+        })
+      })
+
+      <- comm.SlaveComm().Remote(i).GetHandshake()
+
+      if !reseted[i] {
+        wp.Done()
+      }
+    }(&wg2)
   }
 
   wg2.Wait()
@@ -147,6 +149,12 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   state = 2
 
   for j := 1; j < n; j++ {
+    i := j
+    
+    comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
+      comm.Reset(i)
+    })
+
     if !reseted[j] {
       comm.SlaveComm().Remote(j).SendHandshake()
     }
