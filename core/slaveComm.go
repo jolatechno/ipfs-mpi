@@ -179,6 +179,9 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
   if param.Init {
     j = comm.Idx + 1
     wg.Add(param.N - param.Idx - 1)
+
+    fmt.Println("[SlaveComm]", param.N, param.Idx) //--------------------------
+
   } else {
     wg.Add(param.N - 1)
   }
@@ -190,13 +193,13 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
       continue
     }
 
-    fmt.Printf("[SlaveComm] %d Connecting to %d\n", comm.Idx, i) //--------------------------
-
     go func(wp *sync.WaitGroup) {
       comm.Connect(i, (*param.Addrs)[i])
       wp.Done()
     }(&wg)
   }
+
+  fmt.Println("[SlaveComm] handshake 1.5") //--------------------------
 
   wg.Wait()
 
