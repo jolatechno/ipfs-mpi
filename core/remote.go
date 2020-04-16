@@ -165,8 +165,6 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
         return
       }
 
-      fmt.Printf("[Remote] Received %q\n", str) //--------------------------
-
       if str == HandShakeHeader {
         r.HandshakeChan <- true
         continue

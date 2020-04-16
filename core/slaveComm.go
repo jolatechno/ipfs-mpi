@@ -202,7 +202,9 @@ func (c *BasicSlaveComm)Start() {
   })
 
   c.Interface().SetCloseHandler(func() {
-    c.Close()
+    if c.Idx == 0 {
+      c.Close()
+    }
   })
 
   c.Interface().SetMessageHandler(func(to int, content string) {

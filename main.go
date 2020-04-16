@@ -70,8 +70,12 @@ func main(){
       }
 
       n, err := strconv.Atoi(splitted[2])
+      if n <= 0 && err == nil {
+        err = errors.New("Size not understood")
+      }
       if err != nil {
         store.Raise(err)
+        continue
       }
 
       go func() {
@@ -96,6 +100,7 @@ func main(){
     } else if splitted[0] == "Del" {
       if len(splitted) < 2 {
         store.Raise(errors.New("No file given"))
+        continue
       }
 
       for _, f := range splitted[1:] {
