@@ -17,6 +17,9 @@ import (
 )
 
 func ParamFromString(msg string) (Param, error) {
+
+  fmt.Println("[Param] From string 0 : ", msg) //--------------------------
+
   param := Param{}
   splitted := strings.Split(msg, ",")
   if len(splitted) != 5 {
@@ -47,7 +50,11 @@ func ParamFromString(msg string) (Param, error) {
   }
 
   addrs := strings.Split(splitted[4], ";")
-  list := make([]peer.ID, len(addrs))
+  list := make([]peer.ID, n)
+
+  if len(addrs) != n {
+    return param, errors.New("lsit length and comm size don't match")
+  }
 
   for i, addr := range addrs {
     if addr != "" {
@@ -62,6 +69,8 @@ func ParamFromString(msg string) (Param, error) {
   param.N = n
   param.Id = splitted[3]
   param.Addrs = &list
+
+  fmt.Println("[Param] From string 1 : ", param) //--------------------------
 
   return param, nil
 }
@@ -96,6 +105,9 @@ func (p *Param)String() string {
   }
 
   joinedAddress := strings.Join(addrs, ";")
+
+  fmt.Printf("[Param] To string %d,%d,%d,%s,%s\n", initInt, p.Idx, p.N, p.Id, joinedAddress) //--------------------------
+
   return fmt.Sprintf("%d,%d,%d,%s,%s", initInt, p.Idx, p.N, p.Id, joinedAddress)
 }
 

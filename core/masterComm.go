@@ -32,7 +32,6 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   remotes := make([]Remote, n)
   comm := BasicMasterComm {
     Addrs: &Addrs,
-    N: n,
     Comm: BasicSlaveComm {
       Ctx: ctx,
       Inter: inter,
@@ -57,6 +56,8 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     }
   })
 
+  state := 0
+
   var wg sync.WaitGroup
 
   wg.Add(n - 1)
@@ -77,8 +78,10 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
     go func(wp *sync.WaitGroup) {
       comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
-        reseted[i] = true
-        wp.Done()
+        if state == 0 {
+          reseted[i] = true
+          wp.Done()
+        }
 
         comm.Reset(i)
 
@@ -98,6 +101,8 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   }
 
   wg.Wait()
+
+  state = 1
 
   N := 0
   for _, s := range reseted {
@@ -121,8 +126,10 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
     go func(wp *sync.WaitGroup) {
       comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
-        reseted[i] = true
-        wp.Done()
+        if state == 1 {
+          reseted[i] = true
+          wp.Done()
+        }
 
         comm.Reset(i)
 
@@ -140,6 +147,8 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   }
 
   wg2.Wait()
+
+  state = 2
 
   for j := 1; j < n; j++ {
     i := j
@@ -161,7 +170,6 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 type BasicMasterComm struct {
   Addrs *[]peer.ID
   Ctx context.Context
-  N int
   Comm BasicSlaveComm
 }
 
@@ -202,7 +210,7 @@ func (c *BasicMasterComm)Connect(i int, addr peer.ID, init bool) {
     p := Param {
       Init: init,
       Idx: i,
-      N: c.N,
+      N: c.Comm.N,
       Id: c.Comm.Id,
       Addrs: c.Addrs,
     }
