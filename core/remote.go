@@ -83,8 +83,6 @@ func (r *BasicRemote)CloseRemote() {
 func (r *BasicRemote)Send(msg string) {
   *r.Sent = append(*r.Sent, msg)
 
-  fmt.Printf("[Remote] Sending %q\n", msg ) //--------------------------
-
   if stream := r.Rw; stream != io.ReadWriteCloser(nil) {
     writer := bufio.NewWriter(stream)
 

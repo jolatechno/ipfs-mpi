@@ -224,9 +224,12 @@ type BasicSlaveComm struct {
 
 func (c *BasicSlaveComm)Start() {
 
-  fmt.Printf("[SlaveComm] Starting %d\n", c.Idx) //--------------------------
+  fmt.Println("[SlaveComm] Starting", c.Idx) //--------------------------
 
   c.Interface().SetErrorHandler(func(err error) {
+
+    fmt.Println("[SlaveComm] [interface] errror : ", err) //--------------------------
+
     c.Raise(err)
   })
 
@@ -237,6 +240,9 @@ func (c *BasicSlaveComm)Start() {
   })
 
   c.Interface().SetMessageHandler(func(to int, content string) {
+
+    fmt.Printf("[SlaveComm] %d Sending %q to %d\n", c.Idx, content, to) //--------------------------
+
     c.Remote(to).Send(content)
   })
 
