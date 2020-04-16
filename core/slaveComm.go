@@ -138,7 +138,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     }
 
     comm.Remote(i).SetErrorHandler(func(err error) {
-      comm.Remote(i).Reset(nil)
+      comm.Remote(i).Reset(io.ReadWriteCloser(nil))
     })
 
     comm.Remote(i).SetCloseHandler(func() {

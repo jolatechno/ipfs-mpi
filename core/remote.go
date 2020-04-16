@@ -68,6 +68,8 @@ func (r *BasicRemote)CloseRemote() {
 func (r *BasicRemote)Send(msg string) {
   *r.Sent = append(*r.Sent, msg)
 
+  fmt.Printf("[Remote] Sending %q\n", msg ) //--------------------------
+
   if stream := r.Rw; stream != nil {
     _, err := bufio.NewWriter(stream).WriteString(fmt.Sprintf("%s,%s", MessageHeader, msg))
     if err != nil {
@@ -96,7 +98,10 @@ func (r *BasicRemote)GetHandshake() chan bool {
 
 func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
   r.Rw = stream
-  if stream == nil {
+  if stream == io.ReadWriteCloser(nil) {
+
+    fmt.Println("[Remote] Nil stream") //--------------------------
+
     return
   }
 
