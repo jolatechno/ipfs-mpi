@@ -19,13 +19,14 @@ ipfs add -r interpreter
 Wich will give an output ressembling :
 
 ```
-added QmYjH4sibLpCSNCVbHXhfCZY78Ckj2aDDMWFwup7NGJ3JD interpreter/dummy/init.py
-added Qmb5jKmyFQFDceBXLCkjdfQbJrJ5fQ6KLGJHESTJ8E5mZo interpreter/dummy/run.py
+added QmVoLznUzS5zKN8bYxVN6BNUKuq52JaHTZ7SwWGFE2miPb interpreter/echo/__pycache__/utils.cpython-37.pyc
+added QmYjH4sibLpCSNCVbHXhfCZY78Ckj2aDDMWFwup7NGJ3JD interpreter/echo/init.py
+added QmURFGfqZor5j5MY3XQMMyhJWpqzfWV7ZDpC2FvrDipuLU interpreter/echo/run.py
 
 ...
 
-added QmR7CHExUVmzAnSw6NyTCgGt8cAALxC8pyyDDHiEgU7uxE interpreter
- 7.89 KiB / 7.89 KiB [====================================================================================================================================================================================] 100.00%
+added QmYH56FbDHY9rnXJ7gbkz4zFV5eWB6PvtufVNyJbGthj5f interpreter
+ 8.02 KiB / 8.02 KiB [====================================================================================================================================================================================] 100.00%
  ```
 
 Where the line corresponding to the whole directory is `added QmR7CHExUVmzAnSw6NyTCgGt8cAALxC8pyyDDHiEgU7uxE interpreter`, so the ipfs-store that you should use will be `QmR7CHExUVmzAnSw6NyTCgGt8cAALxC8pyyDDHiEgU7uxE/`

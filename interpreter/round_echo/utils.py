@@ -1,18 +1,21 @@
 import sys
 import signal
+import time
 
 class TimeoutException(Exception):
     pass
 
 def Timeout(signum, frame):
-    print("Log,Timed-out")
+    Log("Read time-out")
+
+    time.sleep(1)
+
     raise TimeoutException()
 
 def Init():
     assert len(sys.argv) >= 3, "not enough arguments"
 
     n, i = int(sys.argv[1]), int(sys.argv[2])
-
 
     assert 0 <= i < n, "index not understood"
 
