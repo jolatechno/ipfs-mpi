@@ -126,27 +126,29 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     comm.Close()
   })
 
-  for i := 1; i < len(*param.Addrs); i++ {
-    (*comm.Remotes)[i], err = NewRemote()
-    if err != nil {
-      return nil, err
+  for i := range *param.Addrs {
+    if i > 0 {
+      (*comm.Remotes)[i], err = NewRemote()
+      if err != nil {
+        return nil, err
+      }
+
+      streamHandler, err := comm.Remote(i).StreamHandler()
+      if err != nil {
+        return nil, err
+      }
+
+      comm.Remote(i).SetErrorHandler(func(err error) {
+        comm.Remote(i).Reset(io.ReadWriteCloser(nil))
+      })
+
+      comm.Remote(i).SetCloseHandler(func() {
+        comm.Close()
+      })
+
+      proto := protocol.ID(fmt.Sprintf("%d/%s/%s", i, param.Id, string(base)))
+      host.SetStreamHandler(proto, streamHandler)
     }
-
-    streamHandler, err := comm.Remote(i).StreamHandler()
-    if err != nil {
-      return nil, err
-    }
-
-    comm.Remote(i).SetErrorHandler(func(err error) {
-      comm.Remote(i).Reset(io.ReadWriteCloser(nil))
-    })
-
-    comm.Remote(i).SetCloseHandler(func() {
-      comm.Close()
-    })
-
-    proto := protocol.ID(fmt.Sprintf("%d/%s/%s", i, param.Id, string(base)))
-    host.SetStreamHandler(proto, streamHandler)
   }
 
   if param.Init {
