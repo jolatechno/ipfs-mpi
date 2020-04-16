@@ -105,7 +105,7 @@ func (p *Param)String() string {
 
 func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, base protocol.ID, param Param, file string, n int, i int) (_ SlaveComm, err error) {
 
-  fmt.Println("[SlaveComm] new, ", param.Init, param.N, param.Idx) //--------------------------
+  fmt.Println("[SlaveComm] 0 ") //--------------------------
 
   inter, err := NewInterface(file, n, i)
   if err != nil {
@@ -171,10 +171,14 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     host.SetStreamHandler(proto, streamHandler)
   }
 
+  fmt.Println("[SlaveComm] 1") //-------------------------
+
   if param.Init {
     comm.Remote(0).SendHandshake()
     <- comm.Remote(0).GetHandshake()
   }
+
+  fmt.Println("[SlaveComm] 2") //-------------------------
 
   var wg sync.WaitGroup
 
@@ -187,8 +191,12 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     wg.Add(param.N - 1)
   }
 
+  fmt.Println("[SlaveComm] 3") //-------------------------
+
   for ;j < comm.N; j++ {
     i := j
+
+    fmt.Println("[SlaveComm] 4, ", i) //-------------------------
 
     if i == comm.Idx {
       continue
@@ -200,7 +208,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     }(&wg)
   }
 
-  fmt.Println("[SlaveComm] handshake 1.5") //--------------------------
+  fmt.Println("[SlaveComm] 5") //--------------------------
 
   wg.Wait()
 
