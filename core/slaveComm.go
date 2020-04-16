@@ -241,6 +241,9 @@ func (c *BasicSlaveComm)Close() error {
         proto := protocol.ID(fmt.Sprintf("%d/%s", i, string(c.Pid)))
         c.CommHost.RemoveStreamHandler(proto)
 
+        c.Remote(i).SetErrorHandler(func(err error) {})
+        c.Remote(i).SetCloseHandler(func() {})
+
         go func() {
           if c.Idx == 0 {
             c.Remote(i).CloseRemote()
