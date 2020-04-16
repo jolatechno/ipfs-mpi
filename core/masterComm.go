@@ -100,11 +100,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     }(&wg)
   }
 
-  fmt.Println("[MasterComm] Handshake 0.5") //--------------------------
-
   wg.Wait()
-
-  fmt.Println("[MasterComm] Handshake 1") //--------------------------
 
   state = 1
 
@@ -122,7 +118,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   for j := 1; j < n; j ++ {
     i := j
 
-    if !reseted[i] {
+    if reseted[i] {
       continue
     }
 
@@ -150,11 +146,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     }(&wg2)
   }
 
-  fmt.Println("[MasterComm] Handshake 1.5") //--------------------------
-
   wg2.Wait()
-
-  fmt.Println("[MasterComm] Handshake 2") //--------------------------
 
   state = 2
 
