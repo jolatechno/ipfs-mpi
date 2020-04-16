@@ -8,7 +8,7 @@ import (
   "strings"
   "strconv"
   "sync"
-  "time"
+  //"time"
 
   "github.com/libp2p/go-libp2p-core/protocol"
   "github.com/libp2p/go-libp2p-core/peer"
@@ -126,15 +126,6 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     comm.Close()
   })
 
-  go func(){
-    for comm.Check() {
-      time.Sleep(WaitDuration)
-      if !comm.Remote(0).Ping(WaitDuration) {
-        comm.Close()
-      }
-    }
-  }()
-
   for i := 1; i < len(*param.Addrs); i++ {
     (*comm.Remotes)[i], err = NewRemote()
     if err != nil {
@@ -145,6 +136,14 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     if err != nil {
       return nil, err
     }
+
+    comm.Remote(i).SetErrorHandler(func(err error) {
+      comm.Remote(i).Reset(nil)
+    })
+
+    comm.Remote(i).SetCloseHandler(func() {
+      comm.Close()
+    })
 
     proto := protocol.ID(fmt.Sprintf("%d/%s/%s", i, param.Id, string(base)))
     host.SetStreamHandler(proto, streamHandler)

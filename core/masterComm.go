@@ -3,7 +3,7 @@ package core
 import (
   "fmt"
   "context"
-  "time"
+  //"time"
   "sync"
   "bufio"
 
@@ -70,20 +70,25 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
         return nil, err
       }
 
+      comm.SlaveComm().Remote(j).SetCloseHandler(func() {
+        comm.Close()
+      })
+
       go func(wp *sync.WaitGroup, i int) {
-        comm.Connect(i, addr, true)
-
-        go func() {
-          for comm.Check() && state == 0 {
-            if !comm.SlaveComm().Remote(i).Ping(WaitDuration) {
-              reseted[i] = true
-              comm.Reset(i)
-
-              wp.Done()
-              return
-            }
+        comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
+          if state == 0 {
+            reseted[j] = true
+            wp.Done()
           }
-        }()
+
+          comm.Reset(i)
+
+          comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
+            comm.Reset(i)
+          })
+        })
+
+        comm.Connect(i, addr, true)
 
         <- comm.SlaveComm().Remote(i).GetHandshake()
 
@@ -113,18 +118,18 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
       comm.SlaveComm().Remote(j).SendHandshake()
 
       go func(wp *sync.WaitGroup, i int) {
-
-        go func() {
-          for comm.Check() && state == 1 {
-            if !comm.SlaveComm().Remote(i).Ping(WaitDuration) {
-              reseted[i] = true
-              comm.Reset(i)
-
-              wp.Done()
-              return
-            }
+        comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
+          if state == 1 {
+            reseted[j] = true
+            wp.Done()
           }
-        }()
+
+          comm.Reset(i)
+
+          comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
+            comm.Reset(i)
+          })
+        })
 
         <- comm.SlaveComm().Remote(i).GetHandshake()
 
@@ -143,15 +148,6 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     if !reseted[j] {
       comm.SlaveComm().Remote(j).SendHandshake()
     }
-
-    go func(i int) {
-      for comm.Check() {
-        time.Sleep(WaitDuration)
-        if !comm.SlaveComm().Remote(i).Ping(WaitDuration) {
-          comm.Reset(i)
-        }
-      }
-    }(j)
   }
 
   comm.SlaveComm().Start()
@@ -198,7 +194,7 @@ func (c *BasicMasterComm)Connect(i int, addr peer.ID, init bool) {
   err := c.SlaveComm().Connect(i, addr)
 
   if err != nil {
-    c.Reset(i)
+    c.SlaveComm().Remote(i).Raise(err)
   } else {
     p := Param {
       Init: init,
@@ -210,8 +206,10 @@ func (c *BasicMasterComm)Connect(i int, addr peer.ID, init bool) {
 
     writer := bufio.NewWriter(c.SlaveComm().Remote(i).Stream())
 
-    fmt.Fprintf(writer, "%s\n", p.String())
-    writer.Flush()
+    _, err = writer.WriteString(fmt.Sprintf("%s\n", p.String()))
+    if err != nil {
+      c.SlaveComm().Remote(i).Raise(err)
+    }
   }
 }
 

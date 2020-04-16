@@ -83,7 +83,8 @@ type Remote interface {
   standardFunctionsCloser
 
   CloseRemote()
-  Ping(time.Duration) bool
+  SetPingInterval(time.Duration)
+  SetPingTimeout(time.Duration)
   Stream() io.ReadWriteCloser
   Reset(io.ReadWriteCloser)
   Get() string
