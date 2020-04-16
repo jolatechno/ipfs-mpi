@@ -17,9 +17,6 @@ import (
 )
 
 func ParamFromString(msg string) (Param, error) {
-
-  fmt.Println("[Param] From string 0 : ", msg) //--------------------------
-
   param := Param{}
   splitted := strings.Split(msg, ",")
   if len(splitted) != 5 {
@@ -70,8 +67,6 @@ func ParamFromString(msg string) (Param, error) {
   param.Id = splitted[3]
   param.Addrs = &list
 
-  fmt.Println("[Param] From string 1 : ", param) //--------------------------
-
   return param, nil
 }
 
@@ -105,9 +100,6 @@ func (p *Param)String() string {
   }
 
   joinedAddress := strings.Join(addrs, ";")
-
-  fmt.Printf("[Param] To string %d,%d,%d,%s,%s\n", initInt, p.Idx, p.N, p.Id, joinedAddress) //--------------------------
-
   return fmt.Sprintf("%d,%d,%d,%s,%s", initInt, p.Idx, p.N, p.Id, joinedAddress)
 }
 
@@ -176,6 +168,8 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     host.SetStreamHandler(proto, streamHandler)
   }
 
+  fmt.Printf("[SlaveComm] %d Handshake 0\n", comm.Idx) //--------------------------
+
   if param.Init {
     comm.Remote(0).SendHandshake()
     <- comm.Remote(0).GetHandshake()
@@ -183,15 +177,12 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
 
   var wg sync.WaitGroup
 
-  if param.Init {
-    wg.Add(param.N - param.Idx - 1)
-  } else {
-    wg.Add(param.N - 1)
-  }
-
   j := 1
   if param.Init {
     j = comm.Idx + 1
+    wg.Add(param.N - param.Idx - 1)
+  } else {
+    wg.Add(param.N - 1)
   }
 
   for ;j < comm.N; j++ {
@@ -206,6 +197,8 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
       wp.Done()
     }(&wg)
   }
+
+  fmt.Printf("[SlaveComm] %d Handshake 1\n", comm.Idx) //--------------------------
 
   if param.Init {
     comm.Remote(0).SendHandshake()
