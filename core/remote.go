@@ -54,14 +54,24 @@ func (r *BasicRemote)SetPingTimeout(timeoutDuration time.Duration) {
 }
 
 func (r *BasicRemote)CloseRemote() {
-  if stream := r.Rw; stream != nil {
+  if stream := r.Rw; stream != io.ReadWriteCloser(nil) {
 
     fmt.Println("[Remote] CloseRemote") //--------------------------
 
     writer := bufio.NewWriter(stream)
 
-    fmt.Fprint(writer, CloseHeader)
-    writer.Flush()
+    _, err := writer.WriteString(CloseHeader)
+    if err != nil {
+      r.Raise(err)
+    }
+
+    go func() {
+      err = writer.Flush()
+      if err != nil {
+        r.Raise(err)
+        return
+      }
+    }()
   }
 }
 
@@ -70,20 +80,41 @@ func (r *BasicRemote)Send(msg string) {
 
   fmt.Printf("[Remote] Sending %q\n", msg ) //--------------------------
 
-  if stream := r.Rw; stream != nil {
-    _, err := bufio.NewWriter(stream).WriteString(fmt.Sprintf("%s,%s", MessageHeader, msg))
+  if stream := r.Rw; stream != io.ReadWriteCloser(nil) {
+    writer := bufio.NewWriter(stream)
+
+    _, err := writer.WriteString(fmt.Sprintf("%s,%s", MessageHeader, msg))
     if err != nil {
       r.Raise(err)
+      return
     }
+
+    go func() {
+      err = writer.Flush()
+      if err != nil {
+        r.Raise(err)
+        return
+      }
+    }()
   }
 }
 
 func (r *BasicRemote)SendHandshake() {
-  if stream := r.Rw; stream != nil {
+  if stream := r.Rw; stream != io.ReadWriteCloser(nil) {
     writer := bufio.NewWriter(stream)
 
-    fmt.Fprintf(writer, HandShakeHeader)
-    writer.Flush()
+    _, err := writer.WriteString(HandShakeHeader)
+    if err != nil {
+      r.Raise(err)
+    }
+
+    go func() {
+      err = writer.Flush()
+      if err != nil {
+        r.Raise(err)
+        return
+      }
+    }()
   }
 }
 
@@ -106,14 +137,23 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
   }
 
   offset := r.Received
+  writer := bufio.NewWriter(stream)
 
   go func() {
     for _, msg := range *r.Sent {
-      _, err := bufio.NewWriter(stream).WriteString(fmt.Sprintf("%s,%s", MessageHeader, msg))
+      _, err := writer.WriteString(fmt.Sprintf("%s,%s", MessageHeader, msg))
       if err != nil {
         r.Raise(err)
         return
       }
+
+      go func() {
+        err = writer.Flush()
+        if err != nil {
+          r.Raise(err)
+          return
+        }
+      }()
     }
   }()
 
@@ -136,6 +176,14 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
         if err != nil {
           r.Raise(err)
         }
+
+        go func() {
+          err = writer.Flush()
+          if err != nil {
+            r.Raise(err)
+            return
+          }
+        }()
         continue
 
       } else if str == PingRespHeader {
@@ -200,9 +248,9 @@ func (r *BasicRemote)Close() error {
 
     fmt.Println("[Remote] Closing") //--------------------------
 
-    if r.Rw != nil {
+    if r.Rw != io.ReadWriteCloser(nil) {
       r.Rw.Close()
-      r.Rw = nil
+      r.Rw = io.ReadWriteCloser(nil)
     }
 
     r.Standard.Close()

@@ -209,6 +209,13 @@ func (c *BasicMasterComm)Connect(i int, addr peer.ID, init bool) {
     _, err = writer.WriteString(fmt.Sprintf("%s\n", p.String()))
     if err != nil {
       c.SlaveComm().Remote(i).Raise(err)
+      return
+    }
+
+    err = writer.Flush()
+    if err != nil {
+      c.SlaveComm().Remote(i).Raise(err)
+      return
     }
   }
 }
