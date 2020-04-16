@@ -263,6 +263,9 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
 
 func (r *BasicRemote)StreamHandler() (network.StreamHandler, error) {
   return func(stream network.Stream) {
+
+    fmt.Println("[Remote] [StreamHandler]") //--------------------------
+
     r.Reset(stream.(io.ReadWriteCloser))
   }, nil
 }
