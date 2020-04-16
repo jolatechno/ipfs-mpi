@@ -13,7 +13,7 @@ Message Passing Interface computing using libp2p as a back-bone to build computa
 This example needs to be added to ipfs :
 
 ```
-ipfs add -r example_interpretor
+ipfs add -r interpreter
 ```
 
 Wich will give an output ressembling :
@@ -21,25 +21,9 @@ Wich will give an output ressembling :
 ```
 added QmYjH4sibLpCSNCVbHXhfCZY78Ckj2aDDMWFwup7NGJ3JD interpreter/dummy/init.py
 added Qmb5jKmyFQFDceBXLCkjdfQbJrJ5fQ6KLGJHESTJ8E5mZo interpreter/dummy/run.py
-added QmNYxkata4t7Pp4xvYyaQWEtZKNfUMQ9i1WUQ5p43cvbzq interpreter/echo/__pycache__/utils.cpython-37.pyc
-added QmYjH4sibLpCSNCVbHXhfCZY78Ckj2aDDMWFwup7NGJ3JD interpreter/echo/init.py
-added QmURFGfqZor5j5MY3XQMMyhJWpqzfWV7ZDpC2FvrDipuLU interpreter/echo/run.py
-added QmXHjtA4485CKau2sr3nsjwmBfEuB7PajDY3tkf6oM6WTK interpreter/echo/utils.py
-added QmYtMkhCXQr25NWdSK5cMBmv67ZsjDFPPHkJfksnD887tE interpreter/multi_echo/__pycache__/utils.cpython-37.pyc
-added QmYjH4sibLpCSNCVbHXhfCZY78Ckj2aDDMWFwup7NGJ3JD interpreter/multi_echo/init.py
-added QmWNp1x7CoT9gKP6ekFALhmYNNHyUq8DjbtDHKz42nCnKD interpreter/multi_echo/run.py
-added QmXHjtA4485CKau2sr3nsjwmBfEuB7PajDY3tkf6oM6WTK interpreter/multi_echo/utils.py
-added QmYHjsqkopRxojbRreAsG6EDC2sfWc9okQ8X2B4hcRHYtj interpreter/round_echo/__pycache__/utils.cpython-37.pyc
-added QmYjH4sibLpCSNCVbHXhfCZY78Ckj2aDDMWFwup7NGJ3JD interpreter/round_echo/init.py
-added QmZtWPvv8sQWXpPvdbNvjyXcRbmcnqDVRo7gfwohqYKFLp interpreter/round_echo/run.py
-added QmXHjtA4485CKau2sr3nsjwmBfEuB7PajDY3tkf6oM6WTK interpreter/round_echo/utils.py
-added QmUQT4c4btHFZGgcrSzzxXTstFWSe3eS32YhVCJYGqtut7 interpreter/dummy
-added QmbTf6m59E2EfQBGoqJ3vHYcaoGFgBPAskS6UDyTjGpBoV interpreter/echo/__pycache__
-added QmbU4m7qVx9hF4NSH1bgLyyhS1HEhoE72fVKqC6ZrCfRBU interpreter/echo
-added QmeQfhcDropaiaTYHMSoabpzssckt9aQfyuYkm6xSdo1U2 interpreter/multi_echo/__pycache__
-added QmW8ETYBnHeR82JeLBdXWDbHX7oZipG8zA3ojovsmzrvMK interpreter/multi_echo
-added QmU7BWPUfBbPKf4Ex4dkNSi8soDM1hRvF7mLfpmTqrPJ7N interpreter/round_echo/__pycache__
-added QmVkY4hE9yWRx6otwpTkR9PHXJmGsx5VnYcC3R6BK3Zaiy interpreter/round_echo
+
+...
+
 added QmR7CHExUVmzAnSw6NyTCgGt8cAALxC8pyyDDHiEgU7uxE interpreter
  7.89 KiB / 7.89 KiB [====================================================================================================================================================================================] 100.00%
  ```
@@ -120,7 +104,7 @@ You can close the interface using `exit`.
 
 ## Usage
 
-See [example](./example) for info on how to design an interpretor for ipfs-mpi.
+See [interpreter](./interpreter) for examples on how to design an interpreter for libp2p-mpi, and feel free to use the [utils.py](./interpreter/echo/utils.py) file to simplify interactions with libp2p-mpi.
 
 ### WARNING : Development in progress, might contain bug
 
