@@ -181,7 +181,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     wg.Add(param.N - param.Idx - 1)
 
   } else {
-    wg.Add(param.N - 1)
+    wg.Add(param.N - 2)
   }
 
   for ;j < comm.N; j++ {
