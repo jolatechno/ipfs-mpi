@@ -114,29 +114,31 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   wg2.Add(N - 1)
 
   for i := range *comm.Addrs {
-    if !reseted[i] {
-      comm.SlaveComm().Remote(i).SendHandshake()
+    if i > 0 {
+      if !reseted[i] {
+        comm.SlaveComm().Remote(i).SendHandshake()
 
-      go func(wp *sync.WaitGroup) {
-        comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
-          if state == 1 {
-            reseted[i] = true
+        go func(wp *sync.WaitGroup) {
+          comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
+            if state == 1 {
+              reseted[i] = true
+              wp.Done()
+            }
+
+            comm.Reset(i)
+
+            comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
+              comm.Reset(i)
+            })
+          })
+
+          <- comm.SlaveComm().Remote(i).GetHandshake()
+
+          if !reseted[i] {
             wp.Done()
           }
-
-          comm.Reset(i)
-
-          comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
-            comm.Reset(i)
-          })
-        })
-
-        <- comm.SlaveComm().Remote(i).GetHandshake()
-
-        if !reseted[i] {
-          wp.Done()
-        }
-      }(&wg2)
+        }(&wg2)
+      }
     }
   }
 
