@@ -72,7 +72,7 @@ func (r *BasicRemote)CloseRemote() {
 
     go func() {
       err = writer.Flush()
-      if err != nil {
+      if err != nil && r.Check() {
         r.Raise(err)
         return
       }
@@ -96,7 +96,7 @@ func (r *BasicRemote)Send(msg string) {
 
     go func() {
       err = writer.Flush()
-      if err != nil {
+      if err != nil && r.Check() {
         r.Raise(err)
         return
       }
@@ -115,7 +115,7 @@ func (r *BasicRemote)SendHandshake() {
 
     go func() {
       err = writer.Flush()
-      if err != nil {
+      if err != nil && r.Check() {
         r.Raise(err)
         return
       }
@@ -152,7 +152,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
 
       go func() {
         err = writer.Flush()
-        if err != nil {
+        if err != nil && r.Check() {
           r.Raise(err)
           return
         }
@@ -171,7 +171,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
 
       go func() {
         err = writer.Flush()
-        if err != nil {
+        if err != nil && r.Check() {
           r.Raise(err)
           return
         }
@@ -212,7 +212,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
 
         go func() {
           err = writer.Flush()
-          if err != nil {
+          if err != nil && r.Check() {
             r.Raise(err)
             return
           }
