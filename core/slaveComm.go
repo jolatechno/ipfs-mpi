@@ -104,6 +104,9 @@ func (p *Param)String() string {
 }
 
 func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, base protocol.ID, param Param, file string, n int, i int) (_ SlaveComm, err error) {
+
+  fmt.Println("[SlaveComm] new, ", param.Init, param.N, param.Idx) //--------------------------
+
   inter, err := NewInterface(file, n, i)
   if err != nil {
     return nil, err
@@ -179,8 +182,6 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
   if param.Init {
     j = comm.Idx + 1
     wg.Add(param.N - param.Idx - 1)
-
-    fmt.Println("[SlaveComm]", param.N, param.Idx) //--------------------------
 
   } else {
     wg.Add(param.N - 1)
