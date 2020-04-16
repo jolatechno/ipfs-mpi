@@ -304,7 +304,7 @@ func (c *BasicSlaveComm)Connect(i int, addr peer.ID) error {
     }
 
     return stream, nil
-  }, WaitDuration)
+  }, StandardTimeout)
 
   if err != nil {
     return err

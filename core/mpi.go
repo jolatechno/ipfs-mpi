@@ -7,17 +7,12 @@ import (
   "fmt"
   "bufio"
   "io"
-  "time"
   "strings"
 
   "github.com/libp2p/go-libp2p-core/protocol"
   "github.com/libp2p/go-libp2p-core/network"
 
   maddr "github.com/multiformats/go-multiaddr"
-)
-
-var (
-  WaitDuration = time.Second
 )
 
 type addrList []maddr.Multiaddr

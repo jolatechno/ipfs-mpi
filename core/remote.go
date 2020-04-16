@@ -10,7 +10,7 @@ import (
 
   "github.com/libp2p/go-libp2p-core/network"
 
-  //"github.com/jolatechno/go-timeout"
+  "github.com/jolatechno/go-timeout"
 )
 
 var (
@@ -19,11 +19,15 @@ var (
   CloseHeader = "Close\n"
   PingHeader = "Ping\n"
   PingRespHeader = "PingResp\n"
+
+  StandardTimeout = time.Second
+  StandardPingInterval = time.Second
 )
 
 func NewRemote() (Remote, error) {
   return &BasicRemote {
-    PingChan: make(chan bool),
+    PingInterval: StandardPingInterval,
+    PingTimeout: StandardTimeout,
     ReadChan: make(chan string),
     HandshakeChan: make(chan bool),
     Sent: &[]string{},
@@ -34,7 +38,8 @@ func NewRemote() (Remote, error) {
 }
 
 type BasicRemote struct {
-  PingChan chan bool
+  PingInterval time.Duration
+  PingTimeout time.Duration
   ReadChan chan string
   HandshakeChan chan bool
   Sent *[]string
@@ -45,12 +50,12 @@ type BasicRemote struct {
   Standard standardFunctionsCloser
 }
 
-func (r *BasicRemote)SetPingInterval(Interval time.Duration) {
-
+func (r *BasicRemote)SetPingInterval(interval time.Duration) {
+  r.PingInterval = interval
 }
 
 func (r *BasicRemote)SetPingTimeout(timeoutDuration time.Duration) {
-
+  r.PingTimeout = timeoutDuration
 }
 
 func (r *BasicRemote)CloseRemote() {
@@ -130,14 +135,12 @@ func (r *BasicRemote)GetHandshake() chan bool {
 func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
   r.Rw = stream
   if stream == io.ReadWriteCloser(nil) {
-
-    fmt.Println("[Remote] Nil stream") //--------------------------
-
     return
   }
 
   offset := r.Received
   writer := bufio.NewWriter(stream)
+  pingChan := make(chan bool)
 
   go func() {
     for _, msg := range *r.Sent {
@@ -159,9 +162,41 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
 
   go func() {
     for r.Check() && r.Rw == stream {
-      str, err := bufio.NewReader(stream).ReadString('\n')
+      time.Sleep(r.PingInterval)
+
+      _, err := bufio.NewWriter(stream).WriteString(PingHeader)
       if err != nil {
         r.Raise(err)
+      }
+
+      go func() {
+        err = writer.Flush()
+        if err != nil {
+          r.Raise(err)
+          return
+        }
+      }()
+
+      err = timeout.MakeSimpleTimeout(func() error {
+        <- pingChan
+        return nil
+      }, r.PingTimeout)
+
+      if err != nil {
+        if r.Check() {
+          r.Raise(err)
+        }
+      }
+    }
+  }()
+
+  go func() {
+    for r.Check() && r.Rw == stream {
+      str, err := bufio.NewReader(stream).ReadString('\n')
+      if err != nil {
+        if r.Check() {
+          r.Raise(err)
+        }
         return
       }
 
@@ -185,7 +220,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
         continue
 
       } else if str == PingRespHeader {
-        r.PingChan <- true
+        pingChan <- true
         continue
 
       } else if str == CloseHeader {
@@ -219,8 +254,8 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
       }
     }
   }()
+  close(pingChan)
   if !r.Check() {
-    close(r.PingChan)
     close(r.ReadChan)
     close(r.HandshakeChan)
   }
@@ -243,9 +278,6 @@ func (r *BasicRemote)Stream() io.ReadWriteCloser {
 
 func (r *BasicRemote)Close() error {
   if r.Check() {
-
-    fmt.Println("[Remote] Closing") //--------------------------
-
     if r.Rw != io.ReadWriteCloser(nil) {
       r.Rw.Close()
       r.Rw = io.ReadWriteCloser(nil)

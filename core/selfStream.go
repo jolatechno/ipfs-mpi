@@ -14,7 +14,7 @@ import (
 
 var (
   StreamEnded = errors.New("Stream closed")
-  StandardTimeout = time.Minute
+  StandardStreamTimeout = 5 * StandardTimeout
 )
 
 func NewStream(pid protocol.ID) SelfStream {
@@ -25,8 +25,8 @@ func NewStream(pid protocol.ID) SelfStream {
     ReadPipe: readPipe,
     WritePipeReversed: writePipeReversed,
     ReadPipeReversed: readPipeReversed,
-    WriteTimeout: StandardTimeout,
-    ReadTimeout: StandardTimeout,
+    WriteTimeout: StandardStreamTimeout,
+    ReadTimeout: StandardStreamTimeout,
 		Pid: pid,
 
   }
