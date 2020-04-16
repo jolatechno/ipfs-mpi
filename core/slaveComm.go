@@ -97,7 +97,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     return nil, err
   }
 
-  remotes := make([]Remote, len(*param.Addrs))
+  remotes := make([]Remote, param.N)
   comm := BasicSlaveComm {
     Ctx: ctx,
     Inter: inter,
@@ -126,29 +126,29 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     comm.Close()
   })
 
-  for i := range *param.Addrs {
-    if i > 0 {
-      (*comm.Remotes)[i], err = NewRemote()
-      if err != nil {
-        return nil, err
-      }
+  for j := 1; j < param.N; j++ {
+    i := j
 
-      streamHandler, err := comm.Remote(i).StreamHandler()
-      if err != nil {
-        return nil, err
-      }
-
-      comm.Remote(i).SetErrorHandler(func(err error) {
-        comm.Remote(i).Reset(io.ReadWriteCloser(nil))
-      })
-
-      comm.Remote(i).SetCloseHandler(func() {
-        comm.Close()
-      })
-
-      proto := protocol.ID(fmt.Sprintf("%d/%s/%s", i, param.Id, string(base)))
-      host.SetStreamHandler(proto, streamHandler)
+    (*comm.Remotes)[i], err = NewRemote()
+    if err != nil {
+      return nil, err
     }
+
+    streamHandler, err := comm.Remote(i).StreamHandler()
+    if err != nil {
+      return nil, err
+    }
+
+    comm.Remote(i).SetErrorHandler(func(err error) {
+      comm.Remote(i).Reset(io.ReadWriteCloser(nil))
+    })
+
+    comm.Remote(i).SetCloseHandler(func() {
+      comm.Close()
+    })
+
+    proto := protocol.ID(fmt.Sprintf("%d/%s/%s", i, param.Id, string(base)))
+    host.SetStreamHandler(proto, streamHandler)
   }
 
   if param.Init {
@@ -159,15 +159,22 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
   var wg sync.WaitGroup
 
   if param.Init {
-    wg.Add(len(*param.Addrs) - param.Idx - 1)
+    wg.Add(param.N - param.Idx - 1)
   } else {
-    wg.Add(len(*param.Addrs) - 1)
+    wg.Add(param.N - 1)
   }
 
-  for i, addr := range *param.Addrs {
-    if i > 0 && (i > param.Idx || !param.Init) && i != param.Idx {
+  j := 1
+  if param.Init {
+    j = param.Idx + 1
+  }
+
+  for ;j < param.N; j++ {
+    i := j
+
+    if i != param.Idx {
       go func(wp *sync.WaitGroup) {
-        comm.Connect(i, addr)
+        comm.Connect(i, (*param.Addrs)[i])
         wp.Done()
       }(&wg)
     }
@@ -288,7 +295,7 @@ func (c *BasicSlaveComm)Host() ExtHost {
 
 func (c *BasicSlaveComm)Connect(i int, addr peer.ID) error {
 
-  fmt.Printf("[SlaveComm] %d connecting to %d\n", c.Idx, i) //--------------------------
+  fmt.Printf("[SlaveComm] %d connecting to %d with address: %q\n", c.Idx, i, addr) //--------------------------
 
   rwi, err := timeout.MakeTimeout(func() (interface{}, error) {
     stream, err := c.CommHost.NewStream(c.Ctx, addr, c.Pid)

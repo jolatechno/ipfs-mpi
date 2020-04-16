@@ -63,40 +63,40 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   state := 0
   reseted := make([]bool, n)
 
-  for i, addr := range *comm.Addrs {
-    if i > 0 {
-      (*comm.Comm.Remotes)[i], err = NewRemote()
-      if err != nil {
-        return nil, err
-      }
+  for j := 1; j < n; j++ {
+    i := j
 
-      comm.SlaveComm().Remote(i).SetCloseHandler(func() {
-        comm.Close()
-      })
+    (*comm.Comm.Remotes)[i], err = NewRemote()
+    if err != nil {
+      return nil, err
+    }
 
-      go func(wp *sync.WaitGroup) {
-        comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
-          if state == 0 {
-            reseted[i] = true
-            wp.Done()
-          }
+    comm.SlaveComm().Remote(i).SetCloseHandler(func() {
+      comm.Close()
+    })
 
-          comm.Reset(i)
-
-          comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
-            comm.Reset(i)
-          })
-        })
-
-        comm.Connect(i, addr, true)
-
-        <- comm.SlaveComm().Remote(i).GetHandshake()
-
-        if !reseted[i] {
+    go func(wp *sync.WaitGroup) {
+      comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
+        if state == 0 {
+          reseted[i] = true
           wp.Done()
         }
-      }(&wg)
-    }
+
+        comm.Reset(i)
+
+        comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
+          comm.Reset(i)
+        })
+      })
+
+      comm.Connect(i, (*comm.Addrs)[i], true)
+
+      <- comm.SlaveComm().Remote(i).GetHandshake()
+
+      if !reseted[i] {
+        wp.Done()
+      }
+    }(&wg)
   }
 
   wg.Wait()
@@ -113,32 +113,32 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
   wg2.Add(N - 1)
 
-  for i := range *comm.Addrs {
-    if i > 0 {
-      if !reseted[i] {
-        comm.SlaveComm().Remote(i).SendHandshake()
+  for j := 1; j < n; j ++ {
+    i := j
 
-        go func(wp *sync.WaitGroup) {
-          comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
-            if state == 1 {
-              reseted[i] = true
-              wp.Done()
-            }
+    if !reseted[i] {
+      comm.SlaveComm().Remote(i).SendHandshake()
 
-            comm.Reset(i)
-
-            comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
-              comm.Reset(i)
-            })
-          })
-
-          <- comm.SlaveComm().Remote(i).GetHandshake()
-
-          if !reseted[i] {
+      go func(wp *sync.WaitGroup) {
+        comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
+          if state == 1 {
+            reseted[i] = true
             wp.Done()
           }
-        }(&wg2)
-      }
+
+          comm.Reset(i)
+
+          comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
+            comm.Reset(i)
+          })
+        })
+
+        <- comm.SlaveComm().Remote(i).GetHandshake()
+
+        if !reseted[i] {
+          wp.Done()
+        }
+      }(&wg2)
     }
   }
 
