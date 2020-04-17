@@ -97,7 +97,9 @@ func NewRemote() (Remote, error) {
 }
 
 type BasicRemote struct {
-  Mutex sync.Mutex
+  WriteMutex sync.Mutex
+  StreamMutex sync.Mutex
+
   PingInterval time.Duration
   PingTimeout time.Duration
   ReadChan *safeChannelString
@@ -158,7 +160,9 @@ func (r *BasicRemote)CloseRemote() {
 }
 
 func (r *BasicRemote)Send(msg string) {
+  r.WriteMutex.Lock()
   *r.Sent = append(*r.Sent, msg)
+  r.WriteMutex.Unlock()
 
   r.send(fmt.Sprintf("%s,%s", MessageHeader, msg), false)
 }
@@ -181,8 +185,8 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
     return
   }
 
-  r.Mutex.Lock()
-  defer r.Mutex.Unlock()
+  r.StreamMutex.Lock()
+  defer r.StreamMutex.Unlock()
 
   r.Rw = stream
   if stream == io.ReadWriteCloser(nil) {
@@ -192,9 +196,14 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
   offset := r.Received
   pingChan := make(chan bool)
 
-  for _, msg := range *r.Sent {
-    r.send(fmt.Sprintf("%s,%s", MessageHeader, msg), false, stream)
-  }
+  go func() {
+    r.WriteMutex.Lock()
+    defer r.WriteMutex.Unlock()
+
+    for _, msg := range *r.Sent {
+      r.send(fmt.Sprintf("%s,%s", MessageHeader, msg), true)
+    }
+  }()
 
   go func() {
     for r.Check() && r.Stream() == stream {
@@ -301,8 +310,8 @@ func (r *BasicRemote)Check() bool {
 }
 
 func (r *BasicRemote)Stream() io.ReadWriteCloser {
-  r.Mutex.Lock()
-  defer r.Mutex.Unlock()
+  r.StreamMutex.Lock()
+  defer r.StreamMutex.Unlock()
   return r.Rw
 }
 
