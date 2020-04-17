@@ -50,7 +50,11 @@ type BasicRemote struct {
   Standard standardFunctionsCloser
 }
 
-func (r *BasicRemote)send(str string) {
+func (r *BasicRemote)send(str string, referenceStream ...io.ReadWriteCloser) {
+  if len(referenceStream) == 1 && referenceStream[0] != r.Rw {
+    return
+  }
+
   if stream := r.Rw; stream != io.ReadWriteCloser(nil) {
     writer := bufio.NewWriter(stream)
 
@@ -111,18 +115,16 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
   offset := r.Received
   pingChan := make(chan bool)
 
-  go func() {
-    for _, msg := range *r.Sent {
-      r.send(fmt.Sprintf("%s,%s", MessageHeader, msg))
-    }
-  }()
+  for _, msg := range *r.Sent {
+    r.send(fmt.Sprintf("%s,%s", MessageHeader, msg), stream)
+  }
 
   go func() {
     for r.Check() && r.Rw == stream {
       time.Sleep(r.PingInterval)
 
       err := timeout.MakeSimpleTimeout(func() error {
-        r.send(PingHeader)
+        r.send(PingHeader, stream)
         <- pingChan
         return nil
       }, r.PingTimeout)
@@ -151,7 +153,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
         continue
 
       } else if str == PingHeader {
-        r.send(PingRespHeader)
+        r.send(PingRespHeader, stream)
         continue
 
       } else if str == PingRespHeader {
@@ -191,22 +193,22 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
 
       }
     }
+    close(pingChan)
+    if !r.Check() {
+
+      for len(r.ReadChan) > 0 {
+        <- r.ReadChan
+      }
+
+      close(r.ReadChan)
+
+      for len(r.HandshakeChan) > 0 {
+        <- r.HandshakeChan
+      }
+
+      close(r.HandshakeChan)
+    }
   }()
-  close(pingChan)
-  if !r.Check() {
-
-    for len(r.ReadChan) > 0 {
-      <- r.ReadChan
-    }
-
-    close(r.ReadChan)
-
-    for len(r.HandshakeChan) > 0 {
-      <- r.HandshakeChan
-    }
-
-    close(r.HandshakeChan)
-  }
 }
 
 func (r *BasicRemote)StreamHandler() (network.StreamHandler, error) {
