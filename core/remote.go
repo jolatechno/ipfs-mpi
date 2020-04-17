@@ -136,15 +136,22 @@ func (r *BasicRemote)send(str string, blocking bool, referenceStream ...io.ReadW
     writer := bufio.NewWriter(stream)
 
     _, err := writer.WriteString(str)
-    if err != nil && stream == r.Stream() {
-      r.Raise(err)
+    if err != nil {
+      if stream == r.Stream() {
+        r.Raise(err)
+      }
+
       return
     }
 
     flush := func() {
       err := writer.Flush()
-      if err != nil && stream == r.Stream() {
-        r.Raise(err)
+      if err != nil {
+        if stream == r.Stream() {
+          r.Raise(err)
+        }
+        
+        return
       }
     }
 
@@ -234,8 +241,11 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
   go func() {
     for r.Check() &&  r.Stream() == stream {
       str, err := bufio.NewReader(stream).ReadString('\n')
-      if err != nil && stream == r.Stream() {
-        r.Raise(err)
+      if err != nil {
+        if stream == r.Stream() {
+          r.Raise(err)
+        }
+
         return
       }
 
