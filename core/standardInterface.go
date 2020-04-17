@@ -6,7 +6,7 @@ import (
 
 func NewStandardInterface() standardFunctionsCloser {
   nilEndHandler := func() {}
-  nilErrorHandler := func(error) {}
+  nilErrorHandler := func(err error) {}
 
   return &BasicFunctionsCloser {
     EndHandler: &nilEndHandler,

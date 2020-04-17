@@ -50,6 +50,25 @@ type BasicRemote struct {
   Standard standardFunctionsCloser
 }
 
+func (r *BasicRemote)send(str string) {
+  if stream := r.Rw; stream != io.ReadWriteCloser(nil) {
+    writer := bufio.NewWriter(stream)
+
+    _, err := writer.WriteString(str)
+    if err != nil {
+      r.Raise(err)
+    }
+
+    go func() {
+      err = writer.Flush()
+      if err != nil && r.Check() {
+        r.Raise(err)
+        return
+      }
+    }()
+  }
+}
+
 func (r *BasicRemote)SetPingInterval(interval time.Duration) {
   r.PingInterval = interval
 }
@@ -59,66 +78,19 @@ func (r *BasicRemote)SetPingTimeout(timeoutDuration time.Duration) {
 }
 
 func (r *BasicRemote)CloseRemote() {
-  if stream := r.Rw; stream != io.ReadWriteCloser(nil) {
+  fmt.Println("[Remote] CloseRemote") //--------------------------
 
-    fmt.Println("[Remote] CloseRemote") //--------------------------
-
-    writer := bufio.NewWriter(stream)
-
-    _, err := writer.WriteString(CloseHeader)
-    if err != nil {
-      r.Raise(err)
-    }
-
-    go func() {
-      err = writer.Flush()
-      if err != nil && r.Check() {
-        r.Raise(err)
-        return
-      }
-    }()
-  }
+  r.send(CloseHeader)
 }
 
 func (r *BasicRemote)Send(msg string) {
   *r.Sent = append(*r.Sent, msg)
 
-  if stream := r.Rw; stream != io.ReadWriteCloser(nil) {
-    writer := bufio.NewWriter(stream)
-
-    _, err := writer.WriteString(fmt.Sprintf("%s,%s", MessageHeader, msg))
-    if err != nil {
-      r.Raise(err)
-      return
-    }
-
-    go func() {
-      err = writer.Flush()
-      if err != nil && r.Check() {
-        r.Raise(err)
-        return
-      }
-    }()
-  }
+  r.send(fmt.Sprintf("%s,%s", MessageHeader, msg))
 }
 
 func (r *BasicRemote)SendHandshake() {
-  if stream := r.Rw; stream != io.ReadWriteCloser(nil) {
-    writer := bufio.NewWriter(stream)
-
-    _, err := writer.WriteString(HandShakeHeader)
-    if err != nil {
-      r.Raise(err)
-    }
-
-    go func() {
-      err = writer.Flush()
-      if err != nil && r.Check() {
-        r.Raise(err)
-        return
-      }
-    }()
-  }
+  r.send(HandShakeHeader)
 }
 
 
@@ -137,24 +109,11 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
   }
 
   offset := r.Received
-  writer := bufio.NewWriter(stream)
   pingChan := make(chan bool)
 
   go func() {
     for _, msg := range *r.Sent {
-      _, err := writer.WriteString(fmt.Sprintf("%s,%s", MessageHeader, msg))
-      if err != nil {
-        r.Raise(err)
-        return
-      }
-
-      go func() {
-        err = writer.Flush()
-        if err != nil && r.Check() {
-          r.Raise(err)
-          return
-        }
-      }()
+      r.send(fmt.Sprintf("%s,%s", MessageHeader, msg))
     }
   }()
 
@@ -162,28 +121,14 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
     for r.Check() && r.Rw == stream {
       time.Sleep(r.PingInterval)
 
-      _, err := bufio.NewWriter(stream).WriteString(PingHeader)
-      if err != nil {
-        r.Raise(err)
-      }
-
-      go func() {
-        err = writer.Flush()
-        if err != nil && r.Check() {
-          r.Raise(err)
-          return
-        }
-      }()
-
-      err = timeout.MakeSimpleTimeout(func() error {
+      err := timeout.MakeSimpleTimeout(func() error {
+        r.send(PingHeader)
         <- pingChan
         return nil
       }, r.PingTimeout)
 
       if err != nil {
-        if r.Check() {
-          r.Raise(err)
-        }
+        r.Raise(err)
       }
     }
   }()
@@ -206,18 +151,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
         continue
 
       } else if str == PingHeader {
-        _, err := bufio.NewWriter(stream).WriteString(PingRespHeader)
-        if err != nil {
-          r.Raise(err)
-        }
-
-        go func() {
-          err = writer.Flush()
-          if err != nil && r.Check() {
-            r.Raise(err)
-            return
-          }
-        }()
+        r.send(PingRespHeader)
         continue
 
       } else if str == PingRespHeader {
