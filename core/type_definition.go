@@ -98,6 +98,7 @@ type Interface interface {
   standardFunctionsCloser
 
   Start()
+  SetResetHandler(func(int))
   SetMessageHandler(func(int, string))
   SetRequestHandler(func(int))
   Push(string) error

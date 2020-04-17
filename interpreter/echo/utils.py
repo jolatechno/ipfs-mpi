@@ -27,9 +27,9 @@ def Log(content):
 def Send(i, content):
     print(f"Send,{ i },{ content }")
 
-def Read(i, timeout = -1):
+def Read(i, timeout = -1, handler = Timeout):
     if timeout > 0:
-        signal.signal(signal.SIGALRM, Timeout) #link the SIGALRM signal to the handler
+        signal.signal(signal.SIGALRM, handler) #link the SIGALRM signal to the handler
         signal.alarm(timeout) #create an alarm of timeout second
 
     resp = input(f"Req,{ i }\n")
@@ -38,3 +38,6 @@ def Read(i, timeout = -1):
         signal.alarm(0) #reinitiate the alarm
 
     return resp
+
+def Reset(i):
+    print(f"Reset,{ i }")

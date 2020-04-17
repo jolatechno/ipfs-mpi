@@ -204,6 +204,10 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     }
   }
 
+  comm.SlaveComm().Interface().SetResetHandler(func(i int) {
+    comm.Reset(i)
+  })
+
   comm.SlaveComm().Start()
 
   return &comm, nil

@@ -14,6 +14,7 @@ import (
 func NewInterface(file string, n int, i int, args ...string) (Interface, error) {
   nilMessageHandler := func(int, string) {}
   nilRequestHandler := func(int) {}
+  nilResetHandler := func(int) {}
 
   cmdArgs := append([]string{file + "/run.py", fmt.Sprint(n), fmt.Sprint(i)}, args...)
   inter := StdInterface {
@@ -21,6 +22,7 @@ func NewInterface(file string, n int, i int, args ...string) (Interface, error) 
     Cmd: exec.Command("python3", cmdArgs...),
     MessageHandler: &nilMessageHandler,
     RequestHandler: &nilRequestHandler,
+    ResetHandler: &nilResetHandler,
     Standard: NewStandardInterface(),
   }
 
@@ -31,6 +33,7 @@ type StdInterface struct {
   Stdin io.Writer
   MessageHandler *func(int, string)
   RequestHandler *func(int)
+  ResetHandler *func(int)
   Idx int
   Cmd *exec.Cmd
   Standard standardFunctionsCloser
@@ -116,6 +119,19 @@ func (s *StdInterface)Start() {
 
         (*s.RequestHandler)(idx)
 
+      } else if splitted[0] == "Reset" && s.Idx == 0 {
+        if len(splitted) != 2 {
+          s.Raise(errors.New("Not enough field"))
+        }
+
+        idx, err := strconv.Atoi(splitted[1][:len(splitted[1]) - 1])
+        if err != nil {
+          s.Raise(err)
+          continue
+        }
+
+        (*s.ResetHandler)(idx)
+
       } else if splitted[0] == "Log" && s.Idx == 0 {
         if len(splitted) < 2 {
           s.Raise(errors.New("Not enough field"))
@@ -177,6 +193,10 @@ func (s *StdInterface)SetMessageHandler(handler func(int, string)) {
 
 func (s *StdInterface)SetRequestHandler(handler func(int)) {
   s.RequestHandler = &handler
+}
+
+func (s *StdInterface)SetResetHandler(handler func(int)) {
+  s.ResetHandler = &handler
 }
 
 func (s *StdInterface)Push(msg string) error {
