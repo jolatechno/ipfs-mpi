@@ -8,6 +8,7 @@ import (
   "strings"
   "strconv"
   "sync"
+  "bufio"
 
   "github.com/libp2p/go-libp2p-core/protocol"
   "github.com/libp2p/go-libp2p-core/peer"
@@ -319,9 +320,11 @@ func (c *BasicSlaveComm)Host() ExtHost {
   return c.CommHost
 }
 
-func (c *BasicSlaveComm)Connect(i int, addr peer.ID) error {
+func (c *BasicSlaveComm)Connect(i int, addr peer.ID, msgs ...string) {
 
-  fmt.Printf("[SlaveComm] %d connecting to %d with address: %q\n", c.Idx, i, addr) //--------------------------
+  if c.Idx == 0 { //--------------------------
+    fmt.Printf("[MasterComm] connecting to %d with address: %q\n", i, addr) //--------------------------
+  } //--------------------------
 
   pid := c.Base
   if c.Idx != 0 {
@@ -338,15 +341,31 @@ func (c *BasicSlaveComm)Connect(i int, addr peer.ID) error {
   }, StandardTimeout)
 
   if err != nil {
-    return err
+    c.Remote(i).Raise(err)
+    return
   }
 
   rwc, ok := rwi.(io.ReadWriteCloser)
   if !ok {
-    return errors.New("couldn't convert interface")
+    c.Remote(i).Raise(errors.New("couldn't convert interface"))
+    return
+  }
+
+  for _, msg := range msgs {
+    writer := bufio.NewWriter(rwc)
+
+    _, err = writer.WriteString(msg)
+    if err != nil {
+      c.Remote(i).Raise(err)
+      return
+    }
+
+    err = writer.Flush()
+    if err != nil {
+      c.Remote(i).Raise(err)
+      return
+    }
   }
 
   c.Remote(i).Reset(rwc)
-
-  return nil
 }

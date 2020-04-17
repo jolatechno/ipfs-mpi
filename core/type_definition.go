@@ -65,7 +65,6 @@ type MasterComm interface {
   standardFunctionsCloser
 
   SlaveComm() SlaveComm
-  Connect(int, peer.ID, bool)
   Reset(int)
 }
 
@@ -76,7 +75,7 @@ type SlaveComm interface {
   Host() ExtHost
   Interface() Interface
   Remote(int) Remote
-  Connect(int, peer.ID) error
+  Connect(int, peer.ID, ...string)
 }
 
 type Remote interface {

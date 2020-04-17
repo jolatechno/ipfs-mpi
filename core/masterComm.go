@@ -3,9 +3,7 @@ package core
 import (
   "fmt"
   "context"
-  //"time"
   "sync"
-  "bufio"
 
   "github.com/libp2p/go-libp2p-core/protocol"
   "github.com/libp2p/go-libp2p-core/peer"
@@ -160,7 +158,13 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
         })
       })
 
-      comm.Connect(i, (*comm.Addrs)[i], true)
+      comm.SlaveComm().Connect(i, Addrs[i], fmt.Sprintf("%s\n", Param {
+        Init: true,
+        Idx: i,
+        N: n,
+        Id: id,
+        Addrs: &Addrs,
+      }))
 
       <- comm.SlaveComm().Remote(i).GetHandshake()
 
@@ -240,36 +244,6 @@ func (c *BasicMasterComm)SlaveComm() SlaveComm {
   return &c.Comm
 }
 
-func (c *BasicMasterComm)Connect(i int, addr peer.ID, init bool) {
-  err := c.SlaveComm().Connect(i, addr)
-
-  if err != nil {
-    c.SlaveComm().Remote(i).Raise(err)
-  } else {
-    p := Param {
-      Init: init,
-      Idx: i,
-      N: c.Comm.N,
-      Id: c.Comm.Id,
-      Addrs: c.Addrs,
-    }
-
-    writer := bufio.NewWriter(c.SlaveComm().Remote(i).Stream())
-
-    _, err = writer.WriteString(fmt.Sprintf("%s\n", p.String()))
-    if err != nil {
-      c.SlaveComm().Remote(i).Raise(err)
-      return
-    }
-
-    err = writer.Flush()
-    if err != nil {
-      c.SlaveComm().Remote(i).Raise(err)
-      return
-    }
-  }
-}
-
 func (c *BasicMasterComm)Reset(i int) {
 
   fmt.Println("[MasterComm] reseting ", i) //--------------------------
@@ -280,5 +254,11 @@ func (c *BasicMasterComm)Reset(i int) {
   }
 
   (*c.Addrs)[i] = addr
-  c.Connect(i, addr, false)
+  c.SlaveComm().Connect(i, addr, fmt.Sprintf("%s\n", Param {
+    Init: false,
+    Idx: i,
+    N: c.Comm.N,
+    Id: c.Comm.Id,
+    Addrs: c.Addrs,
+  }))
 }

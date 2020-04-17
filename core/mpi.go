@@ -15,6 +15,17 @@ import (
   maddr "github.com/multiformats/go-multiaddr"
 )
 
+type safeInt struct {
+  Value int
+  Mutex sync.Mutex
+}
+
+func (i *safeInt)ReadIncrement() int {
+  i.Mutex.Lock()
+  defer i.Mutex.Unlock()
+  return i.Value
+}
+
 type addrList []maddr.Multiaddr
 
 func (al *addrList) String() string {
@@ -63,7 +74,6 @@ func NewMpi(ctx context.Context, config Config) (Mpi, error) {
     Ipfs_store: config.Ipfs_store,
     MpiHost: host,
     MpiStore: store,
-    Id: 0,
     Standard: NewStandardInterface(),
   }
 
@@ -137,7 +147,7 @@ type BasicMpi struct {
   Ipfs_store string
   MpiHost ExtHost
   MpiStore Store
-  Id int
+  Id safeInt
   Standard standardFunctionsCloser
 }
 
@@ -183,8 +193,8 @@ func (m *BasicMpi)Add(f string) error {
     }
   }
 
-  proto := protocol.ID("/" + f + "/" + string(m.Pid))
-  m.Host().Listen(proto, "/" + f + "/" + m.Ipfs_store)
+  proto := protocol.ID(fmt.Sprintf("/%s/%s", f, m.Pid))
+  m.Host().Listen(proto, fmt.Sprintf("/%s/%s", f, m.Ipfs_store))
   m.Host().SetStreamHandler(proto, func(stream network.Stream) {
     reader := bufio.NewReader(stream)
 
@@ -192,6 +202,8 @@ func (m *BasicMpi)Add(f string) error {
     if err != nil {
       return
     }
+
+    fmt.Println("[mpi] [StreamHandler] got param : ", str[:len(str) - 1]) //--------------------------
 
     param, err := ParamFromString(str[:len(str) - 1])
     if err != nil {
@@ -251,8 +263,7 @@ func (m *BasicMpi)Start(file string, n int, args ...string) error {
     return errors.New("no such file")
   }
 
-  id := m.Id
-  m.Id++
+  id := m.Id.ReadIncrement()
 
   proto := protocol.ID(fmt.Sprintf("/%s/%s", file, m.Pid))
   stringId := fmt.Sprintf("%d.%s", id, m.Host().ID())
