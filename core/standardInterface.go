@@ -34,7 +34,9 @@ func (b *BasicFunctionsCloser)Close() error {
 }
 
 func (b *BasicFunctionsCloser)Raise(err error) {
-  (*b.ErrorHandler)(err)
+  if b.Check() {
+    (*b.ErrorHandler)(err)
+  }
 }
 
 func (b *BasicFunctionsCloser)Check() bool {

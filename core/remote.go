@@ -199,7 +199,10 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
       }
 
       if str == HandShakeHeader {
-        r.HandshakeChan <- true
+        go func() {
+          r.HandshakeChan <- true
+        }()
+
         continue
 
       } else if str == PingHeader {
@@ -243,7 +246,10 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
         }
 
         r.Received++
-        r.ReadChan <- msg
+
+        go func() {
+          r.ReadChan <- msg
+        }()
 
       } else {
         r.Raise(errors.New("command not understood"))
@@ -254,7 +260,17 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
   }()
   close(pingChan)
   if !r.Check() {
+
+    for len(r.ReadChan) > 0 {
+      <- r.ReadChan
+    }
+
     close(r.ReadChan)
+
+    for len(r.HandshakeChan) > 0 {
+      <- r.HandshakeChan
+    }
+
     close(r.HandshakeChan)
   }
 }
