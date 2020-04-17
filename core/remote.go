@@ -301,9 +301,6 @@ func (r *BasicRemote)Stream() io.ReadWriteCloser {
 
 
 func (r *BasicRemote)Close() error {
-
-  fmt.Println("[Remote] Closing") //--------------------------
-
   if r.Check() {
     r.Standard.Close()
 
