@@ -224,7 +224,7 @@ func (m *BasicMpi)Add(f string) error {
     })
 
     comm.SetCloseHandler(func() {
-      m.ToClose.Delete(stringId)
+      go m.ToClose.Delete(stringId)
     })
   })
   return nil
@@ -282,7 +282,7 @@ func (m *BasicMpi)Start(file string, n int, args ...string) error {
   })
 
   comm.SetCloseHandler(func() {
-    m.ToClose.Delete(stringId)
+    go m.ToClose.Delete(stringId)
   })
 
   return nil

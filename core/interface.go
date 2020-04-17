@@ -15,6 +15,8 @@ var (
   nilMessageHandler = func(int, string) {}
   nilRequestHandler = func(int) {}
   nilResetHandler = func(int) {}
+
+  logFormat = "\033[33m%s\033[0m\n"
 )
 
 func NewInterface(file string, n int, i int, args ...string) (Interface, error) {
@@ -138,7 +140,11 @@ func (s *StdInterface)Start() {
           continue
         }
 
-        log.Print(strings.Join(splitted[1:], ","))
+        last_idx := len(splitted) - 1
+        last_len := len(splitted[last_idx]) - 1
+        splitted[last_idx] = splitted[last_idx][:last_len]
+
+        log.Print(fmt.Sprintf(logFormat, strings.Join(splitted[1:], ",")))
 
       } else if splitted[0] == "Send" {
         if len(splitted) < 3 {

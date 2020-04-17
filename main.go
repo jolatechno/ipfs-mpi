@@ -8,13 +8,14 @@ import (
   "strconv"
   "os"
   "fmt"
-  "time"
+  //"time"
 
   "github.com/jolatechno/ipfs-mpi/core"
 )
 
 const (
-  ErrorFormat = "\033[31m%s\033[0m\n"
+  errorFormat = "\033[31m%s\033[0m\n"
+  prompt = "libp2p-mpi>"
 )
 
 func main(){
@@ -32,7 +33,7 @@ func main(){
 
   store.SetErrorHandler(func(err error) {
     if !quiet {
-      fmt.Printf(ErrorFormat, err.Error())
+      fmt.Printf(errorFormat, err.Error())
     }
   })
 
@@ -110,9 +111,8 @@ func main(){
       }
 
     } else if splitted[0] == "exit" {
-      go store.Close()
-      time.Sleep(10 * time.Second)
-      break
+      store.Close()
+      os.Exit(0)
 
     } else {
       store.Raise(errors.New("Command not understood"))
