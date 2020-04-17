@@ -121,8 +121,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
       N: n,
       Idx: 0,
       CommHost: host,
-      Base: protocol.ID(fmt.Sprintf("%s/%s", id, string(base))),
-      Pid: base,
+      Base: base,
       Remotes: &remotes,
       Standard: NewStandardInterface(),
     },
@@ -275,7 +274,7 @@ func (c *BasicMasterComm)Reset(i int) {
 
   fmt.Println("[MasterComm] reseting ", i) //--------------------------
 
-  addr, err := c.SlaveComm().Host().NewPeer(c.Comm.Pid)
+  addr, err := c.SlaveComm().Host().NewPeer(c.Comm.Base)
   if err != nil {
     c.Raise(err)
   }

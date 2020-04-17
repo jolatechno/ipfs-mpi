@@ -120,7 +120,6 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     Idx: param.Idx,
     CommHost: host,
     Base: base,
-    Pid: protocol.ID(fmt.Sprintf("%d/%s/%s", param.Idx, param.Id, string(base))),
     Remotes: &remotes,
     Standard: NewStandardInterface(),
   }
@@ -219,7 +218,6 @@ type BasicSlaveComm struct {
   Idx int
   CommHost ExtHost
   Base protocol.ID
-  Pid protocol.ID
   Remotes *[]Remote
   Standard standardFunctionsCloser
 }
@@ -274,12 +272,13 @@ func (c *BasicSlaveComm)Close() error {
 
     for j := 0; j < c.N; j++ {
       i := j
+
       if i == c.Idx {
         continue
       }
 
-      if i != 0 {
-        proto := protocol.ID(fmt.Sprintf("%d/%s", i, string(c.Pid)))
+      if i != 0 && c.Idx != 0 {
+        proto := protocol.ID(fmt.Sprintf("%d/%s/%s", i, c.Id, string(c.Base)))
         c.CommHost.RemoveStreamHandler(proto)
       }
 
@@ -324,8 +323,16 @@ func (c *BasicSlaveComm)Connect(i int, addr peer.ID) error {
 
   fmt.Printf("[SlaveComm] %d connecting to %d with address: %q\n", c.Idx, i, addr) //--------------------------
 
+  var pid protocol.ID
+
+  if c.Idx == 0 {
+    pid = protocol.ID(fmt.Sprintf("%s/%s", c.Id, string(c.Base)))
+  } else {
+    pid = protocol.ID(fmt.Sprintf("%d/%s/%s", c.Idx, c.Id, string(c.Base)))
+  }
+
   rwi, err := timeout.MakeTimeout(func() (interface{}, error) {
-    stream, err := c.CommHost.NewStream(c.Ctx, addr, c.Pid)
+    stream, err := c.CommHost.NewStream(c.Ctx, addr, pid)
     if err != nil {
       return nil, err
     }
