@@ -6,6 +6,7 @@ import (
   "fmt"
   "errors"
   "strings"
+  "sync"
   "time"
 
   "github.com/libp2p/go-libp2p-core/network"
@@ -24,12 +25,70 @@ var (
   StandardPingInterval = time.Second
 )
 
+func NewChannelBool() *safeChannelBool {
+  return &safeChannelBool {
+    Chan: make(chan bool),
+  }
+}
+
+type safeChannelBool struct {
+  Chan chan bool
+  Mutex sync.Mutex
+  Ended bool
+}
+
+func (c *safeChannelBool)Send(t bool) {
+  c.Mutex.Lock()
+  defer c.Mutex.Unlock()
+  if !c.Ended {
+    c.Chan <- t
+  }
+}
+
+func (c *safeChannelBool)Close() {
+  c.Mutex.Lock()
+  defer c.Mutex.Unlock()
+  if !c.Ended {
+    c.Ended = true
+    close(c.Chan)
+  }
+}
+
+func NewChannelString() *safeChannelString {
+  return &safeChannelString {
+    Chan: make(chan string),
+  }
+}
+
+type safeChannelString struct {
+  Chan chan string
+  Mutex sync.Mutex
+  Ended bool
+}
+
+func (c *safeChannelString)Send(str string) {
+  c.Mutex.Lock()
+  defer c.Mutex.Unlock()
+  if !c.Ended {
+    c.Chan <- str
+  }
+}
+
+func (c *safeChannelString)Close() {
+  c.Mutex.Lock()
+  defer c.Mutex.Unlock()
+  if !c.Ended {
+    c.Ended = true
+    close(c.Chan)
+  }
+}
+
 func NewRemote() (Remote, error) {
   return &BasicRemote {
     PingInterval: StandardPingInterval,
     PingTimeout: StandardTimeout,
-    ReadChan: make(chan string),
-    HandshakeChan: make(chan bool),
+    ReadChan: NewChannelString(),
+    HandshakeChan: NewChannelBool(),
     Sent: &[]string{},
     Rw: nil,
     Received: 0,
@@ -40,8 +99,8 @@ func NewRemote() (Remote, error) {
 type BasicRemote struct {
   PingInterval time.Duration
   PingTimeout time.Duration
-  ReadChan chan string
-  HandshakeChan chan bool
+  ReadChan *safeChannelString
+  HandshakeChan *safeChannelBool
   Sent *[]string
   Rw io.ReadWriteCloser
   Received int
@@ -99,11 +158,11 @@ func (r *BasicRemote)SendHandshake() {
 
 
 func (r *BasicRemote)Get() string {
-  return <- r.ReadChan
+  return <- r.ReadChan.Chan
 }
 
 func (r *BasicRemote)GetHandshake() chan bool {
-  return r.HandshakeChan
+  return r.HandshakeChan.Chan
 }
 
 func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
@@ -147,7 +206,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
 
       if str == HandShakeHeader {
         go func() {
-          r.HandshakeChan <- true
+          r.HandshakeChan.Send(true)
         }()
 
         continue
@@ -184,7 +243,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
         r.Received++
 
         go func() {
-          r.ReadChan <- msg
+          r.ReadChan.Send(msg)
         }()
 
       } else {
@@ -195,18 +254,17 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
     }
     close(pingChan)
     if !r.Check() {
-
-      for len(r.ReadChan) > 0 {
-        <- r.ReadChan
+      for len(r.ReadChan.Chan) > 0 {
+        <- r.ReadChan.Chan
       }
 
-      close(r.ReadChan)
+      r.ReadChan.Close()
 
-      for len(r.HandshakeChan) > 0 {
-        <- r.HandshakeChan
+      for len(r.HandshakeChan.Chan) > 0 {
+        <- r.HandshakeChan.Chan
       }
 
-      close(r.HandshakeChan)
+      r.HandshakeChan.Close()
     }
   }()
 }
