@@ -14,6 +14,7 @@ import (
 func NewSafeWaitgroupTwice(n int, m int) *safeWaitgroupTwice {
   swg := safeWaitgroupTwice {
     Value: make([]int, n),
+    Jumped: make([]bool, n),
   }
 
   swg.WG1.Add(m)
