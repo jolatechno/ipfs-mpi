@@ -105,34 +105,22 @@ func NewMpi(ctx context.Context, config Config) (Mpi, error) {
     }
   }()
 
-  mpi.SetCloseHandler(func() {
-    mpi.Host().Close()
-    mpi.Store().Close()
-    mpi.ToClose.Range(func(k interface{}, value interface{}) bool {
-      closer, ok := value.(io.Closer)
-      if ok {
-        closer.Close()
-      }
-      return true
-    })
-  })
-
   store.SetErrorHandler(func(err error) {
     mpi.Raise(err)
-    mpi.Close()
+    go mpi.Close()
   })
 
   store.SetCloseHandler(func() {
-    mpi.Close()
+    go mpi.Close()
   })
 
   host.SetErrorHandler(func(err error) {
     mpi.Raise(err)
-    mpi.Close()
+    go mpi.Close()
   })
 
   host.SetCloseHandler(func() {
-    mpi.Close()
+    go mpi.Close()
   })
 
   return &mpi, nil
