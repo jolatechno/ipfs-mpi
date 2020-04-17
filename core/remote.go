@@ -140,6 +140,7 @@ func (r *BasicRemote)SetPingTimeout(timeoutDuration time.Duration) {
 }
 
 func (r *BasicRemote)CloseRemote() {
+
   fmt.Println("[Remote] CloseRemote") //--------------------------
 
   r.send(CloseHeader)
@@ -217,6 +218,9 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
         continue
 
       } else if str == CloseHeader {
+
+        fmt.Println("[Remote] Closing requested") //--------------------------
+
         r.Close()
         continue
 
@@ -287,7 +291,7 @@ func (r *BasicRemote)Stream() io.ReadWriteCloser {
 func (r *BasicRemote)Close() error {
   if r.Check() {
     r.Standard.Close()
-    
+
     if r.Rw != io.ReadWriteCloser(nil) {
       r.Rw.Close()
       r.Rw = io.ReadWriteCloser(nil)
