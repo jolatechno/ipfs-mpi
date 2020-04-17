@@ -118,6 +118,9 @@ func (r *BasicRemote)flush(writer *bufio.Writer) {
 }
 
 func (r *BasicRemote)send(str string, blocking bool, referenceStream ...io.ReadWriteCloser) {
+
+  fmt.Printf("[Remote] Sending %q\n", str) //--------------------------
+
   if stream := r.Stream(); stream != io.ReadWriteCloser(nil) {
     if len(referenceStream) == 1 && referenceStream[0] != stream {
       return
@@ -214,6 +217,8 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
         r.Raise(err)
         return
       }
+
+      fmt.Printf("[Remote] Received %q\n", str) //--------------------------
 
       if str == HandShakeHeader {
         go func() {

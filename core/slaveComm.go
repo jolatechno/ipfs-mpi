@@ -238,16 +238,10 @@ func (c *BasicSlaveComm)Start() {
   })
 
   c.Interface().SetMessageHandler(func(to int, content string) {
-
-    fmt.Printf("[SlaveComm] %d Sending %q to %d\n", c.Idx, content, to) //--------------------------
-
     c.Remote(to).Send(content)
   })
 
   c.Interface().SetRequestHandler(func(i int) {
-
-    fmt.Printf("[SlaveComm] %d requesting from %d\n", c.Idx, i) //--------------------------
-
     c.Interface().Push(c.Remote(i).Get())
   })
 
