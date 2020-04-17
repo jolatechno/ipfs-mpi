@@ -22,7 +22,7 @@ var (
   PingRespHeader = "PingResp\n"
 
   StandardTimeout = time.Second
-  StandardPingInterval = time.Second
+  StandardPingInterval = 2 * time.Second
 )
 
 func NewChannelBool() *safeChannelBool {
@@ -119,7 +119,9 @@ func (r *BasicRemote)flush(writer *bufio.Writer) {
 
 func (r *BasicRemote)send(str string, blocking bool, referenceStream ...io.ReadWriteCloser) {
 
-  fmt.Printf("[Remote] Sending %q\n", str) //--------------------------
+  if str != PingHeader && str != PingRespHeader { //--------------------------
+    fmt.Printf("[Remote] Sending %q\n", str) //--------------------------
+  } //--------------------------
 
   if stream := r.Stream(); stream != io.ReadWriteCloser(nil) {
     if len(referenceStream) == 1 && referenceStream[0] != stream {
