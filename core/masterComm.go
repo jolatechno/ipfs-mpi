@@ -11,6 +11,23 @@ import (
   "github.com/libp2p/go-libp2p-core/peer"
 )
 
+type safeBool struct {
+  Value bool
+  Mutex sync.Mutex
+}
+
+func (b *safeBool)Read() bool {
+  b.Mutex.Lock()
+  defer b.Mutex.Unlock()
+  return b.Value
+}
+
+func (b *safeBool)Assign(t bool) {
+  b.Mutex.Lock()
+  defer b.Mutex.Unlock()
+  b.Value = t
+}
+
 func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, id string, file string, args ...string) (_ MasterComm, err error) {
   inter, err := NewInterface(file, n, 0, args...)
   if err != nil {
@@ -56,13 +73,12 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     }
   })
 
-  state := 0
-
+  var endedFirstStep *safeBool
   var wg sync.WaitGroup
 
   wg.Add(n - 1)
 
-  reseted := make([]bool, n)
+  reseted := make([]*safeBool, n)
 
   for j := 1; j < n; j++ {
     i := j
@@ -78,8 +94,8 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
     go func(wp *sync.WaitGroup) {
       comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
-        if state == 0 {
-          reseted[i] = true
+        if !endedFirstStep.Read() {
+          reseted[i].Assign(true)
           wp.Done()
         }
 
@@ -94,23 +110,23 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
       <- comm.SlaveComm().Remote(i).GetHandshake()
 
-      if !reseted[i] {
+      if !reseted[i].Read() {
         wp.Done()
       }
     }(&wg)
   }
 
   wg.Wait()
-
-  state = 1
+  endedFirstStep.Assign(true)
 
   N := 0
   for _, s := range reseted {
-    if !s {
+    if !s.Read() {
       N++
     }
   }
 
+  var endedSecondStep *safeBool
   var wg2 sync.WaitGroup
 
   wg2.Add(N - 1)
@@ -118,7 +134,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   for j := 1; j < n; j ++ {
     i := j
 
-    if reseted[i] {
+    if reseted[i].Read() {
       continue
     }
 
@@ -126,8 +142,8 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
     go func(wp *sync.WaitGroup) {
       comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
-        if state == 1 {
-          reseted[i] = true
+        if !endedSecondStep.Read() {
+          reseted[i].Assign(true)
           wp.Done()
         }
 
@@ -140,15 +156,14 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
       <- comm.SlaveComm().Remote(i).GetHandshake()
 
-      if !reseted[i] {
+      if !reseted[i].Read() {
         wp.Done()
       }
     }(&wg2)
   }
 
   wg2.Wait()
-
-  state = 2
+  endedSecondStep.Assign(true)
 
   for j := 1; j < n; j++ {
     i := j
@@ -157,7 +172,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
       comm.Reset(i)
     })
 
-    if !reseted[j] {
+    if !reseted[j].Read() {
       comm.SlaveComm().Remote(j).SendHandshake()
     }
   }
