@@ -1,6 +1,6 @@
 # libp2p-mpi
 
-####  *__WARNING : Development in progress, might contain bug, Please download releases to avoid bug__*
+####  *__WARNING: Development in progress, might contain bugs, Please download releases to avoid bugs__*
 
 [![](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](https://ipfs.io/)
 [![](https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23ipfs)
@@ -16,7 +16,7 @@ This example needs to be added to ipfs :
 ipfs add -r interpreter
 ```
 
-Wich will give an output ressembling :
+Which will give an output resembling :
 
 ```
 added QmVoLznUzS5zKN8bYxVN6BNUKuq52JaHTZ7SwWGFE2miPb interpreter/echo/__pycache__/utils.cpython-37.pyc
@@ -41,7 +41,7 @@ go build
 
 ## Getting started
 
-You should first launch the ipfs daemon with `ipfs daemon` wich will output :
+You should first launch the ipfs daemon with `ipfs daemon` which will output :
 
 ```
 API server listening on /ip4/127.0.0.1/tcp/5001
@@ -79,7 +79,7 @@ You can start a interpreter using :
 Start file n args...
 ```
 
-with `file` being the name of the interpreter, `n` the size the number of peer to connect to and `args` a list of argument to pass to the interpreter
+with `file` being the name of the interpreter, `n` the size the number of peers to connect to and `args` a list of argument to pass to the interpreter
 
 #### Add
 
@@ -109,9 +109,7 @@ You can close the interface using `exit`.
 
 See [interpreter](./interpreter) for examples on how to design an interpreter for libp2p-mpi, and feel free to use the [utils.py](./interpreter/echo/utils.py) file to simplify interactions with libp2p-mpi.
 
-### WARNING : Development in progress, might contain bug
-
-# ToDo
+# To-do
 
 __main changes:__
 
@@ -123,6 +121,6 @@ __'cosmetic' changes:__
 
 - [x] write an example
 
-__long-term goals:__
+__long-term goal:__
 
 - [ ] implement a _filecoin-like_ cryptocurrency rewarding computation
