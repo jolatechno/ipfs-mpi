@@ -4,10 +4,12 @@ import (
   "sync"
 )
 
-func NewStandardInterface() standardFunctionsCloser {
-  nilEndHandler := func() {}
-  nilErrorHandler := func(err error) {}
+var (
+  nilEndHandler = func() {}
+  nilErrorHandler = func(err error) {}
+)
 
+func NewStandardInterface() standardFunctionsCloser {
   return &BasicFunctionsCloser {
     EndHandler: &nilEndHandler,
     ErrorHandler: &nilErrorHandler,

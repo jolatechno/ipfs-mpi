@@ -276,8 +276,8 @@ func (c *BasicSlaveComm)Close() error {
     for j := 0; j < c.N; j++ {
       i := j
 
-      c.Remote(i).SetErrorHandler(func(err error) {})
-      c.Remote(i).SetCloseHandler(func() {})
+      c.Remote(i).SetErrorHandler(nilErrorHandler)
+      c.Remote(i).SetCloseHandler(nilEndHandler)
 
       if i == c.Idx {
         continue

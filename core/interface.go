@@ -11,11 +11,13 @@ import (
   "io"
 )
 
-func NewInterface(file string, n int, i int, args ...string) (Interface, error) {
-  nilMessageHandler := func(int, string) {}
-  nilRequestHandler := func(int) {}
-  nilResetHandler := func(int) {}
+var (
+  nilMessageHandler = func(int, string) {}
+  nilRequestHandler = func(int) {}
+  nilResetHandler = func(int) {}
+)
 
+func NewInterface(file string, n int, i int, args ...string) (Interface, error) {
   cmdArgs := append([]string{file + "/run.py", fmt.Sprint(n), fmt.Sprint(i)}, args...)
   inter := StdInterface {
     Idx: i,
