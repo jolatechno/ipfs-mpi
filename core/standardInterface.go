@@ -5,12 +5,8 @@ import (
 )
 
 var (
-  nilEndHandler = func() {
-    return
-  }
-  nilErrorHandler = func(err error) {
-    return
-  }
+  nilEndHandler = func() {}
+  nilErrorHandler = func(err error) {}
 )
 
 func NewStandardInterface() standardFunctionsCloser {
@@ -40,7 +36,9 @@ func (b *BasicFunctionsCloser)Close() error {
 }
 
 func (b *BasicFunctionsCloser)Raise(err error) {
-  if b.Check() {
+  b.Mutex.Lock()
+  defer b.Mutex.Unlock()
+  if !b.Ended {
     (*b.ErrorHandler)(err)
   }
 }
