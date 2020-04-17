@@ -97,6 +97,7 @@ func NewRemote() (Remote, error) {
 }
 
 type BasicRemote struct {
+  Mutex sync.Mutex
   PingInterval time.Duration
   PingTimeout time.Duration
   ReadChan *safeChannelString
@@ -109,25 +110,33 @@ type BasicRemote struct {
   Standard standardFunctionsCloser
 }
 
-func (r *BasicRemote)send(str string, referenceStream ...io.ReadWriteCloser) {
-  if len(referenceStream) == 1 && referenceStream[0] != r.Rw {
-    return
+func (r *BasicRemote)flush(writer *bufio.Writer) {
+  err := writer.Flush()
+  if err != nil {
+    r.Raise(err)
   }
+}
 
+func (r *BasicRemote)send(str string, blocking bool, referenceStream ...io.ReadWriteCloser) {
   if stream := r.Rw; stream != io.ReadWriteCloser(nil) {
+    if len(referenceStream) == 1 && referenceStream[0] != stream {
+      return
+    }
+
     writer := bufio.NewWriter(stream)
 
     _, err := writer.WriteString(str)
     if err != nil {
       r.Raise(err)
+      return
     }
 
-    go func() {
-      err = writer.Flush()
-      if err != nil {
-        r.Raise(err)
-      }
-    }()
+    if blocking {
+      r.flush(writer)
+    } else {
+      go r.flush(writer)
+    }
+
   }
 }
 
@@ -143,17 +152,17 @@ func (r *BasicRemote)CloseRemote() {
 
   fmt.Println("[Remote] CloseRemote") //--------------------------
 
-  r.send(CloseHeader)
+  r.send(CloseHeader, true)
 }
 
 func (r *BasicRemote)Send(msg string) {
   *r.Sent = append(*r.Sent, msg)
 
-  r.send(fmt.Sprintf("%s,%s", MessageHeader, msg))
+  r.send(fmt.Sprintf("%s,%s", MessageHeader, msg), false)
 }
 
 func (r *BasicRemote)SendHandshake() {
-  r.send(HandShakeHeader)
+  r.send(HandShakeHeader, false)
 }
 
 
@@ -175,7 +184,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
   pingChan := make(chan bool)
 
   for _, msg := range *r.Sent {
-    r.send(fmt.Sprintf("%s,%s", MessageHeader, msg), stream)
+    r.send(fmt.Sprintf("%s,%s", MessageHeader, msg), false, stream)
   }
 
   go func() {
@@ -183,7 +192,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
       time.Sleep(r.PingInterval)
 
       err := timeout.MakeSimpleTimeout(func() error {
-        r.send(PingHeader, stream)
+        r.send(PingHeader, false, stream)
         <- pingChan
         return nil
       }, r.PingTimeout)
@@ -210,7 +219,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
         continue
 
       } else if str == PingHeader {
-        r.send(PingRespHeader, stream)
+        r.send(PingRespHeader, false, stream)
         continue
 
       } else if str == PingRespHeader {

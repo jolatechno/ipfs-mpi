@@ -36,9 +36,7 @@ func (b *BasicFunctionsCloser)Close() error {
 }
 
 func (b *BasicFunctionsCloser)Raise(err error) {
-  b.Mutex.Lock()
-  defer b.Mutex.Unlock()
-  if !b.Ended {
+  if b.Check() {
     (*b.ErrorHandler)(err)
   }
 }
