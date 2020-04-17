@@ -158,13 +158,15 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
         })
       })
 
-      comm.SlaveComm().Connect(i, Addrs[i], fmt.Sprintf("%s\n", Param {
+      param := &Param {
         Init: true,
         Idx: i,
         N: n,
         Id: id,
         Addrs: &Addrs,
-      }))
+      }
+
+      comm.SlaveComm().Connect(i, Addrs[i], fmt.Sprintf("%s\n", param.String()))
 
       <- comm.SlaveComm().Remote(i).GetHandshake()
 
@@ -253,12 +255,14 @@ func (c *BasicMasterComm)Reset(i int) {
     c.Raise(err)
   }
 
-  (*c.Addrs)[i] = addr
-  c.SlaveComm().Connect(i, addr, fmt.Sprintf("%s\n", Param {
+  param := &Param {
     Init: false,
     Idx: i,
     N: c.Comm.N,
     Id: c.Comm.Id,
     Addrs: c.Addrs,
-  }))
+  }
+
+  (*c.Addrs)[i] = addr
+  c.SlaveComm().Connect(i, addr, fmt.Sprintf("%s\n", param.String()))
 }
