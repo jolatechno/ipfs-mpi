@@ -276,12 +276,12 @@ func (c *BasicSlaveComm)Close() error {
     for j := 0; j < c.N; j++ {
       i := j
 
+      c.Remote(i).SetErrorHandler(func(err error) {})
+      c.Remote(i).SetCloseHandler(func() {})
+
       if i == c.Idx {
         continue
       }
-
-      c.Remote(i).SetErrorHandler(func(err error) {})
-      c.Remote(i).SetCloseHandler(func() {})
 
       if i != 0 {
         proto := protocol.ID(fmt.Sprintf("%d/%s", i, string(c.Pid)))
