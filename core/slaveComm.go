@@ -323,11 +323,8 @@ func (c *BasicSlaveComm)Connect(i int, addr peer.ID) error {
 
   fmt.Printf("[SlaveComm] %d connecting to %d with address: %q\n", c.Idx, i, addr) //--------------------------
 
-  var pid protocol.ID
-
-  if c.Idx == 0 {
-    pid = protocol.ID(fmt.Sprintf("%s/%s", c.Id, string(c.Base)))
-  } else {
+  pid := c.Base
+  if c.Idx != 0 {
     pid = protocol.ID(fmt.Sprintf("%d/%s/%s", c.Idx, c.Id, string(c.Base)))
   }
 
