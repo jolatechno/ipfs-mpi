@@ -133,9 +133,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   })
 
   comm.Comm.SetCloseHandler(func() {
-    if comm.Check() {
-      comm.Close()
-    }
+    comm.Close()
   })
 
   wg := NewSafeWaitgroupTwice(n, n - 1)
@@ -220,11 +218,7 @@ type BasicMasterComm struct {
 }
 
 func (c *BasicMasterComm)Close() error {
-  if c.SlaveComm().Check() {
-    c.SlaveComm().Close()
-  }
-
-  return nil
+  return c.SlaveComm().Close()
 }
 
 func (c *BasicMasterComm)SetErrorHandler(handler func(error)) {

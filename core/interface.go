@@ -74,9 +74,7 @@ func (s *StdInterface)Start() {
       s.Raise(err)
     }
 
-    if s.Check() {
-      s.Close()
-    }
+    s.Close()
   }()
 
   errReader := bufio.NewReader(stderr)
@@ -166,11 +164,7 @@ func (s *StdInterface)Start() {
 }
 
 func (s *StdInterface)Close() error {
-  if s.Check() {
-    s.Standard.Close()
-  }
-
-  return nil
+  return s.Standard.Close()
 }
 
 func (s *StdInterface)SetErrorHandler(handler func(error)) {

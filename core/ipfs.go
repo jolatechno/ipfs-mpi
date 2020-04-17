@@ -59,11 +59,7 @@ type IpfsShell struct {
 }
 
 func (s *IpfsShell)Close() error {
-  if s.Check() {
-    s.Standard.Close()
-  }
-
-  return nil
+  return s.Standard.Close()
 }
 
 func (s *IpfsShell)Check() bool {

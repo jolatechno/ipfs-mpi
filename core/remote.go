@@ -124,9 +124,8 @@ func (r *BasicRemote)send(str string, referenceStream ...io.ReadWriteCloser) {
 
     go func() {
       err = writer.Flush()
-      if err != nil && r.Check() {
+      if err != nil {
         r.Raise(err)
-        return
       }
     }()
   }
@@ -198,9 +197,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
     for r.Check() && r.Rw == stream {
       str, err := bufio.NewReader(stream).ReadString('\n')
       if err != nil {
-        if r.Check() {
-          r.Raise(err)
-        }
+        r.Raise(err)
         return
       }
 
@@ -289,12 +286,12 @@ func (r *BasicRemote)Stream() io.ReadWriteCloser {
 
 func (r *BasicRemote)Close() error {
   if r.Check() {
+    r.Standard.Close()
+    
     if r.Rw != io.ReadWriteCloser(nil) {
       r.Rw.Close()
       r.Rw = io.ReadWriteCloser(nil)
     }
-
-    r.Standard.Close()
   }
   return nil
 }
