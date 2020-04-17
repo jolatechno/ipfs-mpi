@@ -50,6 +50,11 @@ func (c *safeChannelBool)Close() {
   defer c.Mutex.Unlock()
   if !c.Ended {
     c.Ended = true
+
+    for len(c.Chan) > 0 {
+      <- c.Chan
+    }
+
     close(c.Chan)
   }
 }
@@ -79,6 +84,11 @@ func (c *safeChannelString)Close() {
   defer c.Mutex.Unlock()
   if !c.Ended {
     c.Ended = true
+
+    for len(c.Chan) > 0 {
+      <- c.Chan
+    }
+
     close(c.Chan)
   }
 }
@@ -233,29 +243,27 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
         fmt.Printf("[Remote] Received %q\n", str) //--------------------------
       } //--------------------------
 
-      if str == HandShakeHeader {
+      splitted := strings.Split(str, ",")
+
+      switch splitted[0] {
+      default:
+        r.Raise(errors.New("header not understood"))
+
+      case HandShakeHeader:
         go func() {
           r.HandshakeChan.Send(true)
         }()
 
-        continue
-
-      } else if str == PingHeader {
+      case PingHeader:
         r.send(PingRespHeader, false, stream)
-        continue
 
-      } else if str == PingRespHeader {
+      case PingRespHeader:
         pingChan <- true
-        continue
 
-      } else if str == CloseHeader {
+      case CloseHeader:
         r.Close()
-        continue
 
-      }
-
-      splitted := strings.Split(str, ",")
-      if splitted[0] == MessageHeader {
+      case MessageHeader:
         if len(splitted) <= 1 {
           r.Raise(errors.New("not enough fields"))
           continue
@@ -274,27 +282,14 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
         go func() {
           r.ReadChan.Send(msg)
         }()
-
-      } else {
-        r.Raise(errors.New("command not understood"))
-        continue
-
       }
     }
     close(pingChan)
     if !r.Check() {
-      for len(r.ReadChan.Chan) > 0 {
-        <- r.ReadChan.Chan
-      }
-
       r.ReadChan.Close()
-
-      for len(r.HandshakeChan.Chan) > 0 {
-        <- r.HandshakeChan.Chan
-      }
-
       r.HandshakeChan.Close()
     }
+
   }()
 }
 
