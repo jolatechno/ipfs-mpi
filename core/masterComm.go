@@ -11,21 +11,85 @@ import (
   "github.com/libp2p/go-libp2p-core/peer"
 )
 
-type safeBool struct {
-  Value bool
+func NewSafeWaitgroupTwice(n int, m int) *safeWaitgroupTwice {
+  swg := safeWaitgroupTwice {
+    Value: make([]int, n),
+  }
+
+  swg.WG1.Add(m)
+  swg.WG2.Add(m)
+
+  return &swg
+}
+
+type safeWaitgroupTwice struct {
+  Jumped []bool
+  Value []int
   Mutex sync.Mutex
+  WG1 sync.WaitGroup
+  WG2 sync.WaitGroup
 }
 
-func (b *safeBool)Read() bool {
-  b.Mutex.Lock()
-  defer b.Mutex.Unlock()
-  return b.Value
+func (wg *safeWaitgroupTwice)DoneFirst(i int) {
+  wg.Mutex.Lock()
+  defer wg.Mutex.Unlock()
+  if wg.Value[i] < 1 {
+    wg.Value[i] = 1
+    wg.WG1.Done()
+  }
 }
 
-func (b *safeBool)Assign(t bool) {
-  b.Mutex.Lock()
-  defer b.Mutex.Unlock()
-  b.Value = t
+func (wg *safeWaitgroupTwice)CheckFist(i int) bool {
+  wg.Mutex.Lock()
+  defer wg.Mutex.Unlock()
+  return wg.Value[i] >= 1
+}
+
+func (wg *safeWaitgroupTwice)DoneSecond(i int) {
+  wg.Mutex.Lock()
+  defer wg.Mutex.Unlock()
+  if wg.Value[i] < 2 {
+    if wg.Value[i] < 1 {
+      wg.WG1.Done()
+    }
+
+    wg.Value[i] = 2
+    wg.WG2.Done()
+  }
+}
+
+func (wg *safeWaitgroupTwice)DoneAll(i int) {
+  wg.Mutex.Lock()
+  defer wg.Mutex.Unlock()
+  wg.Jumped[i] = true
+  if wg.Value[i] < 2 {
+    if wg.Value[i] < 1 {
+      wg.WG1.Done()
+    }
+
+    wg.Value[i] = 2
+    wg.WG2.Done()
+  }
+}
+
+func (wg *safeWaitgroupTwice)CheckSecond(i int) bool {
+  wg.Mutex.Lock()
+  defer wg.Mutex.Unlock()
+  return wg.Value[i] >= 2
+}
+
+func (wg *safeWaitgroupTwice)Check(i int) bool {
+  wg.Mutex.Lock()
+  defer wg.Mutex.Unlock()
+  return !wg.Jumped[i]
+}
+
+func (wg *safeWaitgroupTwice)WaitFirst() {
+  wg.WG1.Wait()
+}
+
+func (wg *safeWaitgroupTwice)WaitSecond() {
+  wg.WG2.Wait()
 }
 
 func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, id string, file string, args ...string) (_ MasterComm, err error) {
@@ -73,12 +137,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     }
   })
 
-  var endedFirstStep *safeBool
-  var wg sync.WaitGroup
-
-  wg.Add(n - 1)
-
-  reseted := make([]*safeBool, n)
+  wg := NewSafeWaitgroupTwice(n, n - 1)
 
   for j := 1; j < n; j++ {
     i := j
@@ -92,12 +151,9 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
       comm.Close()
     })
 
-    go func(wp *sync.WaitGroup) {
+    go func() {
       comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
-        if !endedFirstStep.Read() {
-          reseted[i].Assign(true)
-          wp.Done()
-        }
+        wg.DoneAll(i)
 
         comm.Reset(i)
 
@@ -110,60 +166,30 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
       <- comm.SlaveComm().Remote(i).GetHandshake()
 
-      if !reseted[i].Read() {
-        wp.Done()
-      }
-    }(&wg)
+      wg.DoneFirst(i)
+    }()
   }
 
-  wg.Wait()
-  endedFirstStep.Assign(true)
-
-  N := 0
-  for _, s := range reseted {
-    if !s.Read() {
-      N++
-    }
-  }
-
-  var endedSecondStep *safeBool
-  var wg2 sync.WaitGroup
-
-  wg2.Add(N - 1)
+  wg.WaitFirst()
 
   for j := 1; j < n; j ++ {
     i := j
 
-    if reseted[i].Read() {
+    if wg.CheckSecond(i) {
       continue
     }
 
     comm.SlaveComm().Remote(i).SendHandshake()
 
-    go func(wp *sync.WaitGroup) {
-      comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
-        if !endedSecondStep.Read() {
-          reseted[i].Assign(true)
-          wp.Done()
-        }
-
-        comm.Reset(i)
-
-        comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
-          comm.Reset(i)
-        })
-      })
+    go func() {
 
       <- comm.SlaveComm().Remote(i).GetHandshake()
 
-      if !reseted[i].Read() {
-        wp.Done()
-      }
-    }(&wg2)
+      wg.DoneSecond(i)
+    }()
   }
 
-  wg2.Wait()
-  endedSecondStep.Assign(true)
+  wg.WaitSecond()
 
   for j := 1; j < n; j++ {
     i := j
@@ -172,8 +198,8 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
       comm.Reset(i)
     })
 
-    if !reseted[j].Read() {
-      comm.SlaveComm().Remote(j).SendHandshake()
+    if wg.Check(i) {
+      comm.SlaveComm().Remote(i).SendHandshake()
     }
   }
 
