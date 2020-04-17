@@ -122,13 +122,6 @@ type BasicRemote struct {
   Standard standardFunctionsCloser
 }
 
-func (r *BasicRemote)flush(writer *bufio.Writer) {
-  err := writer.Flush()
-  if err != nil {
-    r.Raise(err)
-  }
-}
-
 func (r *BasicRemote)send(str string, blocking bool, referenceStream ...io.ReadWriteCloser) {
 
   if str != PingHeader && str != PingRespHeader { //--------------------------
@@ -143,15 +136,22 @@ func (r *BasicRemote)send(str string, blocking bool, referenceStream ...io.ReadW
     writer := bufio.NewWriter(stream)
 
     _, err := writer.WriteString(str)
-    if err != nil {
+    if err != nil && stream == r.Stream() {
       r.Raise(err)
       return
     }
 
+    flush := func() {
+      err := writer.Flush()
+      if err != nil && stream == r.Stream() {
+        r.Raise(err)
+      }
+    }
+
     if blocking {
-      r.flush(writer)
+      flush()
     } else {
-      go r.flush(writer)
+      go flush()
     }
 
   }
@@ -234,7 +234,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
   go func() {
     for r.Check() &&  r.Stream() == stream {
       str, err := bufio.NewReader(stream).ReadString('\n')
-      if err != nil {
+      if err != nil && stream == r.Stream() {
         r.Raise(err)
         return
       }
