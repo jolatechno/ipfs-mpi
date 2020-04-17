@@ -203,8 +203,6 @@ func (m *BasicMpi)Add(f string) error {
       return
     }
 
-    fmt.Println("[mpi] [StreamHandler] got param : ", str[:len(str) - 1]) //--------------------------
-
     param, err := ParamFromString(str[:len(str) - 1])
     if err != nil {
       return
