@@ -147,17 +147,11 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
       comm.Close()
     })
 
+    comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
+      wg.DoneAll(i)
+    })
+
     go func() {
-      comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
-        wg.DoneAll(i)
-
-        comm.Reset(i)
-
-        comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
-          comm.Reset(i)
-        })
-      })
-
       comm.SlaveComm().Connect(i, Addrs[i], fmt.Sprintf("%s\n", &Param {
         Init: true,
         Idx: i,
@@ -184,7 +178,6 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     comm.SlaveComm().Remote(i).SendHandshake()
 
     go func() {
-
       <- comm.SlaveComm().Remote(i).GetHandshake()
 
       wg.DoneSecond(i)
@@ -202,6 +195,8 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
     if wg.Check(i) {
       comm.SlaveComm().Remote(i).SendHandshake()
+    } else {
+      comm.Reset(i)
     }
   }
 
@@ -215,6 +210,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 }
 
 type BasicMasterComm struct {
+  Mutex sync.Mutex
   Addrs *[]peer.ID
   Ctx context.Context
   Comm BasicSlaveComm
@@ -245,20 +241,28 @@ func (c *BasicMasterComm)SlaveComm() SlaveComm {
 }
 
 func (c *BasicMasterComm)Reset(i int) {
+  var err error
+
+  c.Mutex.Lock()
 
   fmt.Println("[MasterComm] reseting ", i) //--------------------------
 
-  addr, err := c.SlaveComm().Host().NewPeer(c.Comm.Base)
+  (*c.Addrs)[i], err = c.SlaveComm().Host().NewPeer(c.Comm.Base)
   if err != nil {
+    c.Mutex.Unlock()
+
     c.Raise(err)
   }
 
-  (*c.Addrs)[i] = addr
-  c.SlaveComm().Connect(i, addr, fmt.Sprintf("%s\n", &Param {
+  param := &Param {
     Init: false,
     Idx: i,
     N: c.Comm.N,
     Id: c.Comm.Id,
     Addrs: c.Addrs,
-  }))
+  }
+
+  c.Mutex.Unlock()
+
+  c.SlaveComm().Connect(i, (*c.Addrs)[i], fmt.Sprintf("%s\n", param))
 }
