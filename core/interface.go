@@ -108,7 +108,11 @@ func (s *StdInterface)Start() {
 
       splitted := strings.Split(str, ",")
 
-      if splitted[0] == "Req" {
+      switch splitted[0] {
+      default:
+        s.Raise(errors.New("Not understood"))
+
+      case "Req":
         if len(splitted) != 2 {
           s.Raise(errors.New("Not enough field"))
         }
@@ -121,7 +125,11 @@ func (s *StdInterface)Start() {
 
         (*s.RequestHandler)(idx)
 
-      } else if splitted[0] == "Reset" && s.Idx == 0 {
+      case "Reset":
+        if s.Idx != 0 {
+          s.Raise(errors.New("Can't reset if isn't the MasterComm"))
+        }
+
         if len(splitted) != 2 {
           s.Raise(errors.New("Not enough field"))
         }
@@ -134,7 +142,11 @@ func (s *StdInterface)Start() {
 
         (*s.ResetHandler)(idx)
 
-      } else if splitted[0] == "Log" && s.Idx == 0 {
+      case "Log":
+        if s.Idx != 0 {
+          s.Raise(errors.New("Can't log if isn't the MasterComm"))
+        }
+
         if len(splitted) < 2 {
           s.Raise(errors.New("Not enough field"))
           continue
@@ -144,9 +156,9 @@ func (s *StdInterface)Start() {
         last_len := len(splitted[last_idx]) - 1
         splitted[last_idx] = splitted[last_idx][:last_len]
 
-        log.Print(fmt.Sprintf(logFormat, strings.Join(splitted[1:], ",")))
+        log.Printf(logFormat, strings.Join(splitted[1:], ","))
 
-      } else if splitted[0] == "Send" {
+      case "Send":
         if len(splitted) < 3 {
           s.Raise(errors.New("Not enough field"))
           continue
@@ -159,11 +171,6 @@ func (s *StdInterface)Start() {
         }
 
         (*s.MessageHandler)(idx, strings.Join(splitted[2:], ","))
-
-      } else {
-        s.Raise(errors.New("Not understood"))
-        continue
-
       }
     }
   }()

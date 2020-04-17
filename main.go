@@ -8,7 +8,7 @@ import (
   "strconv"
   "os"
   "fmt"
-  //"time"
+  "log"
 
   "github.com/jolatechno/ipfs-mpi/core"
 )
@@ -33,7 +33,7 @@ func main(){
 
   store.SetErrorHandler(func(err error) {
     if !quiet {
-      fmt.Printf(errorFormat, err.Error())
+      log.Printf(errorFormat, err.Error())
     }
   })
 
@@ -59,12 +59,17 @@ func main(){
     last_size := len(splitted[end_idx]) - 1
     splitted[end_idx] = splitted[end_idx][:last_size]
 
-    if splitted[0] == "List" {
+    switch splitted[0] {
+    default:
+      store.Raise(errors.New("Command not understood"))
+
+    case "List":
       list := store.Store().List()
       for _, f := range list {
         fmt.Println(" ", f)
       }
-    } else if splitted[0] == "Start" {
+
+    case "Start":
       if len(splitted) < 3 {
         store.Raise(errors.New("No size given"))
         continue
@@ -85,8 +90,8 @@ func main(){
           store.Raise(err)
         }
       }()
-    } else if splitted[0] == "Add" {
 
+    case "Add":
       if len(splitted) < 2 {
         store.Raise(errors.New("No file given"))
         continue
@@ -98,7 +103,7 @@ func main(){
         }()
       }
 
-    } else if splitted[0] == "Del" {
+    case "Del":
       if len(splitted) < 2 {
         store.Raise(errors.New("No file given"))
         continue
@@ -110,12 +115,9 @@ func main(){
         }()
       }
 
-    } else if splitted[0] == "exit" {
+    case "exit":
       store.Close()
-      os.Exit(0)
-
-    } else {
-      store.Raise(errors.New("Command not understood"))
+      return
     }
   }
 }
