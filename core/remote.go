@@ -118,7 +118,7 @@ func (r *BasicRemote)flush(writer *bufio.Writer) {
 }
 
 func (r *BasicRemote)send(str string, blocking bool, referenceStream ...io.ReadWriteCloser) {
-  if stream := r.Rw; stream != io.ReadWriteCloser(nil) {
+  if stream := r.Stream(); stream != io.ReadWriteCloser(nil) {
     if len(referenceStream) == 1 && referenceStream[0] != stream {
       return
     }
@@ -149,9 +149,6 @@ func (r *BasicRemote)SetPingTimeout(timeoutDuration time.Duration) {
 }
 
 func (r *BasicRemote)CloseRemote() {
-
-  fmt.Println("[Remote] CloseRemote") //--------------------------
-
   r.send(CloseHeader, true)
 }
 
@@ -175,6 +172,13 @@ func (r *BasicRemote)GetHandshake() chan bool {
 }
 
 func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
+  if !r.Check() {
+    return
+  }
+
+  r.Mutex.Lock()
+  defer r.Mutex.Unlock()
+
   r.Rw = stream
   if stream == io.ReadWriteCloser(nil) {
     return
@@ -188,7 +192,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
   }
 
   go func() {
-    for r.Check() && r.Rw == stream {
+    for r.Check() && r.Stream() == stream {
       time.Sleep(r.PingInterval)
 
       err := timeout.MakeSimpleTimeout(func() error {
@@ -204,7 +208,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
   }()
 
   go func() {
-    for r.Check() && r.Rw == stream {
+    for r.Check() &&  r.Stream() == stream {
       str, err := bufio.NewReader(stream).ReadString('\n')
       if err != nil {
         r.Raise(err)
@@ -227,9 +231,6 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
         continue
 
       } else if str == CloseHeader {
-
-        fmt.Println("[Remote] Closing requested") //--------------------------
-
         r.Close()
         continue
 
@@ -293,16 +294,21 @@ func (r *BasicRemote)Check() bool {
 }
 
 func (r *BasicRemote)Stream() io.ReadWriteCloser {
+  r.Mutex.Lock()
+  defer r.Mutex.Unlock()
   return r.Rw
 }
 
 
 func (r *BasicRemote)Close() error {
+
+  fmt.Println("[Remote] Closing") //--------------------------
+
   if r.Check() {
     r.Standard.Close()
 
-    if r.Rw != io.ReadWriteCloser(nil) {
-      r.Rw.Close()
+    if stream := r.Stream(); stream != io.ReadWriteCloser(nil) {
+      stream.Close()
       r.Rw = io.ReadWriteCloser(nil)
     }
   }
