@@ -5,8 +5,12 @@ import (
 )
 
 var (
-  nilEndHandler = func() {}
-  nilErrorHandler = func(err error) {}
+  nilEndHandler = func() {
+    return
+  }
+  nilErrorHandler = func(err error) {
+    return
+  }
 )
 
 func NewStandardInterface() standardFunctionsCloser {
