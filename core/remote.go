@@ -201,13 +201,46 @@ func (r *BasicRemote)SendHandshake() {
   r.send(HandShakeHeader, false)
 }
 
-
 func (r *BasicRemote)Get() string {
   return <- r.ReadChan.Chan
 }
 
 func (r *BasicRemote)GetHandshake() chan bool {
   return r.HandshakeChan.Chan
+}
+
+func (r *BasicRemote)SetErrorHandler(handler func(error)) {
+  r.Standard.SetErrorHandler(handler)
+}
+
+func (r *BasicRemote)SetCloseHandler(handler func()) {
+  r.Standard.SetCloseHandler(handler)
+}
+
+func (r *BasicRemote)Raise(err error) {
+  r.Standard.Raise(err)
+}
+
+func (r *BasicRemote)Check() bool {
+  return r.Standard.Check()
+}
+
+func (r *BasicRemote)Stream() io.ReadWriteCloser {
+  r.StreamMutex.Lock()
+  defer r.StreamMutex.Unlock()
+  return r.Rw
+}
+
+func (r *BasicRemote)Close() error {
+  if r.Check() {
+    r.Standard.Close()
+
+    if stream := r.Stream(); stream != io.ReadWriteCloser(nil) {
+      stream.Close()
+      r.Rw = io.ReadWriteCloser(nil)
+    }
+  }
+  return nil
 }
 
 func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
@@ -341,39 +374,4 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
     }
 
   }()
-}
-
-func (r *BasicRemote)Check() bool {
-  return r.Standard.Check()
-}
-
-func (r *BasicRemote)Stream() io.ReadWriteCloser {
-  r.StreamMutex.Lock()
-  defer r.StreamMutex.Unlock()
-  return r.Rw
-}
-
-
-func (r *BasicRemote)Close() error {
-  if r.Check() {
-    r.Standard.Close()
-
-    if stream := r.Stream(); stream != io.ReadWriteCloser(nil) {
-      stream.Close()
-      r.Rw = io.ReadWriteCloser(nil)
-    }
-  }
-  return nil
-}
-
-func (r *BasicRemote)SetErrorHandler(handler func(error)) {
-  r.Standard.SetErrorHandler(handler)
-}
-
-func (r *BasicRemote)SetCloseHandler(handler func()) {
-  r.Standard.SetCloseHandler(handler)
-}
-
-func (r *BasicRemote)Raise(err error) {
-  r.Standard.Raise(err)
 }

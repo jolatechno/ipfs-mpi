@@ -268,6 +268,8 @@ func (c *BasicMasterComm)Reset(i int, slaveId int) {
     return
   }
 
+  c.SlaveComm().Remote(i).CloseRemote()
+
   c.Comm.SlaveIds[i]++
 
   fmt.Printf("[MasterComm] reseting %d for the %dth time\n", i, c.Comm.SlaveIds[i]) //--------------------------
