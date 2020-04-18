@@ -10,6 +10,7 @@ import (
   "context"
   "errors"
   "io"
+  "bytes"
 )
 
 var (
@@ -78,37 +79,20 @@ func (s *StdInterface)Start() {
     return
 	}
 
-  stderr, err := s.Cmd.StderrPipe()
-	if err != nil {
-    s.Raise(err)
-    return
-	}
-
   go func() {
+    var errorBuffer bytes.Buffer
+    s.Cmd.Stderr = &errorBuffer
+
     err := s.Cmd.Run()
     if err != nil {
       s.Raise(err)
     }
 
+    if strError := errors.New(errorBuffer.String()); strError != nil {
+      s.Raise(strError)
+    }
+
     s.Close()
-  }()
-
-  errScanner := bufio.NewScanner(stderr)
-  go func() {
-    defer func() {
-      if err := recover(); err != nil {
-        s.Raise(err.(error))
-      }
-    }()
-
-    for errScanner.Scan() {
-      s.Raise(errors.New(errScanner.Text()))
-      continue
-    }
-
-    if err := errScanner.Err(); err != nil {
-      s.Raise(err)
-    }
   }()
 
   scanner := bufio.NewScanner(stdout)
