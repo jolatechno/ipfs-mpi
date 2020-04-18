@@ -35,6 +35,8 @@ type safeWaitgroupTwice struct {
 }
 
 func (wg *safeWaitgroupTwice)DoneFirst(i int) {
+  defer recover()
+
   wg.Mutex.Lock()
   defer wg.Mutex.Unlock()
   if wg.Value[i] < 1 {
@@ -50,6 +52,8 @@ func (wg *safeWaitgroupTwice)CheckFist(i int) bool {
 }
 
 func (wg *safeWaitgroupTwice)DoneSecond(i int) {
+  defer recover()
+
   wg.Mutex.Lock()
   defer wg.Mutex.Unlock()
   if wg.Value[i] < 2 {
@@ -63,6 +67,8 @@ func (wg *safeWaitgroupTwice)DoneSecond(i int) {
 }
 
 func (wg *safeWaitgroupTwice)DoneAll(i int) {
+  defer recover()
+
   wg.Mutex.Lock()
   defer wg.Mutex.Unlock()
   wg.Jumped[i] = true
@@ -77,22 +83,29 @@ func (wg *safeWaitgroupTwice)DoneAll(i int) {
 }
 
 func (wg *safeWaitgroupTwice)CheckSecond(i int) bool {
+  defer recover()
+
   wg.Mutex.Lock()
   defer wg.Mutex.Unlock()
   return wg.Value[i] >= 2
 }
 
 func (wg *safeWaitgroupTwice)Check(i int) bool {
+  defer recover()
+
   wg.Mutex.Lock()
   defer wg.Mutex.Unlock()
   return !wg.Jumped[i]
 }
 
 func (wg *safeWaitgroupTwice)WaitFirst() {
+  defer recover()
+
   wg.WG1.Wait()
 }
 
 func (wg *safeWaitgroupTwice)WaitSecond() {
+  defer recover()
   wg.WG2.Wait()
 }
 
@@ -134,6 +147,12 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
       Standard: NewStandardInterface(),
     },
   }
+
+  defer func() {
+    if err := recover(); err != nil {
+      comm.Raise(err.(error))
+    }
+  }()
 
   comm.Comm.SetErrorHandler(func(err error) {
     comm.Raise(err)
@@ -260,6 +279,12 @@ func (c *BasicMasterComm)SlaveComm() SlaveComm {
 }
 
 func (c *BasicMasterComm)Reset(i int, slaveId int) {
+  defer func() {
+    if err := recover(); err != nil {
+      c.Raise(err.(error))
+    }
+  }()
+
   var err error
 
   c.Mutex.Lock()

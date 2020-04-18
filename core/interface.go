@@ -56,6 +56,12 @@ type StdInterface struct {
 }
 
 func (s *StdInterface)Start() {
+  defer func() {
+    if err := recover(); err != nil {
+      s.Raise(err.(error))
+    }
+  }()
+  
   var err error
 
   s.Stdin, err = s.Cmd.StdinPipe()
@@ -93,6 +99,12 @@ func (s *StdInterface)Start() {
 
   errScanner := bufio.NewScanner(stderr)
   go func() {
+    defer func() {
+      if err := recover(); err != nil {
+        s.Raise(err.(error))
+      }
+    }()
+
     for errScanner.Scan() {
       s.Raise(errors.New(errScanner.Text()))
       continue
@@ -105,6 +117,12 @@ func (s *StdInterface)Start() {
 
   scanner := bufio.NewScanner(stdout)
   go func(){
+    defer func() {
+      if err := recover(); err != nil {
+        s.Raise(err.(error))
+      }
+    }()
+
     for s.Check() && scanner.Scan() {
       splitted := strings.Split(scanner.Text(), ",")
 
@@ -205,6 +223,12 @@ func (s *StdInterface)SetResetHandler(handler func(int)) {
 }
 
 func (s *StdInterface)Push(msg string) error {
+  defer func() {
+    if err := recover(); err != nil {
+      s.Raise(err.(error))
+    }
+  }()
+
   if !s.Check() {
     return errors.New("Interface closed")
   }

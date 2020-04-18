@@ -23,24 +23,6 @@ type BasicFunctionsCloser struct {
   ErrorHandler *func(error)
 }
 
-func (b *BasicFunctionsCloser)Close() error {
-  b.Mutex.Lock()
-  defer b.Mutex.Unlock()
-  if !b.Ended {
-    (*b.EndHandler)()
-
-    b.Ended = true
-  }
-
-  return nil
-}
-
-func (b *BasicFunctionsCloser)Raise(err error) {
-  if b.Check() {
-    (*b.ErrorHandler)(err)
-  }
-}
-
 func (b *BasicFunctionsCloser)Check() bool {
   b.Mutex.Lock()
   defer b.Mutex.Unlock()
@@ -53,4 +35,26 @@ func (b *BasicFunctionsCloser)SetErrorHandler(handler func(error)) {
 
 func (b *BasicFunctionsCloser)SetCloseHandler(handler func()) {
   b.EndHandler = &handler
+}
+
+func (b *BasicFunctionsCloser)Close() error {
+  defer recover()
+
+  b.Mutex.Lock()
+  defer b.Mutex.Unlock()
+  if !b.Ended {
+    (*b.EndHandler)()
+
+    b.Ended = true
+  }
+
+  return nil
+}
+
+func (b *BasicFunctionsCloser)Raise(err error) {
+  defer recover()
+
+  if b.Check() {
+    (*b.ErrorHandler)(err)
+  }
 }

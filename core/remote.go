@@ -75,6 +75,8 @@ type safeChannelString struct {
 }
 
 func (c *safeChannelString)Send(str string) {
+  defer recover()
+
   c.Mutex.Lock()
   defer c.Mutex.Unlock()
   if !c.Ended {
@@ -83,6 +85,8 @@ func (c *safeChannelString)Send(str string) {
 }
 
 func (c *safeChannelString)Close() {
+  defer recover()
+
   c.Mutex.Lock()
   defer c.Mutex.Unlock()
   if !c.Ended {
@@ -128,6 +132,11 @@ type BasicRemote struct {
 }
 
 func (r *BasicRemote)send(str string, blocking bool, referenceStream ...io.ReadWriteCloser) {
+  defer func() {
+    if err := recover(); err != nil {
+      r.Raise(err.(error))
+    }
+  }()
 
   if str != PingHeader && str != PingRespHeader { //--------------------------
     fmt.Printf("[Remote] Sending %q\n", str) //--------------------------
@@ -232,6 +241,8 @@ func (r *BasicRemote)Stream() io.ReadWriteCloser {
 }
 
 func (r *BasicRemote)Close() error {
+  defer recover()
+
   if r.Check() {
     r.Standard.Close()
 
@@ -244,6 +255,12 @@ func (r *BasicRemote)Close() error {
 }
 
 func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
+  defer func() {
+    if err := recover(); err != nil {
+      r.Raise(err.(error))
+    }
+  }()
+
   if !r.Check() {
     return
   }
@@ -271,6 +288,8 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
   pingChan := make(chan bool)
 
   go func() {
+    defer recover()
+
     r.WriteMutex.Lock()
     defer r.WriteMutex.Unlock()
 
@@ -280,6 +299,12 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
   }()
 
   go func() {
+    defer func() {
+      if err := recover(); err != nil {
+        r.Raise(err.(error))
+      }
+    }()
+
     for r.Check() && r.Stream() == stream {
       time.Sleep(r.PingInterval)
 
@@ -297,8 +322,15 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
     }
   }()
 
-  scanner := bufio.NewScanner(stream)
   go func() {
+    defer func() {
+      if err := recover(); err != nil {
+        r.Raise(err.(error))
+      }
+    }()
+
+    scanner := bufio.NewScanner(stream)
+
     for r.Check() &&  r.Stream() == stream && scanner.Scan() {
       splitted := strings.Split(scanner.Text(), ",")
 

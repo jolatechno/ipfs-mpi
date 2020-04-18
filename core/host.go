@@ -189,74 +189,6 @@ func (h *BasicExtHost) Check() bool {
   return h.Standard.Check()
 }
 
-func (h *BasicExtHost)Listen(pid protocol.ID, rendezvous string) {
-  if !h.Check() {
-    return
-  }
-
-  h.PeerStores[pid] = pstoremem.NewPeerstore()
-  h.PeerStores[pid].AddAddrs(h.ID(), h.Addrs(), peerstore.TempAddrTTL)
-  discovery.Advertise(h.Ctx, h.Routing, rendezvous)
-  mdnsPeerChan := initMDNS(h.Ctx, h, rendezvous)
-
-  discoveryHandler := func(peer peer.AddrInfo) {
-    if peer.ID != h.ID() {
-      go func(){
-        err := h.Connect(h.Ctx, peer)
-
-        if err == nil {
-          h.PeerStores[pid].AddAddrs(peer.ID, peer.Addrs, peerstore.TempAddrTTL)
-        }
-      }()
-    }
-  }
-
-  go func() {
-    for h.Check() {
-      peer := <- mdnsPeerChan
-      discoveryHandler(peer)
-    }
-  }()
-
-  go func() {
-    for h.Check() {
-      peerChan, err := h.Routing.FindPeers(h.Ctx, rendezvous)
-      if err != nil {
-        return
-      }
-      for peer := range peerChan {
-        discoveryHandler(peer)
-      }
-    }
-  }()
-}
-
-func (h *BasicExtHost)PeerstoreProtocol(base protocol.ID) (peerstore.Peerstore, error) {
-  pstore, ok := h.PeerStores[base]
-  if !ok {
-    return pstore, errors.New("no such protocol")
-  }
-
-  return pstore, nil
-}
-
-func (h *BasicExtHost)NewPeer(base protocol.ID) (peer.ID, error) {
-  var nilPeerId peer.ID
-
-  pstore, err := h.PeerstoreProtocol(base)
-  if err != nil {
-    return nilPeerId, err
-  }
-
-  peers := pstore.Peers()
-  if len(peers) == 0 {
-    return nilPeerId, errors.New("No peers supporting this protocol")
-  }
-
-  n := rand.Intn(len(peers))
-  return peers[n], nil
-}
-
 func (h *BasicExtHost)ID() peer.ID {
   return h.Host.ID()
 }
@@ -281,6 +213,20 @@ func (h *BasicExtHost)Connect(ctx context.Context, pi peer.AddrInfo) error {
   return h.Host.Connect(ctx, pi)
 }
 
+func (h *BasicExtHost)ConnManager() connmgr.ConnManager {
+  return h.Host.ConnManager()
+}
+
+func (h *BasicExtHost)EventBus() event.Bus {
+  return h.Host.EventBus()
+}
+
+func (h *BasicExtHost)NewStream(ctx context.Context, p peer.ID, pids ...protocol.ID) (network.Stream, error) {
+  if p == h.ID() {
+    return h.SelfStream(pids...)
+  }
+  return h.Host.NewStream(ctx, p, pids...)
+}
 func (h *BasicExtHost)SetStreamHandler(pid protocol.ID, handler network.StreamHandler) {
   match, err := helpers.MultistreamSemverMatcher(pid)
   if err != nil {
@@ -306,22 +252,91 @@ func (h *BasicExtHost)RemoveStreamHandler(pid protocol.ID) {
   h.Host.RemoveStreamHandler(pid)
 }
 
-func (h *BasicExtHost)NewStream(ctx context.Context, p peer.ID, pids ...protocol.ID) (network.Stream, error) {
-  if p == h.ID() {
-    return h.SelfStream(pids...)
+func (h *BasicExtHost)PeerstoreProtocol(base protocol.ID) (peerstore.Peerstore, error) {
+  pstore, ok := h.PeerStores[base]
+  if !ok {
+    return pstore, errors.New("no such protocol")
   }
-  return h.Host.NewStream(ctx, p, pids...)
+
+  return pstore, nil
 }
 
-func (h *BasicExtHost)ConnManager() connmgr.ConnManager {
-  return h.Host.ConnManager()
+func (h *BasicExtHost)Listen(pid protocol.ID, rendezvous string) {
+  if !h.Check() {
+    return
+  }
+
+  h.PeerStores[pid] = pstoremem.NewPeerstore()
+  h.PeerStores[pid].AddAddrs(h.ID(), h.Addrs(), peerstore.TempAddrTTL)
+  discovery.Advertise(h.Ctx, h.Routing, rendezvous)
+  mdnsPeerChan := initMDNS(h.Ctx, h, rendezvous)
+
+  discoveryHandler := func(peer peer.AddrInfo) {
+    if peer.ID != h.ID() {
+      go func(){
+        err := h.Connect(h.Ctx, peer)
+
+        if err == nil {
+          h.PeerStores[pid].AddAddrs(peer.ID, peer.Addrs, peerstore.TempAddrTTL)
+        }
+      }()
+    }
+  }
+
+  go func() {
+    defer recover()
+
+    for h.Check() {
+      peer := <- mdnsPeerChan
+      discoveryHandler(peer)
+    }
+  }()
+
+  go func() {
+    defer recover()
+
+    for h.Check() {
+      peerChan, err := h.Routing.FindPeers(h.Ctx, rendezvous)
+      if err != nil {
+        return
+      }
+      for peer := range peerChan {
+        discoveryHandler(peer)
+      }
+    }
+  }()
 }
 
-func (h *BasicExtHost)EventBus() event.Bus {
-  return h.Host.EventBus()
+func (h *BasicExtHost)NewPeer(base protocol.ID) (peer.ID, error) {
+  defer func() {
+    if err := recover(); err != nil {
+      h.Raise(err.(error))
+    }
+  }()
+
+  var nilPeerId peer.ID
+
+  pstore, err := h.PeerstoreProtocol(base)
+  if err != nil {
+    return nilPeerId, err
+  }
+
+  peers := pstore.Peers()
+  if len(peers) == 0 {
+    return nilPeerId, errors.New("No peers supporting this protocol")
+  }
+
+  n := rand.Intn(len(peers))
+  return peers[n], nil
 }
 
 func (h *BasicExtHost)SelfStream(pid ...protocol.ID) (SelfStream, error) {
+  defer func() {
+    if err := recover(); err != nil {
+      h.Raise(err.(error))
+    }
+  }()
+
   if len(pid) == 0 {
     return nil, errors.New("no protocol given")
   }

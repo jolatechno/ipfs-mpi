@@ -77,6 +77,12 @@ func NewMpi(ctx context.Context, config Config) (Mpi, error) {
     Standard: NewStandardInterface(),
   }
 
+  defer func() {
+    if err := recover(); err != nil {
+      mpi.Raise(err.(error))
+    }
+  }()
+
   for _, f := range store.List() {
     mpi.Add(f)
   }
@@ -139,7 +145,53 @@ type BasicMpi struct {
   Standard standardFunctionsCloser
 }
 
+func (m *BasicMpi)SetCloseHandler(handler func()) {
+  m.Standard.SetCloseHandler(handler)
+}
+
+func (m *BasicMpi)SetErrorHandler(handler func(error)) {
+  m.Standard.SetErrorHandler(handler)
+}
+
+func (m *BasicMpi)Raise(err error) {
+  m.Standard.Raise(err)
+}
+
+func (m *BasicMpi)Check() bool {
+  return m.Standard.Check()
+}
+
+func (m *BasicMpi)Host() ExtHost {
+  return m.MpiHost
+}
+
+func (m *BasicMpi)Store() Store {
+  return m.MpiStore
+}
+
+func (m *BasicMpi)Get(maxsize uint64) error {
+  f, err := m.MpiStore.Get(maxsize)
+  if err != nil {
+    return err
+  }
+
+  return m.Add(f)
+}
+
+func (m *BasicMpi)Del(f string) error {
+  err := m.Store().Del(f)
+  if err != nil {
+    return err
+  }
+
+  proto := protocol.ID(f + string(m.Pid))
+  m.Host().RemoveStreamHandler(proto)
+  return nil
+}
+
 func (m *BasicMpi)Close() error {
+  defer recover()
+
   if m.Check() {
     m.Standard.Close()
 
@@ -157,23 +209,13 @@ func (m *BasicMpi)Close() error {
   return nil
 }
 
-func (m *BasicMpi)SetCloseHandler(handler func()) {
-  m.Standard.SetCloseHandler(handler)
-}
-
-func (m *BasicMpi)SetErrorHandler(handler func(error)) {
-  m.Standard.SetErrorHandler(handler)
-}
-
-func (m *BasicMpi)Raise(err error) {
-  m.Standard.Raise(err)
-}
-
-func (m *BasicMpi)Check() bool {
-  return m.Standard.Check()
-}
-
 func (m *BasicMpi)Add(f string) error {
+  defer func() {
+    if err := recover(); err != nil {
+      m.Raise(err.(error))
+    }
+  }()
+
   if !m.Store().Has(f) {
     err := m.Store().Dowload(f)
     if err != nil {
@@ -184,6 +226,12 @@ func (m *BasicMpi)Add(f string) error {
   proto := protocol.ID(fmt.Sprintf("/%s/%s", f, m.Pid))
   m.Host().Listen(proto, fmt.Sprintf("/%s/%s", f, m.Ipfs_store))
   m.Host().SetStreamHandler(proto, func(stream network.Stream) {
+    defer func() {
+      if err := recover(); err != nil {
+        m.Raise(err.(error))
+      }
+    }()
+
     reader := bufio.NewReader(stream)
 
     str, err := reader.ReadString('\n')
@@ -216,35 +264,13 @@ func (m *BasicMpi)Add(f string) error {
   return nil
 }
 
-func (m *BasicMpi)Del(f string) error {
-  err := m.Store().Del(f)
-  if err != nil {
-    return err
-  }
-
-  proto := protocol.ID(f + string(m.Pid))
-  m.Host().RemoveStreamHandler(proto)
-  return nil
-}
-
-func (m *BasicMpi)Host() ExtHost {
-  return m.MpiHost
-}
-
-func (m *BasicMpi)Store() Store {
-  return m.MpiStore
-}
-
-func (m *BasicMpi)Get(maxsize uint64) error {
-  f, err := m.MpiStore.Get(maxsize)
-  if err != nil {
-    return err
-  }
-
-  return m.Add(f)
-}
-
 func (m *BasicMpi)Start(file string, n int, args ...string) error {
+  defer func() {
+    if err := recover(); err != nil {
+      m.Raise(err.(error))
+    }
+  }()
+
   if !m.MpiStore.Has(file) {
     return errors.New("no such file")
   }

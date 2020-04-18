@@ -19,7 +19,19 @@ const (
 //straight from version 1.0.1
 
 func NewStore(url string, path string, ipfs_store string) (Store, error) {
-  Shell := shell.NewShell(url)
+  store := &IpfsShell {
+    Path:path,
+    Ipfs_store:ipfs_store,
+    Standard: NewStandardInterface(),
+  }
+
+  defer func() {
+    if err := recover(); err != nil {
+      store.Raise(err.(error))
+    }
+  }()
+
+  store.Shell = shell.NewShell(url)
 
   if _, err := os.Stat(path); os.IsNotExist(err) {
     new_err := os.MkdirAll(path, ModePerm)
@@ -35,18 +47,12 @@ func NewStore(url string, path string, ipfs_store string) (Store, error) {
       return nil, err
   }
 
-  store := make([]string, len(list))
+  store.Store = make([]string, len(list))
   for i, file := range list {
-    store[i] = file.Name()
+    store.Store[i] = file.Name()
   }
 
-  return &IpfsShell {
-    Shell:Shell,
-    Store:store,
-    Path:path,
-    Ipfs_store:ipfs_store,
-    Standard: NewStandardInterface(),
-  }, nil
+  return store, nil
 }
 
 
@@ -96,6 +102,12 @@ func (s *IpfsShell)Has(f string) bool {
 }
 
 func (s *IpfsShell)Del(f string) error {
+  defer func() {
+    if err := recover(); err != nil {
+      s.Raise(err.(error))
+    }
+  }()
+
   if !s.Has(f){
     return errors.New("No file to delete")
   }
@@ -116,6 +128,12 @@ func (s *IpfsShell)Del(f string) error {
 }
 
 func (s *IpfsShell)Dowload(f string) error {
+  defer func() {
+    if err := recover(); err != nil {
+      s.Raise(err.(error))
+    }
+  }()
+
   err := s.Shell.Get(s.Ipfs_store + f, s.Path + f)
   if err != nil {
     return err
@@ -131,6 +149,12 @@ func (s *IpfsShell)Dowload(f string) error {
 }
 
 func (s *IpfsShell)Occupied() (uint64, error) {
+  defer func() {
+    if err := recover(); err != nil {
+      s.Raise(err.(error))
+    }
+  }()
+
   var size uint64
   err := filepath.Walk(s.Path, func(_ string, info os.FileInfo, err error) error {
       if err != nil {

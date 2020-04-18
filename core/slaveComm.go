@@ -135,6 +135,12 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     Standard: NewStandardInterface(),
   }
 
+  defer func() {
+    if err := recover(); err != nil {
+      comm.Raise(err.(error))
+    }
+  }()
+
   (*comm.Remotes)[0], err = NewRemote()
   if err != nil {
     return nil, err
@@ -270,6 +276,12 @@ func (c *BasicSlaveComm)Start() {
 
   fmt.Println("[SlaveComm] Starting", c.Idx) //--------------------------
 
+  defer func() {
+    if err := recover(); err != nil {
+      c.Raise(err.(error))
+    }
+  }()
+
   c.Interface().SetErrorHandler(func(err error) {
     c.Raise(err)
   })
@@ -299,7 +311,37 @@ func (c *BasicSlaveComm)Interface() Interface {
   return c.Inter
 }
 
+func (c *BasicSlaveComm)SetErrorHandler(handler func(error)) {
+  c.Standard.SetErrorHandler(handler)
+}
+
+func (c *BasicSlaveComm)SetCloseHandler(handler func()) {
+  c.Standard.SetCloseHandler(handler)
+}
+
+func (c *BasicSlaveComm)Raise(err error) {
+  c.Standard.Raise(err)
+}
+
+func (c *BasicSlaveComm)Check() bool {
+  return c.Standard.Check()
+}
+
+func (c *BasicSlaveComm)Remote(idx int) Remote {
+  return (*c.Remotes)[idx]
+}
+
+func (c *BasicSlaveComm)Host() ExtHost {
+  return c.CommHost
+}
+
 func (c *BasicSlaveComm)Close() error {
+  defer func() {
+    if err := recover(); err != nil {
+      c.Raise(err.(error))
+    }
+  }()
+
   if c.Check() {
 
     fmt.Println("[SlaveComm] Closing ", c.Idx) //--------------------------
@@ -334,33 +376,15 @@ func (c *BasicSlaveComm)Close() error {
 }
 
 func (c *BasicSlaveComm)RequestReset(i int) {
+  defer func() {
+    if err := recover(); err != nil {
+      c.Raise(err.(error))
+    }
+  }()
+
   c.Mutex.Lock()
   defer c.Mutex.Unlock()
   c.Remote(0).RequestReset(i, c.SlaveIds[i])
-}
-
-func (c *BasicSlaveComm)SetErrorHandler(handler func(error)) {
-  c.Standard.SetErrorHandler(handler)
-}
-
-func (c *BasicSlaveComm)SetCloseHandler(handler func()) {
-  c.Standard.SetCloseHandler(handler)
-}
-
-func (c *BasicSlaveComm)Raise(err error) {
-  c.Standard.Raise(err)
-}
-
-func (c *BasicSlaveComm)Check() bool {
-  return c.Standard.Check()
-}
-
-func (c *BasicSlaveComm)Remote(idx int) Remote {
-  return (*c.Remotes)[idx]
-}
-
-func (c *BasicSlaveComm)Host() ExtHost {
-  return c.CommHost
 }
 
 func (c *BasicSlaveComm)Connect(i int, addr peer.ID, msgs ...string) error {
@@ -368,6 +392,12 @@ func (c *BasicSlaveComm)Connect(i int, addr peer.ID, msgs ...string) error {
   if c.Idx == 0 { //--------------------------
     fmt.Printf("[MasterComm] connecting to %d with address: %q\n", i, addr) //--------------------------
   } //--------------------------
+
+  defer func() {
+    if err := recover(); err != nil {
+      c.Raise(err.(error))
+    }
+  }()
 
   pid := c.Base
   if c.Idx != 0 {

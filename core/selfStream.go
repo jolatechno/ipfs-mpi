@@ -19,8 +19,11 @@ var (
 )
 
 func NewStream(pid protocol.ID) SelfStream {
+  defer recover()
+
   readPipe, writePipe := io.Pipe()
   readPipeReversed, writePipeReversed := io.Pipe()
+
   return &CloseableBuffer {
     WritePipe: writePipe,
     ReadPipe: readPipe,
@@ -46,9 +49,16 @@ type CloseableBuffer struct {
 }
 
 func (b *CloseableBuffer)Reverse() (SelfStream, error) {
+  defer func() {
+    if err := recover(); err != nil {
+      b.Close()
+    }
+  }()
+
   if b.Ended {
 		return nil, StreamEnded
 	}
+
   return &CloseableBuffer {
     WritePipe: b.WritePipeReversed,
     ReadPipe: b.ReadPipeReversed,
@@ -85,6 +95,12 @@ func (b *CloseableBuffer)Protocol() protocol.ID {
 }
 
 func (b *CloseableBuffer)Reset() error {
+  defer func() {
+    if err := recover(); err != nil {
+      b.Close()
+    }
+  }()
+
   if !b.check() {
 		return StreamEnded
 	}
@@ -97,6 +113,12 @@ func (b *CloseableBuffer)Reset() error {
 }
 
 func (b *CloseableBuffer)Read(p []byte) (int, error) {
+  defer func() {
+    if err := recover(); err != nil {
+      b.Close()
+    }
+  }()
+
   if !b.check() {
 		return 0, StreamEnded
 	}
@@ -119,6 +141,12 @@ func (b *CloseableBuffer)Read(p []byte) (int, error) {
 }
 
 func (b *CloseableBuffer) Write(p []byte) (int, error) {
+  defer func() {
+    if err := recover(); err != nil {
+      b.Close()
+    }
+  }()
+
   if !b.check() {
 		return 0, StreamEnded
 	}
