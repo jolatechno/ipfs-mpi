@@ -87,8 +87,9 @@ func (s *StdInterface)Start() {
 
     err := s.Cmd.Run()
 
-    if strError := errors.New(errorBuffer.String()); strError != nil {
-      s.Raise(strError)
+    strError := errorBuffer.String()
+    if strError != "" {
+      s.Raise(errors.New(strError))
     }
 
     if err != nil {
