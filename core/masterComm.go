@@ -102,22 +102,26 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     return nil, err
   }
 
-  Addrs := make([]peer.ID, n)
-  for i, _ := range Addrs {
+  addrs := make([]peer.ID, n)
+  lastReseted := make([]time.Time, n)
+
+  for i := 0; i < n; i++ {
     if i == 0 {
-      Addrs[i] = host.ID()
+      addrs[i] = host.ID()
     } else {
-      Addrs[i], err = host.NewPeer(base)
+      addrs[i], err = host.NewPeer(base)
       if err != nil {
         return nil, err
       }
     }
+
+    lastReseted[i] = time.Now().Add(-1 * (ResetCooldown + time.Second))
   }
 
   remotes := make([]Remote, n)
   comm := BasicMasterComm {
-    LastReseted: make([]time.Time, n),
-    Addrs: &Addrs,
+    LastReseted: lastReseted,
+    Addrs: &addrs,
     Comm: BasicSlaveComm {
       Ctx: ctx,
       Inter: inter,
@@ -158,12 +162,12 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     })
 
     go func() {
-      comm.SlaveComm().Connect(i, Addrs[i], fmt.Sprintf("%s\n", &Param {
+      comm.SlaveComm().Connect(i, addrs[i], fmt.Sprintf("%s\n", &Param {
         Init: true,
         Idx: i,
         N: n,
         Id: id,
-        Addrs: &Addrs,
+        Addrs: &addrs,
       }))
 
       <- comm.SlaveComm().Remote(i).GetHandshake()
@@ -252,12 +256,8 @@ func (c *BasicMasterComm)Reset(i int) {
 
   c.Mutex.Lock()
 
-  if c.LastReseted[i].IsZero() { //--------------------------
-    fmt.Println("[MasterComm] i zero time ") //--------------------------
-  } //--------------------------
-
   t := time.Now()
-  if t.Sub(c.LastReseted[i]) < ResetCooldown || !c.LastReseted[i].IsZero() {
+  if t.Sub(c.LastReseted[i]) < ResetCooldown {
     return
   }
 
