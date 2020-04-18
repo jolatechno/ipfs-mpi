@@ -12,6 +12,7 @@ import (
 
 var (
   ResetCooldown = 2 * time.Second
+  ResetCooldownGlobal = 500 * time.Millisecond
 )
 
 func NewSafeWaitgroupTwice(n int, m int) *safeWaitgroupTwice {
@@ -120,6 +121,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
   remotes := make([]Remote, n)
   comm := BasicMasterComm {
+    LastResetedGlobal: time.Now().Add(-1 * (ResetCooldownGlobal + time.Second)),
     LastReseted: lastReseted,
     Addrs: &addrs,
     Comm: BasicSlaveComm {
@@ -224,6 +226,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 }
 
 type BasicMasterComm struct {
+  LastResetedGlobal time.Time
   LastReseted []time.Time
   Mutex sync.Mutex
   Addrs *[]peer.ID
@@ -261,6 +264,11 @@ func (c *BasicMasterComm)Reset(i int) {
   c.Mutex.Lock()
 
   t := time.Now()
+
+  if t.Sub(c.LastResetedGlobal) < ResetCooldownGlobal {
+    return
+  }
+
   if t.Sub(c.LastReseted[i]) < ResetCooldown {
     return
   }
@@ -288,5 +296,6 @@ func (c *BasicMasterComm)Reset(i int) {
 
   c.SlaveComm().Connect(i, (*c.Addrs)[i], fmt.Sprintf("%s\n", param))
 
+  c.LastResetedGlobal = t
   c.LastReseted[i] = t
 }
