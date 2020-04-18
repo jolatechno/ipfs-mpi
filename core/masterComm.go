@@ -252,8 +252,12 @@ func (c *BasicMasterComm)Reset(i int) {
 
   c.Mutex.Lock()
 
+  if c.LastReseted[i].IsZero() { //--------------------------
+    fmt.Println("[MasterComm] i zero time ") //--------------------------
+  } //--------------------------
+
   t := time.Now()
-  if t.Sub(c.LastReseted[i]) < ResetCooldown {
+  if t.Sub(c.LastReseted[i]) < ResetCooldown || !c.LastReseted[i].IsZero() {
     return
   }
 

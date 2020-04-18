@@ -7,6 +7,7 @@ import (
   "context"
   "sync"
 	"fmt"
+  "time"
   "math/rand"
 
 	"github.com/libp2p/go-libp2p"
@@ -22,9 +23,36 @@ import (
   "github.com/libp2p/go-libp2p-discovery"
   "github.com/libp2p/go-libp2p-core/helpers"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
+  mdns_discovery "github.com/libp2p/go-libp2p/p2p/discovery"
 
   maddr "github.com/multiformats/go-multiaddr"
 )
+
+//this part was stollen from [https://github.com/libp2p/go-libp2p-examples/blob/master/chat-with-mdns/mdns.go]
+type discoveryNotifee struct {
+	PeerChan chan peer.AddrInfo
+}
+
+//interface to be called when new  peer is found
+func (n *discoveryNotifee) HandlePeerFound(pi peer.AddrInfo) {
+	n.PeerChan <- pi
+}
+
+//Initialize the MDNS service
+func initMDNS(ctx context.Context, peerhost host.Host, rendezvous string) chan peer.AddrInfo {
+	// An hour might be a long long period in practical applications. But this is fine for us
+	ser, err := mdns_discovery.NewMdnsService(ctx, peerhost, 3 * time.Minute, rendezvous)
+	if err != nil {
+		panic(err)
+	}
+
+	//register with service so that we get notified about peer discovery
+	n := &discoveryNotifee{}
+	n.PeerChan = make(chan peer.AddrInfo)
+
+	ser.RegisterNotifee(n)
+	return n.PeerChan
+}
 
 func ListIpAdresses() ([]maddr.Multiaddr, error) {
   returnAddr := []maddr.Multiaddr{}
@@ -162,35 +190,45 @@ func (h *BasicExtHost) Check() bool {
 }
 
 func (h *BasicExtHost)Listen(pid protocol.ID, rendezvous string) {
-  if h.Check() {
-    h.PeerStores[pid] = pstoremem.NewPeerstore()
-    h.PeerStores[pid].AddAddrs(h.ID(), h.Addrs(), peerstore.TempAddrTTL)
-    discovery.Advertise(h.Ctx, h.Routing, rendezvous)
+  if !h.Check() {
+    return
+  }
 
-    discoveryHandler := func(peer peer.AddrInfo) {
-      if peer.ID != h.ID() {
-        go func(){
-          err := h.Connect(h.Ctx, peer)
+  h.PeerStores[pid] = pstoremem.NewPeerstore()
+  h.PeerStores[pid].AddAddrs(h.ID(), h.Addrs(), peerstore.TempAddrTTL)
+  discovery.Advertise(h.Ctx, h.Routing, rendezvous)
+  mdnsPeerChan := initMDNS(h.Ctx, h, rendezvous)
 
-          if err == nil {
-            h.PeerStores[pid].AddAddrs(peer.ID, peer.Addrs, peerstore.TempAddrTTL)
-          }
-        }()
+  discoveryHandler := func(peer peer.AddrInfo) {
+    if peer.ID != h.ID() {
+      go func(){
+        err := h.Connect(h.Ctx, peer)
+
+        if err == nil {
+          h.PeerStores[pid].AddAddrs(peer.ID, peer.Addrs, peerstore.TempAddrTTL)
+        }
+      }()
+    }
+  }
+
+  go func() {
+    for h.Check() {
+      peer := <- mdnsPeerChan
+      discoveryHandler(peer)
+    }
+  }()
+
+  go func() {
+    for h.Check() {
+      peerChan, err := h.Routing.FindPeers(h.Ctx, rendezvous)
+      if err != nil {
+        return
+      }
+      for peer := range peerChan {
+        discoveryHandler(peer)
       }
     }
-
-    go func() {
-      for h.Check() {
-        peerChan, err := h.Routing.FindPeers(h.Ctx, rendezvous)
-        if err != nil {
-          return
-        }
-        for peer := range peerChan {
-          discoveryHandler(peer)
-        }
-      }
-    }()
-  }
+  }()
 }
 
 func (h *BasicExtHost)PeerstoreProtocol(base protocol.ID) (peerstore.Peerstore, error) {
