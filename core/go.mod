@@ -2,7 +2,7 @@ module github.com/jolatechno/ipfs-mpi/core
 
 require (
 	github.com/ipfs/go-ipfs-api v0.0.3
-	github.com/jolatechno/go-timeout v0.0.0-20200411125652-7b3152960795
+	github.com/jolatechno/go-timeout v0.0.0-20200418073152-4b2fffd6ee58
 	github.com/libp2p/go-libp2p v0.5.0
 	github.com/libp2p/go-libp2p-connmgr v0.2.1
 	github.com/libp2p/go-libp2p-core v0.3.0

@@ -14,7 +14,8 @@ import (
 
 var (
   StreamEnded = errors.New("Stream closed")
-  StandardStreamTimeout = time.Minute
+  StandardStreamTimeout = 2 * time.Minute
+  StandardCheckingInterval = 2 * time.Second
 )
 
 func NewStream(pid protocol.ID) SelfStream {
@@ -100,9 +101,15 @@ func (b *CloseableBuffer)Read(p []byte) (int, error) {
 		return 0, StreamEnded
 	}
 
-  n, err := timeout.MakeTimeout(func() (interface{}, error) {
+  n, err := timeout.MakeCheckerTimeout(func() (interface{}, error) {
     return b.ReadPipe.Read(p)
-  }, b.ReadTimeout)
+  }, b.ReadTimeout, func() error {
+    if !b.check() {
+      return StreamEnded
+    }
+
+    return nil
+  }, StandardCheckingInterval)
 
   if n == nil {
     n = 0
@@ -116,9 +123,15 @@ func (b *CloseableBuffer) Write(p []byte) (int, error) {
 		return 0, StreamEnded
 	}
 
-  n, err := timeout.MakeTimeout(func() (interface{}, error) {
+  n, err := timeout.MakeCheckerTimeout(func() (interface{}, error) {
     return b.WritePipeReversed.Write(p)
-  }, b.WriteTimeout)
+  }, b.WriteTimeout, func() error {
+    if !b.check() {
+      return StreamEnded
+    }
+
+    return nil
+  }, StandardCheckingInterval)
 
   if n == nil {
     n = 0
