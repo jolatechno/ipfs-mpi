@@ -71,6 +71,7 @@ type MasterComm interface {
 type SlaveComm interface {
   standardFunctionsCloser
 
+  RequestReset(int)
   Start()
   Host() ExtHost
   Interface() Interface
@@ -81,6 +82,8 @@ type SlaveComm interface {
 type Remote interface {
   standardFunctionsCloser
 
+  SetResetHandler(func(int))
+  RequestReset(int)
   CloseRemote()
   SetPingInterval(time.Duration)
   SetPingTimeout(time.Duration)

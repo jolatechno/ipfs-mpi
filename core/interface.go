@@ -12,9 +12,20 @@ import (
 )
 
 var (
+  HeaderNotUnderstood = errors.New("Header not understood")
+  CommandNotUnderstood = errors.New("Command not understood")
+  NotMatserComm = errors.New("Not the MasterComm")
+  NotEnoughFields = errors.New("Not enough field")
+  EmptyString = errors.New("Received an empty string")
+
   nilMessageHandler = func(int, string) {}
   nilRequestHandler = func(int) {}
   nilResetHandler = func(int) {}
+
+  InterfaceLogHeader = "Log"
+  InterfaceSendHeader = "Send"
+  InterfaceResetHeader = "Reset"
+  InterfaceRequestHeader = "Req"
 
   logFormat = "\033[33m%s\033[0m\n"
 )
@@ -99,7 +110,7 @@ func (s *StdInterface)Start() {
     for s.Check() {
       str, err := reader.ReadString('\n')
       if str == "" && err == nil {
-        err = errors.New("Received an empty string")
+        err = EmptyString
       }
       if err != nil {
         s.Close()
@@ -110,11 +121,11 @@ func (s *StdInterface)Start() {
 
       switch splitted[0] {
       default:
-        s.Raise(errors.New("Not understood"))
+        s.Raise(HeaderNotUnderstood)
 
-      case "Req":
+      case InterfaceRequestHeader:
         if len(splitted) != 2 {
-          s.Raise(errors.New("Not enough field"))
+          s.Raise(NotEnoughFields)
         }
 
         idx, err := strconv.Atoi(splitted[1][:len(splitted[1]) - 1])
@@ -125,13 +136,9 @@ func (s *StdInterface)Start() {
 
         (*s.RequestHandler)(idx)
 
-      case "Reset":
-        if s.Idx != 0 {
-          s.Raise(errors.New("Can't reset if isn't the MasterComm"))
-        }
-
+      case InterfaceResetHeader:
         if len(splitted) != 2 {
-          s.Raise(errors.New("Not enough field"))
+          s.Raise(NotEnoughFields)
         }
 
         idx, err := strconv.Atoi(splitted[1][:len(splitted[1]) - 1])
@@ -142,13 +149,13 @@ func (s *StdInterface)Start() {
 
         (*s.ResetHandler)(idx)
 
-      case "Log":
+      case InterfaceLogHeader:
         if s.Idx != 0 {
-          s.Raise(errors.New("Can't log if isn't the MasterComm"))
+          s.Raise(NotMatserComm)
         }
 
         if len(splitted) < 2 {
-          s.Raise(errors.New("Not enough field"))
+          s.Raise(NotEnoughFields)
           continue
         }
 
@@ -158,9 +165,9 @@ func (s *StdInterface)Start() {
 
         log.Printf(logFormat, strings.Join(splitted[1:], ","))
 
-      case "Send":
+      case InterfaceSendHeader:
         if len(splitted) < 3 {
-          s.Raise(errors.New("Not enough field"))
+          s.Raise(NotEnoughFields)
           continue
         }
 

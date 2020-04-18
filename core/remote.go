@@ -4,6 +4,7 @@ import (
   "bufio"
   "io"
   "fmt"
+  "strconv"
   "errors"
   "strings"
   "sync"
@@ -20,6 +21,7 @@ var (
   CloseHeader = "Close\n"
   PingHeader = "Ping\n"
   PingRespHeader = "PingResp\n"
+  ResetHeader = "HandShake\n"
 
   StandardTimeout = 2 * time.Second
   StandardPingInterval = 2 * time.Second
@@ -98,6 +100,7 @@ func (c *safeChannelString)Close() {
 
 func NewRemote() (Remote, error) {
   return &BasicRemote {
+    ResetHandler: &nilResetHandler,
     PingInterval: StandardPingInterval,
     PingTimeout: StandardTimeout,
     ReadChan: NewChannelString(),
@@ -113,6 +116,7 @@ type BasicRemote struct {
   WriteMutex sync.Mutex
   StreamMutex sync.Mutex
 
+  ResetHandler *func(int)
   PingInterval time.Duration
   PingTimeout time.Duration
   ReadChan *safeChannelString
@@ -167,12 +171,20 @@ func (r *BasicRemote)send(str string, blocking bool, referenceStream ...io.ReadW
   }
 }
 
+func (r *BasicRemote)SetResetHandler(handler func(int)) {
+  r.ResetHandler = &handler
+}
+
 func (r *BasicRemote)SetPingInterval(interval time.Duration) {
   r.PingInterval = interval
 }
 
 func (r *BasicRemote)SetPingTimeout(timeoutDuration time.Duration) {
   r.PingTimeout = timeoutDuration
+}
+
+func (r *BasicRemote)RequestReset(i int) {
+  r.send(fmt.Sprintf("%s,%d\n", ResetHeader, i), false)
 }
 
 func (r *BasicRemote)CloseRemote() {
@@ -273,7 +285,21 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
 
       switch splitted[0] {
       default:
-        r.Raise(errors.New("header not understood"))
+        r.Raise(HeaderNotUnderstood)
+
+      case ResetHeader:
+        if len(splitted) <= 1 {
+          r.Raise(NotEnoughFields)
+          continue
+        }
+
+        idx, err := strconv.Atoi(splitted[1][:len(splitted[1]) - 1])
+        if err != nil {
+          r.Raise(err)
+          continue
+        }
+
+        go (*r.ResetHandler)(idx)
 
       case HandShakeHeader:
         go func() {
@@ -291,7 +317,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
 
       case MessageHeader:
         if len(splitted) <= 1 {
-          r.Raise(errors.New("not enough fields"))
+          r.Raise(NotEnoughFields)
           continue
         }
 

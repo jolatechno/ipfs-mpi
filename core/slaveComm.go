@@ -165,7 +165,8 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
       if stream := comm.Remote(i).Stream(); stream != io.ReadWriteCloser(nil) {
         stream.Close()
       }
-      comm.Remote(i).Reset(io.ReadWriteCloser(nil))
+
+      comm.RequestReset(i)
     })
 
     comm.Remote(i).SetCloseHandler(func() {
@@ -211,6 +212,10 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     comm.Remote(0).SendHandshake()
     <- comm.Remote(0).GetHandshake()
   }
+
+  comm.Interface().SetResetHandler(func(i int) {
+    comm.RequestReset(i)
+  })
 
   comm.Start()
 
@@ -294,6 +299,10 @@ func (c *BasicSlaveComm)Close() error {
   }
 
   return nil
+}
+
+func (c *BasicSlaveComm)RequestReset(i int) {
+  c.Remote(0).RequestReset(i)
 }
 
 func (c *BasicSlaveComm)SetErrorHandler(handler func(error)) {
