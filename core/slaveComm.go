@@ -220,6 +220,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
 
   comm.Interface().SetResetHandler(func(i int) {
     comm.RequestReset(i)
+    comm.Remote(i).Reset(io.ReadWriteCloser(nil))
   })
 
   comm.Start()
@@ -307,7 +308,7 @@ func (c *BasicSlaveComm)Close() error {
 }
 
 func (c *BasicSlaveComm)RequestReset(i int) {
-  c.Remote(0).RequestReset(i)
+  //c.Remote(0).RequestReset(i) Disabled for now
 }
 
 func (c *BasicSlaveComm)SetErrorHandler(handler func(error)) {
