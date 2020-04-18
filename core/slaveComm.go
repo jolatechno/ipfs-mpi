@@ -162,7 +162,9 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
 
       fmt.Printf("[SlaveComm] %d disconnected from %d\n", comm.Idx, i) //--------------------------
 
-      comm.Remote(i).Stream().Close()
+      if stream := comm.Remote(i).Stream(); stream != io.ReadWriteCloser(nil) {
+        stream.Close()
+      }
       comm.Remote(i).Reset(io.ReadWriteCloser(nil))
     })
 
