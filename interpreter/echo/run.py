@@ -24,3 +24,5 @@ if __name__ == "__main__":
 
         utils.Log(f"responding \"{msg} {msg}\"")
         utils.Send(0, f"{msg} {msg}")
+
+    utils.Exit()

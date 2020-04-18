@@ -27,6 +27,7 @@ var (
   InterfaceSendHeader = "Send"
   InterfaceResetHeader = "Reset"
   InterfaceRequestHeader = "Req"
+  InterfaceExitHeader = "Exit"
 
   logFormat = "\033[33m%s\033[0m\n"
   masterLogFormat = "\033[32m%s\033[0m\n"
@@ -124,6 +125,9 @@ func (s *StdInterface)Start() {
       switch splitted[0] {
       default:
         s.Raise(HeaderNotUnderstood)
+
+      case InterfaceExitHeader:
+        break
 
       case InterfaceRequestHeader:
         if len(splitted) != 2 {

@@ -21,3 +21,5 @@ if __name__ == "__main__":
         msg = utils.Read(i - 1)
         utils.Log(f"{ i } sending \"{ msg }\" to { i + 1 }")
         utils.Send((i + 1)%n, msg)
+
+    utils.Exit()

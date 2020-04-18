@@ -41,3 +41,6 @@ def Read(i, timeout = -1, handler = Timeout):
 
 def Reset(i):
     print(f"Reset,{ i }")
+
+def Exit():
+    print("Exit")

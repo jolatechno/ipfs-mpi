@@ -370,6 +370,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
 
       case CloseHeader:
         r.Close()
+        break
 
       case MessageHeader:
         if len(splitted) <= 1 {
