@@ -159,6 +159,9 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     }
 
     comm.Remote(i).SetErrorHandler(func(err error) {
+
+      fmt.Printf("[SlaveComm] %d disconnected from %d\n", comm.Idx, i) //--------------------------
+
       comm.Remote(i).Reset(io.ReadWriteCloser(nil))
     })
 
