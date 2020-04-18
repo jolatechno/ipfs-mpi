@@ -7,6 +7,7 @@ import (
   "bufio"
   "strings"
   "strconv"
+  "context"
   "errors"
   "io"
 )
@@ -31,11 +32,11 @@ var (
   masterLogFormat = "\033[32m%s\033[0m\n"
 )
 
-func NewInterface(file string, n int, i int, args ...string) (Interface, error) {
+func NewInterface(ctx context.Context, file string, n int, i int, args ...string) (Interface, error) {
   cmdArgs := append([]string{file + "/run.py", fmt.Sprint(n), fmt.Sprint(i)}, args...)
   inter := StdInterface {
     Idx: i,
-    Cmd: exec.Command("python3", cmdArgs...),
+    Cmd: exec.CommandContext(ctx, "python3", cmdArgs...),
     MessageHandler: &nilMessageHandler,
     RequestHandler: &nilRequestHandler,
     ResetHandler: &nilResetHandler,
@@ -61,7 +62,7 @@ func (s *StdInterface)Start() {
       s.Raise(err.(error))
     }
   }()
-  
+
   var err error
 
   s.Stdin, err = s.Cmd.StdinPipe()
@@ -82,14 +83,8 @@ func (s *StdInterface)Start() {
     return
 	}
 
-  err = s.Cmd.Start()
-  if err != nil {
-    s.Raise(err)
-    return
-  }
-
   go func() {
-    err := s.Cmd.Wait()
+    err := s.Cmd.Run()
     if err != nil {
       s.Raise(err)
     }

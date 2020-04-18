@@ -115,7 +115,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
 
   fmt.Println("[SlaveComm] New", param) //--------------------------
 
-  inter, err := NewInterface(file, n, i)
+  inter, err := NewInterface(ctx, file, n, i)
   if err != nil {
     return nil, err
   }

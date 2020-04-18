@@ -195,6 +195,8 @@ func (m *BasicMpi)Close() error {
   if m.Check() {
     m.Standard.Close()
 
+    m.Ctx.Done()
+
     err := m.Store().Close()
     if err != nil {
       return err
