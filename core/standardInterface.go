@@ -2,12 +2,38 @@ package core
 
 import (
   "sync"
+  "fmt"
 )
 
 var (
   nilEndHandler = func() {}
   nilErrorHandler = func(err error) {}
 )
+
+func NewHeadedError(err error, header string) error {
+  if err == nil {
+    return nil
+  }
+
+  errH, ok := err.(*HeadedError)
+  if ok {
+    return errH
+  }
+
+  return &HeadedError {
+    Err: err,
+    Header: header,
+  }
+}
+
+type HeadedError struct {
+  Err error
+  Header string
+}
+
+func (err *HeadedError)Error() string {
+  return fmt.Sprintf("[%s] %s", err.Header, err.Err.Error())
+}
 
 func NewStandardInterface() standardFunctionsCloser {
   return &BasicFunctionsCloser {

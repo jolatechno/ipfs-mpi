@@ -12,6 +12,8 @@ import (
 )
 
 const (
+  IpfsHeader = "IpfsStore"
+
   ModePerm os.FileMode = 0777
   max_draw int = 1000
 )
@@ -81,7 +83,7 @@ func (s *IpfsShell)SetCloseHandler(handler func()) {
 }
 
 func (s *IpfsShell)Raise(err error) {
-  s.Standard.Raise(err)
+  s.Standard.Raise(NewHeadedError(err, IpfsHeader))
 }
 
 func (s *IpfsShell)Add(f string) {

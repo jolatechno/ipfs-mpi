@@ -28,6 +28,10 @@ import (
   maddr "github.com/multiformats/go-multiaddr"
 )
 
+var (
+  HostHeader = "Host"
+)
+
 //this part was stollen from [https://github.com/libp2p/go-libp2p-examples/blob/master/chat-with-mdns/mdns.go]
 type discoveryNotifee struct {
 	PeerChan chan peer.AddrInfo
@@ -182,7 +186,7 @@ func (h *BasicExtHost)SetErrorHandler(handler func(error)) {
 }
 
 func (h *BasicExtHost)Raise(err error) {
-  h.Standard.Raise(err)
+  h.Standard.Raise(NewHeadedError(err, HostHeader))
 }
 
 func (h *BasicExtHost) Check() bool {

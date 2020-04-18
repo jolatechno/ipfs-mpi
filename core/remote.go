@@ -14,6 +14,8 @@ import (
 )
 
 var (
+  RemoteHeader = "Remote"
+
   HandShakeHeader = "HandShake"
   MessageHeader = "Msg"
   CloseHeader = "Close"
@@ -227,7 +229,7 @@ func (r *BasicRemote)SetCloseHandler(handler func()) {
 }
 
 func (r *BasicRemote)Raise(err error) {
-  r.Standard.Raise(err)
+  r.Standard.Raise(NewHeadedError(err, RemoteHeader))
 }
 
 func (r *BasicRemote)Check() bool {

@@ -14,6 +14,8 @@ import (
 )
 
 var (
+  InterfaceHeader = "Interface"
+
   HeaderNotUnderstood = errors.New("Header not understood")
   CommandNotUnderstood = errors.New("Command not understood")
   //NotMatserComm = errors.New("Not the MasterComm")
@@ -187,7 +189,7 @@ func (s *StdInterface)SetCloseHandler(handler func()) {
 }
 
 func (s *StdInterface)Raise(err error) {
-  s.Standard.Raise(err)
+  s.Standard.Raise(NewHeadedError(err, InterfaceHeader))
 }
 
 func (s *StdInterface)Check() bool {

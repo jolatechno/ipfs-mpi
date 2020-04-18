@@ -17,6 +17,10 @@ import (
   "github.com/jolatechno/go-timeout"
 )
 
+var (
+  SlaveCommHeader = "SlaveComm"
+)
+
 func ParamFromString(msg string) (Param, error) {
   param := Param{}
   splitted := strings.Split(msg, ",")
@@ -320,7 +324,7 @@ func (c *BasicSlaveComm)SetCloseHandler(handler func()) {
 }
 
 func (c *BasicSlaveComm)Raise(err error) {
-  c.Standard.Raise(err)
+  c.Standard.Raise(NewHeadedError(err, SlaveCommHeader))
 }
 
 func (c *BasicSlaveComm)Check() bool {

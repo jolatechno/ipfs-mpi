@@ -15,6 +15,10 @@ import (
   maddr "github.com/multiformats/go-multiaddr"
 )
 
+var (
+  MpiHeader = "Mpi"
+)
+
 type safeInt struct {
   Value int
   Mutex sync.Mutex
@@ -154,7 +158,7 @@ func (m *BasicMpi)SetErrorHandler(handler func(error)) {
 }
 
 func (m *BasicMpi)Raise(err error) {
-  m.Standard.Raise(err)
+  m.Standard.Raise(NewHeadedError(err, MpiHeader))
 }
 
 func (m *BasicMpi)Check() bool {

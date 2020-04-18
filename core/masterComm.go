@@ -11,6 +11,8 @@ import (
 )
 
 var (
+  MasterCommHeader = "MasterComm"
+
   ResetCooldown = 2 * time.Second
 )
 
@@ -267,7 +269,7 @@ func (c *BasicMasterComm)SetCloseHandler(handler func()) {
 }
 
 func (c *BasicMasterComm)Raise(err error) {
-  c.SlaveComm().Raise(err)
+  c.SlaveComm().Raise(NewHeadedError(err, MasterCommHeader))
 }
 
 func (c *BasicMasterComm)Check() bool {
