@@ -14,7 +14,7 @@ import (
 var (
   HeaderNotUnderstood = errors.New("Header not understood")
   CommandNotUnderstood = errors.New("Command not understood")
-  NotMatserComm = errors.New("Not the MasterComm")
+  //NotMatserComm = errors.New("Not the MasterComm")
   NotEnoughFields = errors.New("Not enough field")
   EmptyString = errors.New("Received an empty string")
 
@@ -28,6 +28,7 @@ var (
   InterfaceRequestHeader = "Req"
 
   logFormat = "\033[33m%s\033[0m\n"
+  masterLogFormat = "\033[32m%s\033[0m\n"
 )
 
 func NewInterface(file string, n int, i int, args ...string) (Interface, error) {
@@ -150,10 +151,6 @@ func (s *StdInterface)Start() {
         (*s.ResetHandler)(idx)
 
       case InterfaceLogHeader:
-        if s.Idx != 0 {
-          s.Raise(NotMatserComm)
-        }
-
         if len(splitted) < 2 {
           s.Raise(NotEnoughFields)
           continue
@@ -163,7 +160,11 @@ func (s *StdInterface)Start() {
         last_len := len(splitted[last_idx]) - 1
         splitted[last_idx] = splitted[last_idx][:last_len]
 
-        log.Printf(logFormat, strings.Join(splitted[1:], ","))
+        if s.Idx == 0 {
+          log.Printf(masterLogFormat, strings.Join(splitted[1:], ","))
+        } else {
+          log.Printf(logFormat, strings.Join(splitted[1:], ","))
+        }
 
       case InterfaceSendHeader:
         if len(splitted) < 3 {
