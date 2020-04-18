@@ -21,7 +21,7 @@ var (
   CloseHeader = "Close\n"
   PingHeader = "Ping\n"
   PingRespHeader = "PingResp\n"
-  ResetHeader = "HandShake\n"
+  ResetHeader = "Reset"
 
   StandardTimeout = 2 * time.Second
   StandardPingInterval = 2 * time.Second

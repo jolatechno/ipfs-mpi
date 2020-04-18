@@ -61,7 +61,7 @@ func main(){
 
     switch splitted[0] {
     default:
-      store.Raise(errors.New("Command not understood"))
+      store.Raise(core.CommandNotUnderstood)
 
     case "List":
       list := store.Store().List()
