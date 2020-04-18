@@ -21,7 +21,7 @@ var (
   PingHeader = "Ping\n"
   PingRespHeader = "PingResp\n"
 
-  StandardTimeout = time.Second
+  StandardTimeout = 2 * time.Second
   StandardPingInterval = 2 * time.Second
 )
 
@@ -150,7 +150,7 @@ func (r *BasicRemote)send(str string, blocking bool, referenceStream ...io.ReadW
         if stream == r.Stream() {
           r.Raise(err)
         }
-        
+
         return
       }
     }
