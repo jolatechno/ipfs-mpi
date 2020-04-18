@@ -1,12 +1,17 @@
 package core
 
 import (
+  "time"
   "fmt"
   "context"
   "sync"
 
   "github.com/libp2p/go-libp2p-core/protocol"
   "github.com/libp2p/go-libp2p-core/peer"
+)
+
+var (
+  ResetCooldown = 2 * time.Second
 )
 
 func NewSafeWaitgroupTwice(n int, m int) *safeWaitgroupTwice {
@@ -111,6 +116,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
   remotes := make([]Remote, n)
   comm := BasicMasterComm {
+    LastReseted: make([]time.Time, n),
     Addrs: &Addrs,
     Comm: BasicSlaveComm {
       Ctx: ctx,
@@ -210,6 +216,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 }
 
 type BasicMasterComm struct {
+  LastReseted []time.Time
   Mutex sync.Mutex
   Addrs *[]peer.ID
   Ctx context.Context
@@ -244,6 +251,13 @@ func (c *BasicMasterComm)Reset(i int) {
   var err error
 
   c.Mutex.Lock()
+
+  t := time.Now()
+  if t.Sub(c.LastReseted[i]) < ResetCooldown {
+    return
+  }
+
+  c.LastReseted[i] = t
 
   fmt.Println("[MasterComm] reseting ", i) //--------------------------
 

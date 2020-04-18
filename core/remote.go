@@ -23,6 +23,9 @@ var (
 
   StandardTimeout = 2 * time.Second
   StandardPingInterval = 2 * time.Second
+
+  NilStreamError = errors.New("nil stream")
+  ErrorInterval = 4 * time.Second
 )
 
 func NewChannelBool() *safeChannelBool {
@@ -207,6 +210,17 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
 
   r.Rw = stream
   if stream == io.ReadWriteCloser(nil) {
+    go func() {
+      for r.Check() {
+        time.Sleep(ErrorInterval)
+        if r.Stream() == io.ReadWriteCloser(nil) {
+          r.Raise(NilStreamError)
+        } else {
+          return
+        }
+      }
+    }()
+
     return
   }
 
