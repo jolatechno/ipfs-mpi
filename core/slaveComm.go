@@ -181,6 +181,8 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
 
     proto := protocol.ID(fmt.Sprintf("%d/%s/%s", i, param.Id, string(base)))
     host.SetStreamHandler(proto, func(stream network.Stream) {
+      comm.Mutex.Lock()
+      defer comm.Mutex.Unlock()
 
       fmt.Println("[Remote] [StreamHandler]") //--------------------------
 
@@ -250,6 +252,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
 }
 
 type BasicSlaveComm struct {
+  Mutex sync.Mutex
   SlaveIds []int
   SlaveId int
   Ctx context.Context
@@ -331,6 +334,8 @@ func (c *BasicSlaveComm)Close() error {
 }
 
 func (c *BasicSlaveComm)RequestReset(i int) {
+  c.Mutex.Lock()
+  defer c.Mutex.Unlock()
   c.Remote(0).RequestReset(i, c.SlaveIds[i])
 }
 
