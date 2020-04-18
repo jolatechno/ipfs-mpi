@@ -202,7 +202,11 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     }
 
     go func(wp *sync.WaitGroup) {
-      comm.Connect(i, (*param.Addrs)[i])
+      err := comm.Connect(i, (*param.Addrs)[i])
+      if err != nil {
+          go comm.Remote(i).Raise(err)
+      }
+
       wp.Done()
     }(&wg)
   }
@@ -330,7 +334,7 @@ func (c *BasicSlaveComm)Host() ExtHost {
   return c.CommHost
 }
 
-func (c *BasicSlaveComm)Connect(i int, addr peer.ID, msgs ...string) {
+func (c *BasicSlaveComm)Connect(i int, addr peer.ID, msgs ...string) error {
 
   if c.Idx == 0 { //--------------------------
     fmt.Printf("[MasterComm] connecting to %d with address: %q\n", i, addr) //--------------------------
@@ -351,14 +355,12 @@ func (c *BasicSlaveComm)Connect(i int, addr peer.ID, msgs ...string) {
   }, StandardTimeout)
 
   if err != nil {
-    c.Remote(i).Raise(err)
-    return
+    return err
   }
 
   rwc, ok := rwi.(io.ReadWriteCloser)
   if !ok {
-    c.Remote(i).Raise(errors.New("couldn't convert interface"))
-    return
+    return errors.New("couldn't convert interface")
   }
 
   for _, msg := range msgs {
@@ -366,16 +368,15 @@ func (c *BasicSlaveComm)Connect(i int, addr peer.ID, msgs ...string) {
 
     _, err = writer.WriteString(msg)
     if err != nil {
-      c.Remote(i).Raise(err)
-      return
+      return err
     }
 
     err = writer.Flush()
     if err != nil {
-      c.Remote(i).Raise(err)
-      return
+      return err
     }
   }
 
   c.Remote(i).Reset(rwc)
+  return nil
 }

@@ -168,13 +168,18 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     })
 
     go func() {
-      comm.SlaveComm().Connect(i, addrs[i], fmt.Sprintf("%s\n", &Param {
+      err := comm.SlaveComm().Connect(i, addrs[i], fmt.Sprintf("%s\n", &Param {
         Init: true,
         Idx: i,
         N: n,
         Id: id,
         Addrs: &addrs,
       }))
+
+      if err != nil {
+        comm.SlaveComm().Remote(i).Raise(err)
+        return
+      }
 
       <- comm.SlaveComm().Remote(i).GetHandshake()
 
@@ -275,27 +280,34 @@ func (c *BasicMasterComm)Reset(i int) {
 
   fmt.Println("[MasterComm] reseting ", i) //--------------------------
 
-  (*c.Addrs)[i], err = c.SlaveComm().Host().NewPeer(c.Comm.Base)
-  if err != nil {
-    c.LastReseted[i] = t
+  for {
+    (*c.Addrs)[i], err = c.SlaveComm().Host().NewPeer(c.Comm.Base)
+    if err != nil {
+      c.LastResetedGlobal = t
+      c.LastReseted[i] = t
 
-    c.Mutex.Unlock()
+      c.Mutex.Unlock()
 
-    c.Raise(err)
+      c.Raise(err)
+    }
+
+    param := &Param {
+      Init: false,
+      Idx: i,
+      N: c.Comm.N,
+      Id: c.Comm.Id,
+      Addrs: c.Addrs,
+    }
+
+    err := c.SlaveComm().Connect(i, (*c.Addrs)[i], fmt.Sprintf("%s\n", param))
+    if err == nil {
+      break
+    }
+
   }
-
-  param := &Param {
-    Init: false,
-    Idx: i,
-    N: c.Comm.N,
-    Id: c.Comm.Id,
-    Addrs: c.Addrs,
-  }
-
-  c.Mutex.Unlock()
-
-  c.SlaveComm().Connect(i, (*c.Addrs)[i], fmt.Sprintf("%s\n", param))
 
   c.LastResetedGlobal = t
   c.LastReseted[i] = t
+
+  c.Mutex.Unlock()
 }
