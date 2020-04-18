@@ -91,34 +91,22 @@ func (s *StdInterface)Start() {
     s.Close()
   }()
 
-  errReader := bufio.NewReader(stderr)
+  errScanner := bufio.NewScanner(stderr)
   go func() {
-    for {
-      strErr, err := errReader.ReadString('\n')
-      if err != nil {
-        s.Close()
-        return
-      }
-      if strErr != "" {
-        s.Raise(errors.New(strErr))
-        continue
-      }
+    for errScanner.Scan() {
+      s.Raise(errors.New(errScanner.Text()))
+      continue
+    }
+
+    if err := errScanner.Err(); err != nil {
+      s.Raise(err)
     }
   }()
 
-  reader := bufio.NewReader(stdout)
+  scanner := bufio.NewScanner(stdout)
   go func(){
-    for s.Check() {
-      str, err := reader.ReadString('\n')
-      if str == "" && err == nil {
-        err = EmptyString
-      }
-      if err != nil {
-        s.Close()
-        return
-      }
-
-      splitted := strings.Split(str, ",")
+    for s.Check() && scanner.Scan() {
+      splitted := strings.Split(scanner.Text(), ",")
 
       switch splitted[0] {
       default:
@@ -129,7 +117,7 @@ func (s *StdInterface)Start() {
           s.Raise(NotEnoughFields)
         }
 
-        idx, err := strconv.Atoi(splitted[1][:len(splitted[1]) - 1])
+        idx, err := strconv.Atoi(splitted[1])
         if err != nil {
           s.Raise(err)
           continue
@@ -142,7 +130,7 @@ func (s *StdInterface)Start() {
           s.Raise(NotEnoughFields)
         }
 
-        idx, err := strconv.Atoi(splitted[1][:len(splitted[1]) - 1])
+        idx, err := strconv.Atoi(splitted[1])
         if err != nil {
           s.Raise(err)
           continue
@@ -155,10 +143,6 @@ func (s *StdInterface)Start() {
           s.Raise(NotEnoughFields)
           continue
         }
-
-        last_idx := len(splitted) - 1
-        last_len := len(splitted[last_idx]) - 1
-        splitted[last_idx] = splitted[last_idx][:last_len]
 
         if s.Idx == 0 {
           log.Printf(masterLogFormat, strings.Join(splitted[1:], ","))
@@ -180,6 +164,10 @@ func (s *StdInterface)Start() {
 
         (*s.MessageHandler)(idx, strings.Join(splitted[2:], ","))
       }
+    }
+
+    if err := scanner.Err(); err != nil {
+      s.Raise(err)
     }
   }()
 }

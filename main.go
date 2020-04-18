@@ -43,21 +43,14 @@ func main(){
     fmt.Println("swarm listening on ", addr)
   }
 
-  reader := bufio.NewReader(os.Stdin)
-  for store.Check() {
-    cmd, err := reader.ReadString('\n')
-    if err != nil {
-      panic(err)
-    }
+  scanner := bufio.NewScanner(os.Stdin)
+  for store.Check() && scanner.Scan() {
+    cmd := scanner.Text()
 
     splitted := strings.Split(cmd, " ")
     if len(splitted) == 0 {
       continue
     }
-
-    end_idx := len(splitted) - 1
-    last_size := len(splitted[end_idx]) - 1
-    splitted[end_idx] = splitted[end_idx][:last_size]
 
     switch splitted[0] {
     default:
@@ -84,12 +77,10 @@ func main(){
         continue
       }
 
-      go func() {
-        err := store.Start(splitted[1], n, splitted[3:]...)
-        if err != nil {
-          store.Raise(err)
-        }
-      }()
+      err = store.Start(splitted[1], n, splitted[3:]...)
+      if err != nil {
+        store.Raise(err)
+      }
 
     case "Add":
       if len(splitted) < 2 {
@@ -98,9 +89,7 @@ func main(){
       }
 
       for _, f := range splitted[1:] {
-        go func() {
-          store.Add(f)
-        }()
+        store.Add(f)
       }
 
     case "Del":
@@ -110,14 +99,16 @@ func main(){
       }
 
       for _, f := range splitted[1:] {
-        go func() {
-          store.Del(f)
-        }()
+        store.Del(f)
       }
 
     case "exit":
       store.Close()
       return
     }
+  }
+
+  if err := scanner.Err(); err != nil {
+    panic(err)
   }
 }
