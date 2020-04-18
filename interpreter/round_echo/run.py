@@ -15,9 +15,9 @@ if __name__ == "__main__":
         utils.Log(f"sending \"{ msg }\"")
         utils.Send(1, msg)
         resp = utils.Read(n - 1, 60)
-        utils.Log(f"{ n - 1 } responded: \"{ resp }\"")
+        utils.Log(f"{ n - 1 } responded \"{ resp }\"")
 
     else:
         msg = utils.Read(i - 1)
-        utils.Log(f"{ i } sending: \"{ msg }\" to { i + 1 }")
+        utils.Log(f"{ i } sending \"{ msg }\" to { i + 1 }")
         utils.Send((i + 1)%n, msg)

@@ -20,12 +20,12 @@ if __name__ == "__main__":
 
         for j in range(1, n):
             resp = utils.Read(j, 5)
-            utils.Log(f"{ j } responded: \"{ resp }\"")
+            utils.Log(f"{ j } responded \"{ resp }\"")
 
     else:
-        msg = resp = utils.Read(0)
+        msg = utils.Read(0)
 
         time.sleep(2)
 
-        utils.Log(f"{ i } sending: \"{ resp }\"")
+        utils.Log(f"{ i } responding \"{ msg } { msg }\"")
         utils.Send(0, f"{msg} {msg}")
