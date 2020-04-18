@@ -281,7 +281,7 @@ func (c *BasicSlaveComm)Start() {
   })
 
   c.Interface().SetMessageHandler(func(to int, content string) {
-    c.Remote(to).Send(content + "\n")
+    c.Remote(to).Send(content)
   })
 
   c.Interface().SetRequestHandler(func(i int) {

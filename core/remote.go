@@ -14,11 +14,11 @@ import (
 )
 
 var (
-  HandShakeHeader = "HandShake\n"
+  HandShakeHeader = "HandShake"
   MessageHeader = "Msg"
-  CloseHeader = "Close\n"
-  PingHeader = "Ping\n"
-  PingRespHeader = "PingResp\n"
+  CloseHeader = "Close"
+  PingHeader = "Ping"
+  PingRespHeader = "PingResp"
   ResetHeader = "Reset"
 
   StandardTimeout = 2 * time.Second
@@ -140,7 +140,7 @@ func (r *BasicRemote)send(str string, blocking bool, referenceStream ...io.ReadW
 
     writer := bufio.NewWriter(stream)
 
-    _, err := writer.WriteString(str)
+    _, err := writer.WriteString(str + "\n")
     if err != nil {
       if stream == r.Stream() {
         r.Raise(err)
@@ -182,7 +182,7 @@ func (r *BasicRemote)SetPingTimeout(timeoutDuration time.Duration) {
 }
 
 func (r *BasicRemote)RequestReset(i int, slaveId int) {
-  r.send(fmt.Sprintf("%s,%d,%d\n", ResetHeader, i, slaveId), false)
+  r.send(fmt.Sprintf("%s,%d,%d", ResetHeader, i, slaveId), false)
 }
 
 func (r *BasicRemote)CloseRemote() {
@@ -297,22 +297,15 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
     }
   }()
 
+  scanner := bufio.NewScanner(stream)
   go func() {
-    for r.Check() &&  r.Stream() == stream {
-      str, err := bufio.NewReader(stream).ReadString('\n')
-      if err != nil {
-        if stream == r.Stream() {
-          r.Raise(err)
-        }
+    for r.Check() &&  r.Stream() == stream && scanner.Scan() {
+      splitted := strings.Split(scanner.Text(), ",")
 
-        return
-      }
-
+      str := strings.Join(splitted, ",")//--------------------------
       if str != PingHeader && str != PingRespHeader { //--------------------------
         fmt.Printf("[Remote] Received %q\n", str) //--------------------------
       } //--------------------------
-
-      splitted := strings.Split(str, ",")
 
       switch splitted[0] {
       default:
@@ -324,7 +317,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
           continue
         }
 
-        idx, err := strconv.Atoi(splitted[1][:len(splitted[1]) - 1])
+        idx, err := strconv.Atoi(splitted[1])
         if err != nil {
           r.Raise(err)
           continue
@@ -367,7 +360,13 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
         }()
       }
     }
+
     close(pingChan)
+
+    if err := scanner.Err(); err != nil {
+      r.Raise(err)
+    }
+
     if !r.Check() {
       r.ReadChan.Close()
       r.HandshakeChan.Close()
