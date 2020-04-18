@@ -84,12 +84,13 @@ func (s *StdInterface)Start() {
     s.Cmd.Stderr = &errorBuffer
 
     err := s.Cmd.Run()
-    if err != nil {
-      s.Raise(err)
-    }
 
     if strError := errors.New(errorBuffer.String()); strError != nil {
       s.Raise(strError)
+    }
+
+    if err != nil {
+      s.Raise(err)
     }
 
     s.Close()
