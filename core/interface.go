@@ -208,6 +208,6 @@ func (s *StdInterface)Push(msg string) error {
   if !s.Check() {
     return errors.New("Interface closed")
   }
-  fmt.Fprint(s.Stdin, msg)
+  fmt.Fprintln(s.Stdin, msg)
   return nil
 }
