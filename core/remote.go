@@ -247,7 +247,9 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
       }, r.PingTimeout)
 
       if err != nil {
-        r.Raise(err)
+        if stream == r.Stream() {
+          r.Raise(err)
+        }
       }
     }
   }()

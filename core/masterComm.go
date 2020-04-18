@@ -261,12 +261,12 @@ func (c *BasicMasterComm)Reset(i int) {
     return
   }
 
-  c.LastReseted[i] = t
-
   fmt.Println("[MasterComm] reseting ", i) //--------------------------
 
   (*c.Addrs)[i], err = c.SlaveComm().Host().NewPeer(c.Comm.Base)
   if err != nil {
+    c.LastReseted[i] = t
+
     c.Mutex.Unlock()
 
     c.Raise(err)
@@ -283,4 +283,6 @@ func (c *BasicMasterComm)Reset(i int) {
   c.Mutex.Unlock()
 
   c.SlaveComm().Connect(i, (*c.Addrs)[i], fmt.Sprintf("%s\n", param))
+
+  c.LastReseted[i] = t
 }
