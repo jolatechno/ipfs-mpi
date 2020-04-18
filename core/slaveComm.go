@@ -12,6 +12,7 @@ import (
 
   "github.com/libp2p/go-libp2p-core/protocol"
   "github.com/libp2p/go-libp2p-core/peer"
+  "github.com/libp2p/go-libp2p-core/network"
 
   "github.com/jolatechno/go-timeout"
 )
@@ -19,7 +20,7 @@ import (
 func ParamFromString(msg string) (Param, error) {
   param := Param{}
   splitted := strings.Split(msg, ",")
-  if len(splitted) != 5 {
+  if len(splitted) != 6 {
     return param, errors.New("Param dosen't have the right number fields")
   }
 
@@ -36,17 +37,22 @@ func ParamFromString(msg string) (Param, error) {
     return param, err
   }
 
-  n, err := strconv.Atoi(splitted[2])
+  slaveId, err := strconv.Atoi(splitted[2])
   if err != nil {
     return param, err
   }
 
-  len_addrs := len(splitted[4]) - 1
-  if splitted[4][len_addrs] == '\n' {
-    splitted[4] = splitted[4][:len_addrs]
+  n, err := strconv.Atoi(splitted[3])
+  if err != nil {
+    return param, err
   }
 
-  addrs := strings.Split(splitted[4], ";")
+  len_addrs := len(splitted[5]) - 1
+  if splitted[5][len_addrs] == '\n' {
+    splitted[5] = splitted[5][:len_addrs]
+  }
+
+  addrs := strings.Split(splitted[5], ";")
   list := make([]peer.ID, n)
 
   if len(addrs) != n {
@@ -63,8 +69,9 @@ func ParamFromString(msg string) (Param, error) {
   }
 
   param.Idx = idx
+  param.SlaveId = slaveId
   param.N = n
-  param.Id = splitted[3]
+  param.Id = splitted[4]
   param.Addrs = &list
 
   return param, nil
@@ -73,6 +80,7 @@ func ParamFromString(msg string) (Param, error) {
 type Param struct {
   Init bool
   Idx int
+  SlaveId int
   N int
   Id string
   Addrs *[]peer.ID
@@ -100,7 +108,7 @@ func (p *Param)String() string {
   }
 
   joinedAddress := strings.Join(addrs, ";")
-  return fmt.Sprintf("%d,%d,%d,%s,%s", initInt, p.Idx, p.N, p.Id, joinedAddress)
+  return fmt.Sprintf("%d,%d,%d,%d,%s,%s", initInt, p.Idx, p.SlaveId, p.N, p.Id, joinedAddress)
 }
 
 func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, base protocol.ID, param Param, file string, n int, i int) (_ SlaveComm, err error) {
@@ -114,6 +122,8 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
 
   remotes := make([]Remote, param.N)
   comm := BasicSlaveComm {
+    SlaveIds: make([]int, n),
+    SlaveId: param.SlaveId,
     Ctx: ctx,
     Inter: inter,
     Id: param.Id,
@@ -153,21 +163,16 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
       return nil, err
     }
 
-    streamHandler, err := comm.Remote(i).StreamHandler()
-    if err != nil {
-      return nil, err
-    }
-
     comm.Remote(i).SetErrorHandler(func(err error) {
 
       fmt.Printf("[SlaveComm] %d disconnected from %d\n", comm.Idx, i) //--------------------------
 
       if stream := comm.Remote(i).Stream(); stream != io.ReadWriteCloser(nil) {
         stream.Close()
+        comm.Remote(i).Reset(io.ReadWriteCloser(nil))
       }
 
       comm.RequestReset(i)
-      comm.Remote(i).Reset(io.ReadWriteCloser(nil))
     })
 
     comm.Remote(i).SetCloseHandler(func() {
@@ -175,7 +180,23 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     })
 
     proto := protocol.ID(fmt.Sprintf("%d/%s/%s", i, param.Id, string(base)))
-    host.SetStreamHandler(proto, streamHandler)
+    host.SetStreamHandler(proto, func(stream network.Stream) {
+
+      fmt.Println("[Remote] [StreamHandler]") //--------------------------
+
+      str, err := bufio.NewReader(stream).ReadString('\n')
+      if err != nil {
+        return
+      }
+
+      slaveId, err := strconv.Atoi(str[:len(str) - 1])
+      if err != nil {
+        return
+      }
+
+      comm.SlaveIds[i] = slaveId
+      comm.Remote(i).Reset(stream.(io.ReadWriteCloser))
+    })
   }
 
   if param.Init {
@@ -202,7 +223,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     }
 
     go func(wp *sync.WaitGroup) {
-      err := comm.Connect(i, (*param.Addrs)[i])
+      err := comm.Connect(i, (*param.Addrs)[i], fmt.Sprintf("%d\n", param.SlaveId))
       if err != nil {
           go comm.Remote(i).Raise(err)
       }
@@ -229,6 +250,8 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
 }
 
 type BasicSlaveComm struct {
+  SlaveIds []int
+  SlaveId int
   Ctx context.Context
   Inter Interface
   Id string
@@ -308,7 +331,7 @@ func (c *BasicSlaveComm)Close() error {
 }
 
 func (c *BasicSlaveComm)RequestReset(i int) {
-  //c.Remote(0).RequestReset(i) Disabled for now
+  c.Remote(0).RequestReset(i, c.SlaveIds[i])
 }
 
 func (c *BasicSlaveComm)SetErrorHandler(handler func(error)) {

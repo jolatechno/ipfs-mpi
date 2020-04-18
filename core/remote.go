@@ -10,8 +10,6 @@ import (
   "sync"
   "time"
 
-  "github.com/libp2p/go-libp2p-core/network"
-
   "github.com/jolatechno/go-timeout"
 )
 
@@ -183,8 +181,8 @@ func (r *BasicRemote)SetPingTimeout(timeoutDuration time.Duration) {
   r.PingTimeout = timeoutDuration
 }
 
-func (r *BasicRemote)RequestReset(i int) {
-  r.send(fmt.Sprintf("%s,%d\n", ResetHeader, i), false)
+func (r *BasicRemote)RequestReset(i int, slaveId int) {
+  r.send(fmt.Sprintf("%s,%d,%d\n", ResetHeader, i, slaveId), false)
 }
 
 func (r *BasicRemote)CloseRemote() {
@@ -343,15 +341,6 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
     }
 
   }()
-}
-
-func (r *BasicRemote)StreamHandler() (network.StreamHandler, error) {
-  return func(stream network.Stream) {
-
-    fmt.Println("[Remote] [StreamHandler]") //--------------------------
-
-    r.Reset(stream.(io.ReadWriteCloser))
-  }, nil
 }
 
 func (r *BasicRemote)Check() bool {

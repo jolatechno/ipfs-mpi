@@ -120,9 +120,9 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
   remotes := make([]Remote, n)
   comm := BasicMasterComm {
-    LastReseted: lastReseted,
     Addrs: &addrs,
     Comm: BasicSlaveComm {
+      SlaveIds: make([]int, n),
       Ctx: ctx,
       Inter: inter,
       Id: id,
@@ -154,7 +154,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     }
 
     comm.SlaveComm().Remote(i).SetResetHandler(func(i int) {
-      comm.Reset(i)
+      comm.Reset(i, -1)
     })
 
     comm.SlaveComm().Remote(i).SetCloseHandler(func() {
@@ -209,18 +209,18 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     i := j
 
     comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
-      comm.Reset(i)
+      comm.Reset(i, -1)
     })
 
     if wg.Check(i) {
       comm.SlaveComm().Remote(i).SendHandshake()
     } else {
-      comm.Reset(i)
+      comm.Reset(i, -1)
     }
   }
 
   comm.SlaveComm().Interface().SetResetHandler(func(i int) {
-    comm.Reset(i)
+    comm.Reset(i, -1)
   })
 
   comm.SlaveComm().Start()
@@ -229,7 +229,6 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 }
 
 type BasicMasterComm struct {
-  LastReseted []time.Time
   Mutex sync.Mutex
   Addrs *[]peer.ID
   Ctx context.Context
@@ -260,24 +259,22 @@ func (c *BasicMasterComm)SlaveComm() SlaveComm {
   return &c.Comm
 }
 
-func (c *BasicMasterComm)Reset(i int) {
+func (c *BasicMasterComm)Reset(i int, slaveId int) {
   var err error
 
   c.Mutex.Lock()
 
-  t := time.Now()
-
-  if t.Sub(c.LastReseted[i]) < ResetCooldown {
+  if slaveId != c.Comm.SlaveIds[i] && slaveId != -1 {
     return
   }
 
-  fmt.Println("[MasterComm] reseting ", i) //--------------------------
+  c.Comm.SlaveIds[i]++
+
+  fmt.Printf("[MasterComm] reseting %d for the %dth time\n", i, c.Comm.SlaveIds[i]) //--------------------------
 
   for {
     (*c.Addrs)[i], err = c.SlaveComm().Host().NewPeer(c.Comm.Base)
     if err != nil {
-      c.LastReseted[i] = t
-
       c.Mutex.Unlock()
 
       c.Raise(err)
@@ -286,6 +283,7 @@ func (c *BasicMasterComm)Reset(i int) {
     param := &Param {
       Init: false,
       Idx: i,
+      SlaveId: c.Comm.SlaveIds[i],
       N: c.Comm.N,
       Id: c.Comm.Id,
       Addrs: c.Addrs,
@@ -297,8 +295,6 @@ func (c *BasicMasterComm)Reset(i int) {
     }
 
   }
-
-  c.LastReseted[i] = t
 
   c.Mutex.Unlock()
 }

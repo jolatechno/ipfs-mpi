@@ -65,7 +65,7 @@ type MasterComm interface {
   standardFunctionsCloser
 
   SlaveComm() SlaveComm
-  Reset(int)
+  Reset(idx int, ith_time int)
 }
 
 type SlaveComm interface {
@@ -83,7 +83,7 @@ type Remote interface {
   standardFunctionsCloser
 
   SetResetHandler(func(int))
-  RequestReset(int)
+  RequestReset(int, int)
   CloseRemote()
   SetPingInterval(time.Duration)
   SetPingTimeout(time.Duration)
@@ -93,7 +93,6 @@ type Remote interface {
   GetHandshake() chan bool
   Send(string)
   SendHandshake()
-  StreamHandler() (network.StreamHandler, error)
 }
 
 type Interface interface {
