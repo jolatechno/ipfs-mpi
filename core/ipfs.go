@@ -228,7 +228,7 @@ func (s *IpfsShell)Del(f string, failed bool) error {
     }
   }()
 
-  if !s.Has(f){
+  if !s.Has(f) && !failed {
     return errors.New("No file to delete")
   }
 
