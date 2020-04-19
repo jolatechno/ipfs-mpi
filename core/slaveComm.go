@@ -316,9 +316,6 @@ func (c *BasicSlaveComm)Interface() Interface {
 }
 
 func (c *BasicSlaveComm)RequestReset(i int) {
-
-  fmt.Println("[SlaveComm] Reset Requested") //--------------------------
-
   c.Remote(0).RequestReset(i, c.SlaveIds[i])
 }
 

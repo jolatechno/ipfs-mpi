@@ -270,8 +270,8 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
 
   r.Rw = stream
   if stream == io.ReadWriteCloser(nil) {
-    r.StreamMutex.Unlock()
-    r.Raise(NilStreamError)
+    /*r.StreamMutex.Unlock()
+    r.Raise(NilStreamError)*/
     return
   }
 
