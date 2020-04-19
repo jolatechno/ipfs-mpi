@@ -166,7 +166,7 @@ func (s *IpfsShell)Raise(err error) {
 func (s *IpfsShell)Add(f string) {
   s.Store = append(s.Store, f)
   for i, obj := range s.Accessible {
-    if obj.Name == g {
+    if obj.Name == f {
       s.Accessible = append(s.Accessible[:i], s.Accessible[i + 1:]...)
     break
     }
