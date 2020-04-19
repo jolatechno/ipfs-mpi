@@ -275,5 +275,5 @@ func (s *IpfsShell)Get(maxSize uint64) (string, error) {
 
   n := rand.Intn(len(Choices))
 
-  return Choices[n], errors.New("exceded max draw")
+  return Choices[n], nil
 }
