@@ -128,20 +128,6 @@ func NewStore(url string, path string, ipfs_store string) (Store, error) {
     return nil, err
   }
 
-  for _, file := range list_installed {
-    f := file.Name()
-
-    if shellHas(List, f) {
-      store.Store = append(store.Store, f)
-    } else {
-      err := os.Remove(path + InstalledHeader + f)
-      if err != nil {
-        return nil, err
-      }
-    }
-
-  }
-
   for _, file := range list_failed {
     f := file.Name()
 
@@ -156,8 +142,30 @@ func NewStore(url string, path string, ipfs_store string) (Store, error) {
 
   }
 
+  for _, file := range list_installed {
+    f := file.Name()
+
+    if has(store.Failed, f) {
+      err := os.Remove(path + InstalledHeader + f)
+      if err != nil {
+        return nil, err
+      }
+      continue
+    }
+
+    if shellHas(List, f) {
+      store.Store = append(store.Store, f)
+    } else {
+      err := os.Remove(path + InstalledHeader + f)
+      if err != nil {
+        return nil, err
+      }
+    }
+
+  }
+
   for _, obj := range List {
-    if !has(store.Store, obj.Name) {
+    if !has(store.Store, obj.Name) && !has(store.Failed, obj.Name) {
       store.Accessible = append(store.Accessible, object {
         Name: obj.Name,
         Size: obj.Size,
@@ -232,7 +240,7 @@ func (s *IpfsShell)Del(f string, failed bool) error {
     return errors.New("No file to delete")
   }
 
-  os.Remove(s.Path + InstalledHeader + f)
+  os.RemoveAll(s.Path + InstalledHeader + f)
 
   s.Store = removeFromList(s.Store, f)
 
