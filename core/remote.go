@@ -388,7 +388,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
 
     close(pingChan)
 
-    if err := scanner.Err(); err != nil {
+    if err := scanner.Err(); err != nil && r.Stream() == stream {
       r.Raise(err)
     }
 

@@ -383,15 +383,6 @@ func (c *BasicSlaveComm)Close() error {
 }
 
 func (c *BasicSlaveComm)RequestReset(i int) {
-  c.Mutex.Lock()
-
-  defer func() {
-    c.Mutex.Unlock()
-    if err := recover(); err != nil {
-      c.Raise(err.(error))
-    }
-  }()
-
   c.Remote(0).RequestReset(i, c.SlaveIds[i])
 }
 

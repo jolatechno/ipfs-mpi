@@ -13,7 +13,10 @@ import (
 )
 
 var (
+  StreamHeader = "SelfStream"
+
   StreamEnded = errors.New("Stream closed")
+
   StandardStreamTimeout = 2 * time.Minute
   StandardCheckingInterval = 2 * time.Second
 )
@@ -102,7 +105,7 @@ func (b *CloseableBuffer)Reset() error {
   }()
 
   if !b.check() {
-		return StreamEnded
+		return NewHeadedError(StreamEnded, true, StreamHeader)
 	}
 
   b.ReadPipe, b.WritePipe = io.Pipe()
@@ -120,7 +123,7 @@ func (b *CloseableBuffer)Read(p []byte) (int, error) {
   }()
 
   if !b.check() {
-		return 0, StreamEnded
+		return 0, NewHeadedError(StreamEnded, true, StreamHeader)
 	}
 
   n, err := timeout.MakeCheckerTimeout(func() (interface{}, error) {
@@ -137,7 +140,7 @@ func (b *CloseableBuffer)Read(p []byte) (int, error) {
     n = 0
   }
 
-  return n.(int), err
+  return n.(int), NewHeadedError(err, true, StreamHeader)
 }
 
 func (b *CloseableBuffer) Write(p []byte) (int, error) {
@@ -165,7 +168,7 @@ func (b *CloseableBuffer) Write(p []byte) (int, error) {
     n = 0
   }
 
-  return n.(int), err
+  return n.(int), NewHeadedError(err, true, StreamHeader)
 }
 
 func (b *CloseableBuffer)Stat() network.Stat {
