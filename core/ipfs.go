@@ -96,7 +96,7 @@ func NewStore(url string, path string, ipfs_store string) (Store, error) {
   store.Shell = shell.NewShell(url)
 
   if _, err := os.Stat(path + InstalledHeader); os.IsNotExist(err) {
-    new_err := os.MkdirAll(path, ModePerm)
+    new_err := os.MkdirAll(path + InstalledHeader, ModePerm)
     if new_err != nil{
       return nil, err
     }
@@ -105,7 +105,7 @@ func NewStore(url string, path string, ipfs_store string) (Store, error) {
   }
 
   if _, err := os.Stat(path + FailedHeader); os.IsNotExist(err) {
-    new_err := os.MkdirAll(path, ModePerm)
+    new_err := os.MkdirAll(path + FailedHeader, ModePerm)
     if new_err != nil{
       return nil, err
     }
