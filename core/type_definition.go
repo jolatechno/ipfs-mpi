@@ -82,7 +82,7 @@ type SlaveComm interface {
 type Remote interface {
   standardFunctionsCloser
 
-  SetResetHandler(func(int))
+  SetResetHandler(func(int, int))
   RequestReset(int, int)
   CloseRemote()
   SetPingInterval(time.Duration)

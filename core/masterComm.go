@@ -175,8 +175,8 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
       return nil, err
     }
 
-    comm.SlaveComm().Remote(i).SetResetHandler(func(i int) {
-      comm.Reset(i, -1)
+    comm.SlaveComm().Remote(i).SetResetHandler(func(i int, slaveId int) {
+      comm.Reset(i, slaveId)
     })
 
     comm.SlaveComm().Remote(i).SetCloseHandler(func() {

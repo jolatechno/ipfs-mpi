@@ -28,6 +28,8 @@ var (
 
   NilStreamError = errors.New("nil stream")
   ErrorInterval = 4 * time.Second
+
+  nilRemoteResetHandler = func(int, int) {}
 )
 
 func NewChannelBool() *safeChannelBool {
@@ -104,7 +106,7 @@ func (c *safeChannelString)Close() {
 
 func NewRemote() (Remote, error) {
   return &BasicRemote {
-    ResetHandler: &nilResetHandler,
+    ResetHandler: &nilRemoteResetHandler,
     PingInterval: StandardPingInterval,
     PingTimeout: StandardTimeout,
     ReadChan: NewChannelString(),
@@ -120,7 +122,7 @@ type BasicRemote struct {
   WriteMutex sync.Mutex
   StreamMutex sync.Mutex
 
-  ResetHandler *func(int)
+  ResetHandler *func(int, int)
   PingInterval time.Duration
   PingTimeout time.Duration
   ReadChan *safeChannelString
@@ -180,7 +182,7 @@ func (r *BasicRemote)send(str string, blocking bool, referenceStream ...io.ReadW
   }
 }
 
-func (r *BasicRemote)SetResetHandler(handler func(int)) {
+func (r *BasicRemote)SetResetHandler(handler func(int, int)) {
   r.ResetHandler = &handler
 }
 
@@ -341,7 +343,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
         r.Raise(HeaderNotUnderstood)
 
       case ResetHeader:
-        if len(splitted) <= 1 {
+        if len(splitted) <= 3 {
           r.Raise(NotEnoughFields)
           continue
         }
@@ -352,7 +354,13 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
           continue
         }
 
-        go (*r.ResetHandler)(idx)
+        slaveId, err := strconv.Atoi(splitted[2])
+        if err != nil {
+          r.Raise(err)
+          continue
+        }
+
+        go (*r.ResetHandler)(idx, slaveId)
 
       case HandShakeHeader:
         go func() {
