@@ -12,6 +12,8 @@ func main() {
     panic(err)
   }
 
+  fmt.Println(*store.(*core.IpfsShell))
+
   go func() {
     for {
       fmt.Println("\nFiles: ", store.List())
@@ -33,5 +35,5 @@ func main() {
     }
   }()
 
-  fmt.Println("Store closed: ", <- store.CloseChan())
+  select {}
 }

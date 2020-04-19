@@ -106,12 +106,12 @@ func NewStore(url string, path string, ipfs_store string) (Store, error) {
   }
 
   cfg, err := read()
-  if err != nil && cfg.IpfsStore == ipfs_store {
+  if err != nil || cfg.IpfsStore != ipfs_store {
     List, err := store.Shell.List(ipfs_store)
     if err != nil {
       return nil, err
     }
-    
+
     for _, obj := range List {
       if !has(store.Store, obj.Name) {
         store.Accessible = append(store.Accessible, object {
