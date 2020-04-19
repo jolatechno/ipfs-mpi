@@ -310,13 +310,20 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
 
       err := timeout.MakeSimpleTimeout(func() error {
         r.send(PingHeader, false, stream)
-        <- pingChan.Chan
-        return nil
+        _, ok := <- pingChan.Chan
+        if ok {
+          return nil
+        }
+        return errors.New("Channel closed")
       }, r.PingTimeout)
 
       if err != nil {
         if stream == r.Stream() {
-          r.Raise(err)
+          if err == errors.New("Channel closed") {
+            r.Raise(err)
+          } else {
+            r.Raise(errors.New("Ping timeout"))
+          }
         }
       }
     }
