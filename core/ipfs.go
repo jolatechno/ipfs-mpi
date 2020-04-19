@@ -23,6 +23,16 @@ type object struct {
   Size uint64
 }
 
+func shellHas(List []*shell.LsLink, f string) bool {
+  for _, obj := range List {
+    if obj.Name == f {
+      return true
+    }
+  }
+
+  return false
+}
+
 func occupied(path string) (size uint64, err error) {
   err = filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
       if err != nil {
@@ -89,33 +99,33 @@ func NewStore(url string, path string, ipfs_store string) (Store, error) {
       return nil, err
   }
 
-  store.Store = make([]string, len(list))
-  for i, file := range list {
-    store.Store[i] = file.Name()
+  List, err := store.Shell.List(ipfs_store)
+  if err != nil {
+    return nil, err
   }
 
-  cfg, err := read()
-  if err != nil || cfg.IpfsStore != ipfs_store {
-    List, err := store.Shell.List(ipfs_store)
-    if err != nil {
-      return nil, err
-    }
+  store.Store = make([]string, len(list))
+  for _, file := range list {
+    f := file.Name()
 
-    for _, obj := range List {
-      if !has(store.Store, obj.Name) {
-        store.Accessible = append(store.Accessible, object {
-          Name: obj.Name,
-          Size: obj.Size,
-        })
+    if shellHas(List, f) {
+      store.Store = append(store.Store, f)
+    } else {
+      err := os.Remove(path + f)
+      if err != nil {
+        return nil, err
       }
     }
 
-    upload(config {
-      IpfsStore: store.IpfsStore,
-      Accessible: store.Accessible,
-      Failed: store.Failed,
-    })
+  }
 
+  for _, obj := range List {
+    if !has(store.Store, obj.Name) {
+      store.Accessible = append(store.Accessible, object {
+        Name: obj.Name,
+        Size: obj.Size,
+      })
+    }
   }
 
   return store, nil
@@ -157,15 +167,9 @@ func (s *IpfsShell)Add(f string) {
   for i, obj := range s.Accessible {
     if obj.Name == f {
       s.Accessible = append(s.Accessible[:i], s.Accessible[i + 1:]...)
-    break
+      break
     }
   }
-
-  upload(config {
-    IpfsStore: s.IpfsStore,
-    Accessible: s.Accessible,
-    Failed: s.Failed,
-  })
 }
 
 func (s *IpfsShell)List() []string {
@@ -203,28 +207,19 @@ func (s *IpfsShell)Del(f string, failed bool) error {
       return  err
     }
 
-    for _, obj := range List {
-      if obj.Name == f {
-        size, err := occupied(s.Path + f)
-        if err != nil {
-          return err
-        }
-
-        s.Accessible = append(s.Accessible, object {
-          Name: f,
-          Size: size,
-        })
-        break
+    if shellHas(List, f) {
+      size, err := occupied(s.Path + f)
+      if err != nil {
+        return err
       }
+
+      s.Accessible = append(s.Accessible, object {
+        Name: f,
+        Size: size,
+      })
     }
 
   }
-
-  upload(config {
-    IpfsStore: s.IpfsStore,
-    Accessible: s.Accessible,
-    Failed: s.Failed,
-  })
 
   return nil
 }
