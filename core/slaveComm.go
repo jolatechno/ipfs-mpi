@@ -184,7 +184,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
         stream.Close()
       }
 
-      comm.RequestReset(i)
+      go comm.RequestReset(i)
     })
 
     comm.Remote(i).SetCloseHandler(func() {
@@ -317,6 +317,10 @@ func (c *BasicSlaveComm)Interface() Interface {
   return c.Inter
 }
 
+func (c *BasicSlaveComm)RequestReset(i int) {
+  c.Remote(0).RequestReset(i, c.SlaveIds[i])
+}
+
 func (c *BasicSlaveComm)SetErrorHandler(handler func(error)) {
   c.Standard.SetErrorHandler(handler)
 }
@@ -380,10 +384,6 @@ func (c *BasicSlaveComm)Close() error {
   }
 
   return nil
-}
-
-func (c *BasicSlaveComm)RequestReset(i int) {
-  c.Remote(0).RequestReset(i, c.SlaveIds[i])
 }
 
 func (c *BasicSlaveComm)Connect(i int, addr peer.ID, msgs ...string) error {
