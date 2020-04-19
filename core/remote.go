@@ -47,6 +47,7 @@ type safeChannelBool struct {
 func (c *safeChannelBool)Send(t bool) {
   c.Mutex.Lock()
   defer c.Mutex.Unlock()
+
   if !c.Ended {
     c.Chan <- t
   }
@@ -55,6 +56,7 @@ func (c *safeChannelBool)Send(t bool) {
 func (c *safeChannelBool)Close() {
   c.Mutex.Lock()
   defer c.Mutex.Unlock()
+
   if !c.Ended {
     c.Ended = true
 
@@ -79,20 +81,24 @@ type safeChannelString struct {
 }
 
 func (c *safeChannelString)Send(str string) {
-  defer recover()
-
   c.Mutex.Lock()
-  defer c.Mutex.Unlock()
+  defer func() {
+    c.Mutex.Unlock()
+    recover()
+  }()
+
   if !c.Ended {
     c.Chan <- str
   }
 }
 
 func (c *safeChannelString)Close() {
-  defer recover()
-
   c.Mutex.Lock()
-  defer c.Mutex.Unlock()
+  defer func() {
+    c.Mutex.Unlock()
+    recover()
+  }()
+
   if !c.Ended {
     c.Ended = true
 
@@ -287,10 +293,11 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
   pingChan := make(chan bool)
 
   go func() {
-    defer recover()
-
-    r.WriteMutex.Lock()
-    defer r.WriteMutex.Unlock()
+    r.StreamMutex.Lock()
+    defer func() {
+      r.StreamMutex.Unlock()
+      recover()
+    }()
 
     for _, msg := range *r.Sent {
       r.send(fmt.Sprintf("%s,%s", MessageHeader, msg), true)

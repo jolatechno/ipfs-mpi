@@ -112,7 +112,6 @@ func (b *BasicFunctionsCloser)SetCloseHandler(handler func()) {
 
 func (b *BasicFunctionsCloser)Close() error {
   b.Mutex.Lock()
-
   defer func() {
     b.Mutex.Unlock()
     recover()

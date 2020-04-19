@@ -284,16 +284,13 @@ func (c *BasicMasterComm)SlaveComm() SlaveComm {
 }
 
 func (c *BasicMasterComm)Reset(i int, slaveId int) {
+  c.Mutex.Lock()
   defer func() {
+    c.Mutex.Unlock()
     if err := recover(); err != nil {
-      c.Mutex.Unlock()
       c.Raise(err.(error))
     }
   }()
-
-  var err error
-
-  c.Mutex.Lock()
 
   if slaveId != c.Comm.SlaveIds[i] && slaveId != -1 {
     return
@@ -306,12 +303,12 @@ func (c *BasicMasterComm)Reset(i int, slaveId int) {
   fmt.Printf("[MasterComm] reseting %d for the %dth time\n", i, c.Comm.SlaveIds[i]) //--------------------------
 
   for {
-    (*c.Addrs)[i], err = c.SlaveComm().Host().NewPeer(c.Comm.Base)
+    addr, err := c.SlaveComm().Host().NewPeer(c.Comm.Base)
     if err != nil {
-      c.Mutex.Unlock()
-
-      c.Raise(err)
+      panic(err) //will be handlled by the recover
     }
+
+    (*c.Addrs)[i] = addr
 
     param := &Param {
       Init: false,
@@ -322,12 +319,10 @@ func (c *BasicMasterComm)Reset(i int, slaveId int) {
       Addrs: c.Addrs,
     }
 
-    err := c.SlaveComm().Connect(i, (*c.Addrs)[i], fmt.Sprintf("%s\n", param))
+    err = c.SlaveComm().Connect(i, addr, fmt.Sprintf("%s\n", param))
     if err == nil {
       break
     }
 
   }
-
-  c.Mutex.Unlock()
 }
