@@ -186,7 +186,8 @@ func (h *BasicExtHost)SetErrorHandler(handler func(error)) {
 }
 
 func (h *BasicExtHost)Raise(err error) {
-  h.Standard.Raise(NewHeadedError(err, HostHeader))
+  hErr := NewHeadedError(err, true, HostHeader)
+  h.Standard.Raise(hErr)
 }
 
 func (h *BasicExtHost) Check() bool {

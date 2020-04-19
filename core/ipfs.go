@@ -83,7 +83,8 @@ func (s *IpfsShell)SetCloseHandler(handler func()) {
 }
 
 func (s *IpfsShell)Raise(err error) {
-  s.Standard.Raise(NewHeadedError(err, IpfsHeader))
+  hErr := NewHeadedError(err, true, IpfsHeader)
+  s.Standard.Raise(hErr)
 }
 
 func (s *IpfsShell)Add(f string) {

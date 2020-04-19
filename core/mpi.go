@@ -158,7 +158,8 @@ func (m *BasicMpi)SetErrorHandler(handler func(error)) {
 }
 
 func (m *BasicMpi)Raise(err error) {
-  m.Standard.Raise(NewHeadedError(err, MpiHeader))
+  hErr := NewHeadedError(err, true, MpiHeader)
+  m.Standard.Raise(hErr)
 }
 
 func (m *BasicMpi)Check() bool {

@@ -14,7 +14,6 @@ import (
 )
 
 const (
-  errorFormat = "\033[31m%s\033[0m\n"
   prompt = "libp2p-mpi>"
 )
 
@@ -33,7 +32,7 @@ func main(){
 
   store.SetErrorHandler(func(err error) {
     if !quiet {
-      log.Printf(errorFormat, err.Error())
+      log.Println(err.Error())
     }
   })
 

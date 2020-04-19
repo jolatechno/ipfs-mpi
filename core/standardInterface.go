@@ -8,31 +8,76 @@ import (
 var (
   nilEndHandler = func() {}
   nilErrorHandler = func(err error) {}
+
+  ErrorFormat = "[%s] \033[31m%s\033[0m"
+  AlertFormat = "[%s] \033[33m%s\033[0m"
 )
 
-func NewHeadedError(err error, header string) error {
+func NewHeadedError(err error, panic bool, header string) error {
   if err == nil {
     return nil
   }
 
   errH, ok := err.(*HeadedError)
   if ok {
+    if errH.Header == "" {
+      errH.Header = header
+    }
+
     return errH
   }
 
   return &HeadedError {
+    Panic: panic,
     Err: err,
     Header: header,
   }
 }
 
+func SetNonPanic(err error) error {
+  if err == nil {
+    return nil
+  }
+
+  errH, ok := err.(*HeadedError)
+  if ok {
+    return &HeadedError {
+      Panic: false,
+      Err: errH.Err,
+      Header: errH.Header,
+    }
+  }
+
+  return &HeadedError {
+    Panic: false,
+    Err: err,
+  }
+}
+
+func IsPanic(err error) bool {
+  if err == nil {
+    return false
+  }
+
+  errH, ok := err.(*HeadedError)
+  if ok {
+    return errH.Panic
+  }
+
+  return true
+}
+
 type HeadedError struct {
+  Panic bool
   Err error
   Header string
 }
 
 func (err *HeadedError)Error() string {
-  return fmt.Sprintf("[%s] %s", err.Header, err.Err.Error())
+  if err.Panic {
+    return fmt.Sprintf(ErrorFormat, err.Header, err.Err.Error())
+  }
+  return fmt.Sprintf(AlertFormat, err.Header, err.Err.Error())
 }
 
 func NewStandardInterface() standardFunctionsCloser {

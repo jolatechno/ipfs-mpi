@@ -229,7 +229,8 @@ func (r *BasicRemote)SetCloseHandler(handler func()) {
 }
 
 func (r *BasicRemote)Raise(err error) {
-  r.Standard.Raise(NewHeadedError(err, RemoteHeader))
+  hErr := NewHeadedError(err, true, RemoteHeader)
+  r.Standard.Raise(hErr)
 }
 
 func (r *BasicRemote)Check() bool {

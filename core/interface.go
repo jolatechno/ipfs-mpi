@@ -32,7 +32,7 @@ var (
   InterfaceRequestHeader = "Req"
   InterfaceExitHeader = "Exit"
 
-  logFormat = "\033[33m%s\033[0m\n"
+  logFormat = "\033[34m%s\033[0m\n"
   masterLogFormat = "\033[32m%s\033[0m\n"
 )
 
@@ -190,7 +190,8 @@ func (s *StdInterface)SetCloseHandler(handler func()) {
 }
 
 func (s *StdInterface)Raise(err error) {
-  s.Standard.Raise(NewHeadedError(err, InterfaceHeader))
+  hErr := NewHeadedError(err, true, InterfaceHeader)
+  s.Standard.Raise(hErr)
 }
 
 func (s *StdInterface)Check() bool {

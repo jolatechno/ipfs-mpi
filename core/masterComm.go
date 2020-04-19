@@ -183,6 +183,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     })
 
     comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
+      comm.Raise(SetNonPanic(err))
       wg.DoneAll(i)
     })
 
@@ -230,6 +231,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     i := j
 
     comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
+      comm.Raise(SetNonPanic(err))
       comm.Reset(i, -1)
     })
 
@@ -269,7 +271,8 @@ func (c *BasicMasterComm)SetCloseHandler(handler func()) {
 }
 
 func (c *BasicMasterComm)Raise(err error) {
-  c.SlaveComm().Raise(NewHeadedError(err, MasterCommHeader))
+  hErr := NewHeadedError(err, true, MasterCommHeader)
+  c.SlaveComm().Raise(hErr)
 }
 
 func (c *BasicMasterComm)Check() bool {

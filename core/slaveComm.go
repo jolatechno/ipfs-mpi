@@ -177,6 +177,8 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
 
       fmt.Printf("[SlaveComm] %d disconnected from %d\n", comm.Idx, i) //--------------------------
 
+      comm.Raise(SetNonPanic(err))
+
       if stream := comm.Remote(i).Stream(); stream != io.ReadWriteCloser(nil) {
         stream.Close()
         comm.Remote(i).Reset(io.ReadWriteCloser(nil))
@@ -324,7 +326,8 @@ func (c *BasicSlaveComm)SetCloseHandler(handler func()) {
 }
 
 func (c *BasicSlaveComm)Raise(err error) {
-  c.Standard.Raise(NewHeadedError(err, SlaveCommHeader))
+  hErr := NewHeadedError(err, true, SlaveCommHeader)
+  c.Standard.Raise(hErr)
 }
 
 func (c *BasicSlaveComm)Check() bool {
