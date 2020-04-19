@@ -62,8 +62,13 @@ func (c *safeChannelBool)Close() {
   if !c.Ended {
     c.Ended = true
 
-    for len(c.Chan) > 0 {
-      <- c.Chan
+    for {
+      select {
+      default:
+        break
+      case <- c.Chan:
+        continue
+      }
     }
 
     close(c.Chan)
@@ -106,8 +111,13 @@ func (c *safeChannelString)Close() {
   if !c.Ended {
     c.Ended = true
 
-    for len(c.Chan) > 0 {
-      <- c.Chan
+    for {
+      select {
+      default:
+        break
+      case <- c.Chan:
+        continue
+      }
     }
 
     close(c.Chan)
