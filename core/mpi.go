@@ -255,7 +255,7 @@ func (m *BasicMpi)Add(f string) error {
       return
     }
 
-    comm, err := NewSlaveComm(m.Ctx, m.Host(), stream.(io.ReadWriteCloser), proto, param, m.Path + f, param.N, param.Idx)
+    comm, err := NewSlaveComm(m.Ctx, m.Host(), stream.(io.ReadWriteCloser), proto, param, m.Path + InstalledHeader + f, param.N, param.Idx)
     if err != nil {
       return
     }
@@ -294,7 +294,7 @@ func (m *BasicMpi)Start(file string, n int, args ...string) error {
   proto := protocol.ID(fmt.Sprintf("/%s/%s", file, m.Pid))
   stringId := fmt.Sprintf("%d.%s", id, m.Host().ID())
 
-  comm, err := NewMasterComm(m.Ctx, m.Host(), n, proto, stringId, m.Path + file, args...)
+  comm, err := NewMasterComm(m.Ctx, m.Host(), n, proto, stringId, m.Path + InstalledHeader + file, args...)
 
   if err != nil {
     return err
