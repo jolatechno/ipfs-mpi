@@ -260,7 +260,10 @@ func (m *BasicMpi)Add(f string) error {
     m.ToClose.Store(stringId, comm)
 
     comm.SetErrorHandler(func(err error) {
-      comm.Close()
+      if IsPanic(err) {
+        comm.Close()
+      }
+
       m.Raise(err)
     })
 
@@ -296,7 +299,10 @@ func (m *BasicMpi)Start(file string, n int, args ...string) error {
   m.ToClose.Store(stringId, comm)
 
   comm.SetErrorHandler(func(err error) {
-    comm.Close()
+    if IsPanic(err) {
+      comm.Close()
+    }
+
     m.Raise(err)
   })
 
