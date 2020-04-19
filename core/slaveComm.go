@@ -178,13 +178,9 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
       fmt.Printf("[SlaveComm] %d disconnected from %d\n", comm.Idx, i) //--------------------------
 
       go comm.Raise(SetNonPanic(err))
+      comm.Remote(i).Reset(io.ReadWriteCloser(nil))
 
-      if stream := comm.Remote(i).Stream(); stream != io.ReadWriteCloser(nil) {
-        comm.Remote(i).Reset(io.ReadWriteCloser(nil))
-        stream.Close()
-      }
-
-      go comm.RequestReset(i)
+      comm.RequestReset(i)
     })
 
     comm.Remote(i).SetCloseHandler(func() {
@@ -318,6 +314,9 @@ func (c *BasicSlaveComm)Interface() Interface {
 }
 
 func (c *BasicSlaveComm)RequestReset(i int) {
+
+  fmt.Println("[SlaveComm] Reset Requested") //--------------------------
+
   c.Remote(0).RequestReset(i, c.SlaveIds[i])
 }
 

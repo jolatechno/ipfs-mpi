@@ -270,6 +270,10 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
     }
   }()
 
+  if r.Rw != io.ReadWriteCloser(nil) {
+    r.Rw.Close()
+  }
+  
   r.Rw = stream
   if stream == io.ReadWriteCloser(nil) {
     r.Raise(NilStreamError)
