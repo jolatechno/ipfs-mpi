@@ -57,9 +57,14 @@ func (c *safeChannelBool)Send(t bool) {
 
 func (c *safeChannelBool)Close() {
   c.Mutex.Lock()
-  defer c.Mutex.Unlock()
+  defer func() {
+    c.Mutex.Unlock()
+    recover()
+  }()
 
-  if !c.Ended {
+  c.Ended = true
+
+  /*if !c.Ended {
     c.Ended = true
 
     for {
@@ -72,7 +77,7 @@ func (c *safeChannelBool)Close() {
     }
 
     close(c.Chan)
-  }
+  }*/
 }
 
 func NewChannelString() *safeChannelString {
@@ -107,8 +112,10 @@ func (c *safeChannelString)Close() {
     c.Mutex.Unlock()
     recover()
   }()
+  
+  c.Ended = true
 
-  if !c.Ended {
+  /*if !c.Ended {
     c.Ended = true
 
     for {
@@ -121,7 +128,7 @@ func (c *safeChannelString)Close() {
     }
 
     close(c.Chan)
-  }
+  }*/
 }
 
 func NewRemote() (Remote, error) {
