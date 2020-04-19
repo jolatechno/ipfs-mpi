@@ -29,7 +29,7 @@ type object struct {
 func createEmptyFile(path string) {
   defer recover()
 
-  file, _ := os.Create("test.txt")
+  file, _ := os.Create(path)
   file.Close()
 }
 
@@ -240,6 +240,13 @@ func (s *IpfsShell)Del(f string, failed bool) error {
   s.Store = removeFromList(s.Store, f)
 
   if failed {
+    for i, obj := range s.Accessible {
+      if obj.Name == f {
+        s.Accessible = append(s.Accessible[:i], s.Accessible[i + 1:]...)
+        break
+      }
+    }
+
     s.Failed = append(s.Failed, f)
     createEmptyFile(s.Path + FailedHeader + f)
 

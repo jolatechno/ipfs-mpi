@@ -28,7 +28,7 @@ func main() {
 
       err = store.Dowload(f)
       if err != nil {
-        panic(err)
+        fmt.Println(err.Error())
       }
 
       fmt.Println("Has file: ", store.Has(f))
