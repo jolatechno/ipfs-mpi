@@ -179,7 +179,6 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
 
       go comm.Raise(SetNonPanic(err))
       comm.Remote(i).Reset(io.ReadWriteCloser(nil))
-
       comm.RequestReset(i)
     })
 

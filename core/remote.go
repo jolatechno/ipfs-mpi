@@ -229,6 +229,7 @@ func (r *BasicRemote)SetCloseHandler(handler func()) {
 }
 
 func (r *BasicRemote)Raise(err error) {
+  r.StreamMutex.Unlock()
   hErr := NewHeadedError(err, true, RemoteHeader)
   r.Standard.Raise(hErr)
 }
@@ -273,7 +274,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
   if r.Rw != io.ReadWriteCloser(nil) {
     r.Rw.Close()
   }
-  
+
   r.Rw = stream
   if stream == io.ReadWriteCloser(nil) {
     r.Raise(NilStreamError)
