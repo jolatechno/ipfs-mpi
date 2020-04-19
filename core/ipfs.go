@@ -232,10 +232,7 @@ func (s *IpfsShell)Del(f string, failed bool) error {
     return errors.New("No file to delete")
   }
 
-  err := os.Remove(s.Path + InstalledHeader + f)
-  if err != nil {
-    return NewHeadedError(err, IpfsHeader)
-  }
+  os.Remove(s.Path + InstalledHeader + f)
 
   s.Store = removeFromList(s.Store, f)
 
