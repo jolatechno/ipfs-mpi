@@ -23,19 +23,6 @@ type object struct {
   Size uint64
 }
 
-type config struct {
-  IpfsStore string
-  Accessible []object
-  Failed[] string
-}
-
-func read() (config, error) {
-  return config {}, errors.New("Not yet implemented")
-}
-
-func upload(cfg config) {
-}
-
 func occupied(path string) (size uint64, err error) {
   err = filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
       if err != nil {
@@ -74,6 +61,8 @@ func NewStore(url string, path string, ipfs_store string) (Store, error) {
   store := &IpfsShell {
     Path:path,
     Accessible: []object{},
+    Store: []string{},
+    Failed: []string{},
     IpfsStore:ipfs_store,
     Standard: NewStandardInterface(IpfsHeader),
   }
