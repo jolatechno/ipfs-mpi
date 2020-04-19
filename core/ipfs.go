@@ -7,6 +7,7 @@ import (
   "errors"
   "math/rand"
   "os/exec"
+  //"encoding/json"
 
   shell "github.com/ipfs/go-ipfs-api"
 )
@@ -15,15 +16,65 @@ const (
   IpfsHeader = "IpfsStore"
 
   ModePerm os.FileMode = 0777
-  max_draw int = 1000
 )
+
+type object struct {
+  Name string
+  Size uint64
+}
+
+type config struct {
+  IpfsStore string
+  Accessible []object
+  Failed[] string
+}
+
+func read() (config, error) {
+  return config {}, errors.New("Not yet implemented")
+}
+
+func upload(cfg config) {
+}
+
+func occupied(path string) (size uint64, err error) {
+  err = filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
+      if err != nil {
+          return err
+      }
+      if !info.IsDir() {
+          size += uint64(info.Size())
+      }
+      return err
+  })
+  return size, err
+}
+
+func removeFromList(list []string, element string) []string {
+  for i, name := range list {
+    if name == element {
+      return append(list[:i], list[i + 1:]...)
+    }
+  }
+
+  return list
+}
+
+func has(list []string, element string) bool {
+  for _, name := range list {
+    if name == element {
+      return true
+    }
+  }
+  return false
+}
 
 //straight from version 1.0.1
 
 func NewStore(url string, path string, ipfs_store string) (Store, error) {
   store := &IpfsShell {
     Path:path,
-    Ipfs_store:ipfs_store,
+    Accessible: []object{},
+    IpfsStore:ipfs_store,
     Standard: NewStandardInterface(IpfsHeader),
   }
 
@@ -54,6 +105,30 @@ func NewStore(url string, path string, ipfs_store string) (Store, error) {
     store.Store[i] = file.Name()
   }
 
+  cfg, err := read()
+  if err != nil && cfg.IpfsStore == ipfs_store {
+    List, err := store.Shell.List(ipfs_store)
+    if err != nil {
+      return nil, err
+    }
+    
+    for _, obj := range List {
+      if !has(store.Store, obj.Name) {
+        store.Accessible = append(store.Accessible, object {
+          Name: obj.Name,
+          Size: obj.Size,
+        })
+      }
+    }
+
+    upload(config {
+      IpfsStore: store.IpfsStore,
+      Accessible: store.Accessible,
+      Failed: store.Failed,
+    })
+
+  }
+
   return store, nil
 }
 
@@ -61,8 +136,10 @@ func NewStore(url string, path string, ipfs_store string) (Store, error) {
 type IpfsShell struct {
   Shell *shell.Shell
   Store []string
+  Accessible []object
+  Failed[] string
   Path string
-  Ipfs_store string
+  IpfsStore string
   Standard standardFunctionsCloser
 }
 
@@ -88,6 +165,11 @@ func (s *IpfsShell)Raise(err error) {
 
 func (s *IpfsShell)Add(f string) {
   s.Store = append(s.Store, f)
+  upload(config {
+    IpfsStore: s.IpfsStore,
+    Accessible: s.Accessible,
+    Failed: s.Failed,
+  })
 }
 
 func (s *IpfsShell)List() []string {
@@ -95,15 +177,10 @@ func (s *IpfsShell)List() []string {
 }
 
 func (s *IpfsShell)Has(f string) bool {
-  for _, name := range s.Store {
-    if name == f {
-      return true
-    }
-  }
-  return false
+  return has(s.Store, f)
 }
 
-func (s *IpfsShell)Del(f string) error {
+func (s *IpfsShell)Del(f string, failed bool) error {
   defer func() {
     if err := recover(); err != nil {
       s.Raise(err.(error))
@@ -119,30 +196,60 @@ func (s *IpfsShell)Del(f string) error {
     return nil
   }
 
-  for i, name := range s.Store {
-    if name == f {
-      s.Store = append(s.Store[:i], s.Store[i + 1:]...)
-      return nil
+  s.Store = removeFromList(s.Store, f)
+
+  if failed {
+    s.Failed = append(s.Failed, f)
+
+  } else {
+    List, err := s.Shell.List(s.IpfsStore)
+    if err != nil {
+      return  err
     }
+
+    for _, obj := range List {
+      if obj.Name == f {
+        size, err := occupied(s.Path + f)
+        if err != nil {
+          return err
+        }
+
+        s.Accessible = append(s.Accessible, object {
+          Name: f,
+          Size: size,
+        })
+        break
+      }
+    }
+
   }
 
-  return errors.New("File not in store")
+  upload(config {
+    IpfsStore: s.IpfsStore,
+    Accessible: s.Accessible,
+    Failed: s.Failed,
+  })
+
+  return nil
 }
 
 func (s *IpfsShell)Dowload(f string) error {
   defer func() {
     if err := recover(); err != nil {
+      s.Del(f, true)
       s.Raise(err.(error))
     }
   }()
 
-  err := s.Shell.Get(s.Ipfs_store + f, s.Path + f)
+  err := s.Shell.Get(s.IpfsStore + f, s.Path + f)
   if err != nil {
+    s.Del(f, true)
     return err
   }
 
   err = exec.Command("python3", s.Path + f + "/init.py").Start()
   if err != nil {
+    s.Del(f, true)
     return err
   }
 
@@ -151,45 +258,22 @@ func (s *IpfsShell)Dowload(f string) error {
 }
 
 func (s *IpfsShell)Occupied() (uint64, error) {
-  defer func() {
-    if err := recover(); err != nil {
-      s.Raise(err.(error))
-    }
-  }()
-
-  var size uint64
-  err := filepath.Walk(s.Path, func(_ string, info os.FileInfo, err error) error {
-      if err != nil {
-          return err
-      }
-      if !info.IsDir() {
-          size += uint64(info.Size())
-      }
-      return err
-  })
-  return size, err
+  return occupied(s.Path)
 }
 
 func (s *IpfsShell)Get(maxSize uint64) (string, error) {
-  List, err := s.Shell.List(s.Ipfs_store)
-  if err != nil {
-    return "", err
+  Choices := []string{}
+  for _, obj := range s.Accessible {
+    if obj.Size <= maxSize {
+      Choices = append(Choices, obj.Name)
+    }
   }
 
-  for i := 0; i < max_draw ; i++ {
-    n := rand.Intn(len(List))
-    obj := List[n]
-
-    if s.Has(obj.Name) {
-      continue
-    }
-
-    if obj.Size > maxSize {
-      continue
-    }
-
-    return obj.Name, nil
+  if len(Choices) == 0 {
+    return "", errors.New("No file with a small enough size")
   }
 
-  return "", errors.New("exceded max draw")
+  n := rand.Intn(len(Choices))
+
+  return Choices[n], errors.New("exceded max draw")
 }

@@ -183,7 +183,7 @@ func (m *BasicMpi)Get(maxsize uint64) error {
 }
 
 func (m *BasicMpi)Del(f string) error {
-  err := m.Store().Del(f)
+  err := m.Store().Del(f, false)
   if err != nil {
     return err
   }

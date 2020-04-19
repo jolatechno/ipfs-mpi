@@ -55,7 +55,7 @@ type Store interface {
   Add(string)
   List() []string
   Has(string) bool
-  Del(string) error
+  Del(name string, failed bool) error
   Dowload(string) error
   Occupied() (uint64, error)
   Get(uint64) (string, error)
