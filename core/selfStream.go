@@ -59,7 +59,7 @@ func (b *CloseableBuffer)Reverse() (SelfStream, error) {
   }()
 
   if b.Ended {
-		return nil, StreamEnded
+		return nil, NewHeadedError(StreamEnded, StreamHeader)
 	}
 
   return &CloseableBuffer {
@@ -105,7 +105,7 @@ func (b *CloseableBuffer)Reset() error {
   }()
 
   if !b.check() {
-		return NewHeadedError(StreamEnded, true, StreamHeader)
+		return NewHeadedError(StreamEnded, StreamHeader)
 	}
 
   b.ReadPipe, b.WritePipe = io.Pipe()
@@ -123,14 +123,14 @@ func (b *CloseableBuffer)Read(p []byte) (int, error) {
   }()
 
   if !b.check() {
-		return 0, NewHeadedError(StreamEnded, true, StreamHeader)
+		return 0, NewHeadedError(StreamEnded, StreamHeader)
 	}
 
   n, err := timeout.MakeCheckerTimeout(func() (interface{}, error) {
     return b.ReadPipe.Read(p)
   }, b.ReadTimeout, func() error {
     if !b.check() {
-      return StreamEnded
+      return NewHeadedError(StreamEnded, StreamHeader)
     }
 
     return nil
@@ -140,7 +140,7 @@ func (b *CloseableBuffer)Read(p []byte) (int, error) {
     n = 0
   }
 
-  return n.(int), NewHeadedError(err, true, StreamHeader)
+  return n.(int), NewHeadedError(err, StreamHeader)
 }
 
 func (b *CloseableBuffer) Write(p []byte) (int, error) {
@@ -151,14 +151,14 @@ func (b *CloseableBuffer) Write(p []byte) (int, error) {
   }()
 
   if !b.check() {
-		return 0, StreamEnded
+		return 0, NewHeadedError(StreamEnded, StreamHeader)
 	}
 
   n, err := timeout.MakeCheckerTimeout(func() (interface{}, error) {
     return b.WritePipeReversed.Write(p)
   }, b.WriteTimeout, func() error {
     if !b.check() {
-      return StreamEnded
+      return NewHeadedError(StreamEnded, StreamHeader)
     }
 
     return nil
@@ -168,7 +168,7 @@ func (b *CloseableBuffer) Write(p []byte) (int, error) {
     n = 0
   }
 
-  return n.(int), NewHeadedError(err, true, StreamHeader)
+  return n.(int), NewHeadedError(err, StreamHeader)
 }
 
 func (b *CloseableBuffer)Stat() network.Stat {

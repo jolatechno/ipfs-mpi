@@ -24,7 +24,7 @@ func NewStore(url string, path string, ipfs_store string) (Store, error) {
   store := &IpfsShell {
     Path:path,
     Ipfs_store:ipfs_store,
-    Standard: NewStandardInterface(),
+    Standard: NewStandardInterface(IpfsHeader),
   }
 
   defer func() {
@@ -83,8 +83,7 @@ func (s *IpfsShell)SetCloseHandler(handler func()) {
 }
 
 func (s *IpfsShell)Raise(err error) {
-  hErr := NewHeadedError(err, true, IpfsHeader)
-  s.Standard.Raise(hErr)
+  s.Standard.Raise(err)
 }
 
 func (s *IpfsShell)Add(f string) {

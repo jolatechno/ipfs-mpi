@@ -112,7 +112,7 @@ func NewRemote() (Remote, error) {
     Sent: &[]string{},
     Rw: nil,
     Received: 0,
-    Standard: NewStandardInterface(),
+    Standard: NewStandardInterface(RemoteHeader),
   }, nil
 }
 
@@ -229,8 +229,7 @@ func (r *BasicRemote)SetCloseHandler(handler func()) {
 }
 
 func (r *BasicRemote)Raise(err error) {
-  hErr := NewHeadedError(err, true, RemoteHeader)
-  r.Standard.Raise(hErr)
+  r.Standard.Raise(err)
 }
 
 func (r *BasicRemote)Check() bool {

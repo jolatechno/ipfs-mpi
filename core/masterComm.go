@@ -155,7 +155,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
       CommHost: host,
       Base: base,
       Remotes: &remotes,
-      Standard: NewStandardInterface(),
+      Standard: NewStandardInterface(MasterCommHeader),
     },
   }
 
@@ -164,14 +164,6 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
       comm.Raise(err.(error))
     }
   }()
-
-  comm.Comm.SetErrorHandler(func(err error) {
-    comm.Raise(err)
-  })
-
-  comm.Comm.SetCloseHandler(func() {
-    comm.Close()
-  })
 
   wg := NewSafeWaitgroupTwice(n, n - 1)
 
@@ -280,8 +272,7 @@ func (c *BasicMasterComm)SetCloseHandler(handler func()) {
 }
 
 func (c *BasicMasterComm)Raise(err error) {
-  hErr := NewHeadedError(err, true, MasterCommHeader)
-  c.SlaveComm().Raise(hErr)
+  c.SlaveComm().Raise(err)
 }
 
 func (c *BasicMasterComm)Check() bool {

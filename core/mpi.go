@@ -78,7 +78,7 @@ func NewMpi(ctx context.Context, config Config) (Mpi, error) {
     Ipfs_store: config.Ipfs_store,
     MpiHost: host,
     MpiStore: store,
-    Standard: NewStandardInterface(),
+    Standard: NewStandardInterface(MpiHeader),
   }
 
   defer func() {
@@ -158,8 +158,7 @@ func (m *BasicMpi)SetErrorHandler(handler func(error)) {
 }
 
 func (m *BasicMpi)Raise(err error) {
-  hErr := NewHeadedError(err, true, MpiHeader)
-  m.Standard.Raise(hErr)
+  m.Standard.Raise(err)
 }
 
 func (m *BasicMpi)Check() bool {

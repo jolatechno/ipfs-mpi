@@ -155,7 +155,7 @@ func NewHost(ctx context.Context, bootstrapPeers ...maddr.Multiaddr) (ExtHost, e
     StreamHandlers: streamHandlers,
     Routing: routingDiscovery,
     PeerStores: make(map[protocol.ID] peerstore.Peerstore),
-    Standard: NewStandardInterface(),
+    Standard: NewStandardInterface(HostHeader),
   }, nil
 }
 
@@ -186,8 +186,7 @@ func (h *BasicExtHost)SetErrorHandler(handler func(error)) {
 }
 
 func (h *BasicExtHost)Raise(err error) {
-  hErr := NewHeadedError(err, true, HostHeader)
-  h.Standard.Raise(hErr)
+  h.Standard.Raise(err)
 }
 
 func (h *BasicExtHost) Check() bool {

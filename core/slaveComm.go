@@ -136,7 +136,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     CommHost: host,
     Base: base,
     Remotes: &remotes,
-    Standard: NewStandardInterface(),
+    Standard: NewStandardInterface(SlaveCommHeader),
   }
 
   defer func() {
@@ -328,8 +328,7 @@ func (c *BasicSlaveComm)SetCloseHandler(handler func()) {
 }
 
 func (c *BasicSlaveComm)Raise(err error) {
-  hErr := NewHeadedError(err, true, SlaveCommHeader)
-  c.Standard.Raise(hErr)
+  c.Standard.Raise(err)
 }
 
 func (c *BasicSlaveComm)Check() bool {

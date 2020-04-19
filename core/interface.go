@@ -44,7 +44,7 @@ func NewInterface(ctx context.Context, file string, n int, i int, args ...string
     MessageHandler: &nilMessageHandler,
     RequestHandler: &nilRequestHandler,
     ResetHandler: &nilResetHandler,
-    Standard: NewStandardInterface(),
+    Standard: NewStandardInterface(InterfaceHeader),
   }
 
   return &inter, nil
@@ -193,8 +193,7 @@ func (s *StdInterface)SetCloseHandler(handler func()) {
 }
 
 func (s *StdInterface)Raise(err error) {
-  hErr := NewHeadedError(err, true, InterfaceHeader)
-  s.Standard.Raise(hErr)
+  s.Standard.Raise(err)
 }
 
 func (s *StdInterface)Check() bool {

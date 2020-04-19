@@ -13,7 +13,7 @@ var (
   AlertFormat = "\033[1m[%s]\033[0m \033[33m%s\033[0m"
 )
 
-func NewHeadedError(err error, panic bool, header string) error {
+func NewHeadedError(err error, header string) error {
   if err == nil {
     return nil
   }
@@ -28,7 +28,7 @@ func NewHeadedError(err error, panic bool, header string) error {
   }
 
   return &HeadedError {
-    Panic: panic,
+    Panic: true,
     Err: err,
     Header: header,
   }
@@ -80,14 +80,16 @@ func (err *HeadedError)Error() string {
   return fmt.Sprintf(AlertFormat, err.Header, err.Err.Error())
 }
 
-func NewStandardInterface() standardFunctionsCloser {
+func NewStandardInterface(header string) standardFunctionsCloser {
   return &BasicFunctionsCloser {
+    Header: header,
     EndHandler: &nilEndHandler,
     ErrorHandler: &nilErrorHandler,
   }
 }
 
 type BasicFunctionsCloser struct {
+  Header string
   Mutex sync.Mutex
   Ended bool
   EndHandler *func()
@@ -109,10 +111,13 @@ func (b *BasicFunctionsCloser)SetCloseHandler(handler func()) {
 }
 
 func (b *BasicFunctionsCloser)Close() error {
-  defer recover()
-
   b.Mutex.Lock()
-  defer b.Mutex.Unlock()
+
+  defer func() {
+    b.Mutex.Unlock()
+    recover()
+  }()
+
   if !b.Ended {
     (*b.EndHandler)()
 
@@ -126,6 +131,7 @@ func (b *BasicFunctionsCloser)Raise(err error) {
   defer recover()
 
   if b.Check() {
-    (*b.ErrorHandler)(err)
+    errH := NewHeadedError(err, b.Header)
+    (*b.ErrorHandler)(errH)
   }
 }
