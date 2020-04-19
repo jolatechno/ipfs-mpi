@@ -343,7 +343,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
         r.Raise(HeaderNotUnderstood)
 
       case ResetHeader:
-        if len(splitted) <= 3 {
+        if len(splitted) < 2 {
           r.Raise(NotEnoughFields)
           continue
         }
@@ -378,7 +378,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
         break
 
       case MessageHeader:
-        if len(splitted) <= 1 {
+        if len(splitted) < 2 {
           r.Raise(NotEnoughFields)
           continue
         }
