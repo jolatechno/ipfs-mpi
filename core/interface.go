@@ -118,10 +118,10 @@ func (s *StdInterface)Start() {
         s.Raise(HeaderNotUnderstood)
 
       case InterfaceExitHeader:
-        break
+        s.Close()
 
       case InterfaceRequestHeader:
-        if len(splitted) != 2 {
+        if len(splitted) < 2 {
           s.Raise(NotEnoughFields)
         }
 
@@ -134,7 +134,7 @@ func (s *StdInterface)Start() {
         (*s.RequestHandler)(idx)
 
       case InterfaceResetHeader:
-        if len(splitted) != 2 {
+        if len(splitted) < 2 {
           s.Raise(NotEnoughFields)
         }
 
