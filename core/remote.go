@@ -49,7 +49,9 @@ func (c *safeChannelBool)Send(t bool) {
   defer c.Mutex.Unlock()
 
   if !c.Ended {
-    c.Chan <- t
+    go func() {
+      c.Chan <- t
+    }()
   }
 }
 
@@ -88,7 +90,9 @@ func (c *safeChannelString)Send(str string) {
   }()
 
   if !c.Ended {
-    c.Chan <- str
+    go func() {
+      c.Chan <- str
+    }()
   }
 }
 
@@ -287,14 +291,14 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
   pingChan := NewChannelBool()
 
   go func() {
-    r.StreamMutex.Lock()
+    r.WriteMutex.Lock()
     defer func() {
-      r.StreamMutex.Unlock()
+      r.WriteMutex.Unlock()
       recover()
     }()
 
     for _, msg := range *r.Sent {
-      r.send(fmt.Sprintf("%s,%s", MessageHeader, msg), true)
+      r.send(fmt.Sprintf("%s,%s", MessageHeader, msg), true, stream)
     }
   }()
 
