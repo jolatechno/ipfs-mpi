@@ -284,7 +284,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
   }()
 
   offset := r.Received
-  pingChan := make(chan bool)
+  pingChan := NewChannelBool()
 
   go func() {
     r.StreamMutex.Lock()
@@ -310,7 +310,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
 
       err := timeout.MakeSimpleTimeout(func() error {
         r.send(PingHeader, false, stream)
-        <- pingChan
+        <- pingChan.Chan
         return nil
       }, r.PingTimeout)
 
@@ -364,15 +364,13 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
         go (*r.ResetHandler)(idx, slaveId)
 
       case HandShakeHeader:
-        go func() {
-          r.HandshakeChan.Send(true)
-        }()
+        go r.HandshakeChan.Send(true)
 
       case PingHeader:
         r.send(PingRespHeader, false, stream)
 
       case PingRespHeader:
-        pingChan <- true
+        go pingChan.Send(true)
 
       case CloseHeader:
         r.Close()
@@ -394,13 +392,11 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
 
         r.Received++
 
-        go func() {
-          r.ReadChan.Send(msg)
-        }()
+        go r.ReadChan.Send(msg)
       }
     }
 
-    close(pingChan)
+    pingChan.Close()
 
     if err := scanner.Err(); err != nil && r.Stream() == stream {
       r.Raise(err)
