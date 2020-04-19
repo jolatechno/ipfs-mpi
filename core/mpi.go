@@ -8,6 +8,7 @@ import (
   "bufio"
   "io"
   "strings"
+  "time"
 
   "github.com/libp2p/go-libp2p-core/protocol"
   "github.com/libp2p/go-libp2p-core/network"
@@ -17,6 +18,8 @@ import (
 
 var (
   MpiHeader = "Mpi"
+
+  ThrottleDuration = 50 * time.Millisecond
 )
 
 type safeInt struct {
@@ -93,6 +96,8 @@ func NewMpi(ctx context.Context, config Config) (Mpi, error) {
 
   go func() {
     for mpi.Check() {
+      time.Sleep(ThrottleDuration)
+      
       occupied, err := store.Occupied()
       if err != nil {
         return

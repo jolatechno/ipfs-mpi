@@ -112,7 +112,7 @@ func (c *safeChannelString)Close() {
     c.Mutex.Unlock()
     recover()
   }()
-  
+
   c.Ended = true
 
   /*if !c.Ended {

@@ -276,7 +276,7 @@ func (c *BasicMasterComm)Raise(err error) {
 }
 
 func (c *BasicMasterComm)Check() bool {
-  return !c.SlaveComm().Check()
+  return c.SlaveComm().Check()
 }
 
 func (c *BasicMasterComm)SlaveComm() SlaveComm {
