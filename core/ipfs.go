@@ -146,7 +146,7 @@ func NewStore(url string, path string, ipfs_store string) (Store, error) {
     f := file.Name()
 
     if has(store.Failed, f) {
-      err := os.Remove(path + InstalledHeader + f)
+      err := os.RemoveAll(path + InstalledHeader + f)
       if err != nil {
         return nil, err
       }
@@ -156,7 +156,7 @@ func NewStore(url string, path string, ipfs_store string) (Store, error) {
     if shellHas(List, f) {
       store.Store = append(store.Store, f)
     } else {
-      err := os.Remove(path + InstalledHeader + f)
+      err := os.RemoveAll(path + InstalledHeader + f)
       if err != nil {
         return nil, err
       }
