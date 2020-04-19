@@ -105,19 +105,22 @@ func NewMpi(ctx context.Context, config Config) (Mpi, error) {
 
       f, err := store.Get(left)
       if err != nil {
+        store.Raise(SetNonPanic(err))
         return
       }
 
       err = mpi.Add(f)
       if err != nil {
-        return
+        store.Raise(SetNonPanic(err))
       }
     }
   }()
 
   store.SetErrorHandler(func(err error) {
     mpi.Raise(err)
-    go mpi.Close()
+    if IsPanic(err) {
+      go mpi.Close()
+    }
   })
 
   store.SetCloseHandler(func() {
@@ -126,7 +129,9 @@ func NewMpi(ctx context.Context, config Config) (Mpi, error) {
 
   host.SetErrorHandler(func(err error) {
     mpi.Raise(err)
-    go mpi.Close()
+    if IsPanic(err) {
+      go mpi.Close()
+    }
   })
 
   host.SetCloseHandler(func() {

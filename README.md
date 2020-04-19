@@ -13,25 +13,24 @@ Message Passing Interface computing using libp2p as a back-bone to build computa
 This example needs to be added to ipfs :
 
 ```
-ipfs add -r interpreter
+ipfs add -r example_interpreters
 ```
 
 Which will give an output resembling :
 
 ```
-added QmVoLznUzS5zKN8bYxVN6BNUKuq52JaHTZ7SwWGFE2miPb interpreter/echo/__pycache__/utils.cpython-37.pyc
-added QmYjH4sibLpCSNCVbHXhfCZY78Ckj2aDDMWFwup7NGJ3JD interpreter/echo/init.py
-added QmURFGfqZor5j5MY3XQMMyhJWpqzfWV7ZDpC2FvrDipuLU interpreter/echo/run.py
-
+added QmQVixfS5Hb2uVy9jhVYogntCmTP7HD99omcL9doizhajL example_interpreters/echo/__pycache__/utils.cpython-37.pyc
+added QmYjH4sibLpCSNCVbHXhfCZY78Ckj2aDDMWFwup7NGJ3JD example_interpreters/echo/init.py
+added QmWR3NepbDyh7BP6tSfmxAR5Qj7tKG6tA87efVMxQ1grr6 example_interpreters/echo/run.py
 
 ...
 
-added Qme6f7SjpMexmqGwmJEihsWBrQH1Ro7Lrs6ZqoZAZSCnuS interpreter/round_echo
-added QmdaBTLX7QReQrK6nn7mBV3EVsmtwAawbeeucaBrkmFroA interpreter
- 8.20 KiB / 8.20 KiB [==========================================================================] 100.00%
+added Qmci7BaxqTX2k5YPnt7UhoxLcE9bTUZGgA4epMBmh9ouxm example_interpreters/round_echo
+added QmaYuPXKLbyo9QVJrbkN8W5TkgDV1r8SsMnEjg9fbh58BR example_interpreters
+ 9.33 KiB / 9.33 KiB [=========================================================================] 100.00%
  ```
 
-Where the line corresponding to the whole directory is `added QmdaBTLX7QReQrK6nn7mBV3EVsmtwAawbeeucaBrkmFroA interpreter`, so the ipfs-store that you should use will be `QmdaBTLX7QReQrK6nn7mBV3EVsmtwAawbeeucaBrkmFroA/`
+Where the line corresponding to the whole directory is `added QmaYuPXKLbyo9QVJrbkN8W5TkgDV1r8SsMnEjg9fbh58BR example_interpreters`, so the ipfs-store that you should use will be `QmaYuPXKLbyo9QVJrbkN8W5TkgDV1r8SsMnEjg9fbh58BR/`
 
 ## How to build ?
 
@@ -107,7 +106,9 @@ You can close the interface using `exit`.
 
 ## Usage
 
-See [interpreter](./interpreter) for examples on how to design an interpreter for libp2p-mpi, and feel free to use the [utils.py](./interpreter/echo/utils.py) file to simplify interactions with libp2p-mpi.
+See [example_interpreters](./example_interpreters) for examples on how to design an interpreter for libp2p-mpi, and feel free to use the [utils.py](./example_interpreters/echo/utils.py) file to simplify interactions with libp2p-mpi.
+
+Note that on download of your interpreter the `init.py` file will be called, and if it returns an error it will remove the interpreter and mark it as `failed` without further consequence, which make it ok to check for requirements in the `init.py` file and return an error if requirements are not fulfilled.
 
 # To-do
 
