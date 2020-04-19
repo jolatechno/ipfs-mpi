@@ -16,7 +16,7 @@ func main() {
 
   go func() {
     for {
-      fmt.Println("\nFiles: ", store.List())
+      fmt.Println("\n", len(store.List()), " Files: ", store.List())
 
       f, err := store.Get(5000000)
       if err != nil {

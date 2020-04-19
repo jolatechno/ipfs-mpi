@@ -7,7 +7,6 @@ import (
   "errors"
   "math/rand"
   "os/exec"
-  //"encoding/json"
 
   shell "github.com/ipfs/go-ipfs-api"
 )
@@ -104,7 +103,6 @@ func NewStore(url string, path string, ipfs_store string) (Store, error) {
     return nil, err
   }
 
-  store.Store = make([]string, len(list))
   for _, file := range list {
     f := file.Name()
 
