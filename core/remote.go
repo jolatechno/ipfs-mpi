@@ -258,18 +258,17 @@ func (r *BasicRemote)Close() error {
 }
 
 func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
-  defer func() {
-    if err := recover(); err != nil {
-      r.Raise(err.(error))
-    }
-  }()
-
   if !r.Check() {
     return
   }
 
   r.StreamMutex.Lock()
-  defer r.StreamMutex.Unlock()
+  defer func() {
+    r.StreamMutex.Unlock()
+    if err := recover(); err != nil {
+      r.Raise(err.(error))
+    }
+  }()
 
   r.Rw = stream
   if stream == io.ReadWriteCloser(nil) {

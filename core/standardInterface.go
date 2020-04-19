@@ -9,8 +9,8 @@ var (
   nilEndHandler = func() {}
   nilErrorHandler = func(err error) {}
 
-  ErrorFormat = "[%s] \033[31m%s\033[0m"
-  AlertFormat = "[%s] \033[33m%s\033[0m"
+  ErrorFormat = "\033[1m[%s]\033[0m \033[31m%s\033[0m"
+  AlertFormat = "\033[1m[%s]\033[0m \033[33m%s\033[0m"
 )
 
 func NewHeadedError(err error, panic bool, header string) error {

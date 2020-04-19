@@ -37,10 +37,12 @@ type safeWaitgroupTwice struct {
 }
 
 func (wg *safeWaitgroupTwice)DoneFirst(i int) {
-  defer recover()
-
   wg.Mutex.Lock()
-  defer wg.Mutex.Unlock()
+  defer func() {
+    wg.Mutex.Unlock()
+    recover()
+  }()
+
   if wg.Value[i] < 1 {
     wg.Value[i] = 1
     wg.WG1.Done()
@@ -54,10 +56,12 @@ func (wg *safeWaitgroupTwice)CheckFist(i int) bool {
 }
 
 func (wg *safeWaitgroupTwice)DoneSecond(i int) {
-  defer recover()
-
   wg.Mutex.Lock()
-  defer wg.Mutex.Unlock()
+  defer func() {
+    wg.Mutex.Unlock()
+    recover()
+  }()
+
   if wg.Value[i] < 2 {
     if wg.Value[i] < 1 {
       wg.WG1.Done()
@@ -69,10 +73,12 @@ func (wg *safeWaitgroupTwice)DoneSecond(i int) {
 }
 
 func (wg *safeWaitgroupTwice)DoneAll(i int) {
-  defer recover()
-
   wg.Mutex.Lock()
-  defer wg.Mutex.Unlock()
+  defer func() {
+    wg.Mutex.Unlock()
+    recover()
+  }()
+
   wg.Jumped[i] = true
   if wg.Value[i] < 2 {
     if wg.Value[i] < 1 {
@@ -85,24 +91,27 @@ func (wg *safeWaitgroupTwice)DoneAll(i int) {
 }
 
 func (wg *safeWaitgroupTwice)CheckSecond(i int) bool {
-  defer recover()
-
   wg.Mutex.Lock()
-  defer wg.Mutex.Unlock()
+  defer func() {
+    wg.Mutex.Unlock()
+    recover()
+  }()
+
   return wg.Value[i] >= 2
 }
 
 func (wg *safeWaitgroupTwice)Check(i int) bool {
-  defer recover()
-
   wg.Mutex.Lock()
-  defer wg.Mutex.Unlock()
+  defer func() {
+    wg.Mutex.Unlock()
+    recover()
+  }()
+
   return !wg.Jumped[i]
 }
 
 func (wg *safeWaitgroupTwice)WaitFirst() {
   defer recover()
-
   wg.WG1.Wait()
 }
 
@@ -286,6 +295,7 @@ func (c *BasicMasterComm)SlaveComm() SlaveComm {
 func (c *BasicMasterComm)Reset(i int, slaveId int) {
   defer func() {
     if err := recover(); err != nil {
+      c.Mutex.Unlock()
       c.Raise(err.(error))
     }
   }()
