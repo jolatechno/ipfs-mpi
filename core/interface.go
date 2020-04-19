@@ -89,6 +89,9 @@ func (s *StdInterface)Start() {
 
     strError := errorBuffer.String()
     if strError != "" {
+      if strError[len(strError) - 1] == '\n' {
+        strError = strError[:len(strError) - 1]
+      }
       s.Raise(errors.New(strError))
     }
 
