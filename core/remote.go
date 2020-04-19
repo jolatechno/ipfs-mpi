@@ -229,7 +229,6 @@ func (r *BasicRemote)SetCloseHandler(handler func()) {
 }
 
 func (r *BasicRemote)Raise(err error) {
-  r.StreamMutex.Unlock()
   hErr := NewHeadedError(err, true, RemoteHeader)
   r.Standard.Raise(hErr)
 }
@@ -264,12 +263,6 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
   }
 
   r.StreamMutex.Lock()
-  defer func() {
-    r.StreamMutex.Unlock()
-    if err := recover(); err != nil {
-      r.Raise(err.(error))
-    }
-  }()
 
   if r.Rw != io.ReadWriteCloser(nil) {
     r.Rw.Close()
@@ -277,9 +270,17 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
 
   r.Rw = stream
   if stream == io.ReadWriteCloser(nil) {
+    r.StreamMutex.Unlock()
     r.Raise(NilStreamError)
     return
   }
+
+  defer func() {
+    r.StreamMutex.Unlock()
+    if err := recover(); err != nil {
+      r.Raise(err.(error))
+    }
+  }()
 
   offset := r.Received
   pingChan := make(chan bool)
