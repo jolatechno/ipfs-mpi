@@ -167,13 +167,15 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
   wg := NewSafeWaitgroupTwice(n, n - 1)
 
-  for j := 1; j < n; j++ {
-    i := j
-
+  for i := 1; i < n; i++ {
     (*comm.Comm.Remotes)[i], err = NewRemote()
     if err != nil {
       return nil, err
     }
+  }
+
+  for j := 1; j < n; j++ {
+    i := j
 
     comm.SlaveComm().Remote(i).SetResetHandler(func(i int, slaveId int) {
       comm.Reset(i, slaveId)

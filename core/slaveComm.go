@@ -161,9 +161,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     comm.Close()
   })
 
-  for j := 1; j < comm.N; j++ {
-    i := j
-
+  for i := 1; i < comm.N; i++ {
     if i == comm.Idx {
       continue
     }
@@ -172,7 +170,11 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     if err != nil {
       return nil, err
     }
+  }
 
+  for j := 1; j < comm.N; j++ {
+    i := j
+    
     comm.Remote(i).SetErrorHandler(func(err error) {
 
       fmt.Printf("[SlaveComm] %d hanged-up on %d\n", i, comm.Idx) //--------------------------
@@ -283,7 +285,7 @@ type BasicSlaveComm struct {
 
 func (c *BasicSlaveComm)Start() {
 
-  fmt.Printf("[SlaveComm] the %dth reset of %d started\n", c.SlaveId, c.Idx) //--------------------------
+  fmt.Printf("[SlaveComm] starting the %dth reset of %d\n", c.SlaveId, c.Idx) //--------------------------
 
   defer func() {
     if err := recover(); err != nil {
@@ -357,7 +359,7 @@ func (c *BasicSlaveComm)Close() error {
 
   if c.Check() {
 
-    fmt.Println("[SlaveComm] Closing ", c.Idx) //--------------------------
+    fmt.Printf("[SlaveComm] Closing the %dth reset of %d\n", c.SlaveId, c.Idx) //--------------------------
 
     c.Standard.Close()
 
