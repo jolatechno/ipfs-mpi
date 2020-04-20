@@ -129,8 +129,7 @@ func (b *BasicFunctionsCloser)Close() error {
 func (b *BasicFunctionsCloser)Raise(err error) {
   defer recover()
 
-  if b.Check() {
-    errH := NewHeadedError(err, b.Header)
+  if errH := NewHeadedError(err, b.Header); b.Check() && errH != nil {
     (*b.ErrorHandler)(errH)
   }
 }

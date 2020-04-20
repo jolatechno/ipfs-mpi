@@ -162,7 +162,7 @@ type BasicRemote struct {
   Standard standardFunctionsCloser
 }
 
-func (r *BasicRemote)send(str string, blocking bool, referenceStream ...io.ReadWriteCloser) {
+func (r *BasicRemote)send(str string, blocking bool, referenceStream ...io.ReadWriteCloser) error {
   defer func() {
     if err := recover(); err != nil {
       r.Raise(err.(error))
@@ -175,7 +175,7 @@ func (r *BasicRemote)send(str string, blocking bool, referenceStream ...io.ReadW
 
   if stream := r.Stream(); stream != io.ReadWriteCloser(nil) {
     if len(referenceStream) == 1 && referenceStream[0] != stream {
-      return
+      return nil
     }
 
     writer := bufio.NewWriter(stream)
@@ -183,30 +183,32 @@ func (r *BasicRemote)send(str string, blocking bool, referenceStream ...io.ReadW
     _, err := writer.WriteString(str + "\n")
     if err != nil {
       if stream == r.Stream() {
-        r.Raise(err)
+        return err
       }
 
-      return
+      return nil
     }
 
-    flush := func() {
+    flush := func() error {
       err := writer.Flush()
       if err != nil {
         if stream == r.Stream() {
-          r.Raise(err)
+          return err
         }
-
-        return
       }
+
+      return nil
     }
 
     if blocking {
-      flush()
+      return flush()
     } else {
-      go flush()
+      go r.Raise(flush())
     }
 
   }
+
+  return nil
 }
 
 func (r *BasicRemote)SetResetHandler(handler func(int, int)) {
@@ -222,11 +224,11 @@ func (r *BasicRemote)SetPingTimeout(timeoutDuration time.Duration) {
 }
 
 func (r *BasicRemote)RequestReset(i int, slaveId int) {
-  r.send(fmt.Sprintf("%s,%d,%d", ResetHeader, i, slaveId), false)
+  r.Raise(r.send(fmt.Sprintf("%s,%d,%d", ResetHeader, i, slaveId), false))
 }
 
 func (r *BasicRemote)CloseRemote() {
-  r.send(CloseHeader, true)
+  r.Raise(r.send(CloseHeader, true))
 }
 
 func (r *BasicRemote)Send(msg string) {
@@ -311,15 +313,23 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...string) {
     r.WriteMutex.Lock()
     defer func() {
       r.WriteMutex.Unlock()
-      recover()
+      if err := recover(); err != nil {
+        r.Raise(err.(error))
+      }
     }()
 
     for _, msg := range msgs {
-      r.send(msg, false, stream)
+      err := r.send(msg, true, stream)
+      if err != nil {
+        panic(err)
+      }
     }
 
     for _, msg := range *r.Sent {
-      r.send(fmt.Sprintf("%s,%s", MessageHeader, msg), false, stream)
+      err := r.send(fmt.Sprintf("%s,%s", MessageHeader, msg), true, stream)
+      if err != nil {
+        panic(err)
+      }
     }
   }()
 
