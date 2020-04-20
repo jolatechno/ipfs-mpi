@@ -175,6 +175,10 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
   for j := 1; j < comm.N; j++ {
     i := j
     
+    if i == comm.Idx {
+      continue
+    }
+
     comm.Remote(i).SetErrorHandler(func(err error) {
 
       fmt.Printf("[SlaveComm] %d hanged-up on %d\n", i, comm.Idx) //--------------------------
