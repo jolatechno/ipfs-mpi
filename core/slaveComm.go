@@ -189,18 +189,25 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
       comm.Close()
     })
 
-      proto := protocol.ID(fmt.Sprintf("%d/%d/%s/%s", i, param.Idx, param.Id, string(base)))
+    proto := protocol.ID(fmt.Sprintf("%d/%d/%s/%s", i, param.Idx, param.Id, string(base)))
     host.SetStreamHandler(proto, func(stream network.Stream) {
       comm.Mutex.Lock()
       defer comm.Mutex.Unlock()
 
       str, err := bufio.NewReader(stream).ReadString('\n')
       if err != nil {
+        stream.Close()
         return
       }
 
       slaveId, err := strconv.Atoi(str[:len(str) - 1])
       if err != nil {
+        stream.Close()
+        return
+      }
+
+      if slaveId <= comm.SlaveIds[i] {
+        stream.Close()
         return
       }
 
@@ -275,6 +282,9 @@ type BasicSlaveComm struct {
 }
 
 func (c *BasicSlaveComm)Start() {
+
+  fmt.Printf("[SlaveComm] the %dth reset of %d started\n", c.SlaveId, c.Idx) //--------------------------
+
   defer func() {
     if err := recover(); err != nil {
       c.Raise(err.(error))

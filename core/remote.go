@@ -169,7 +169,7 @@ func (r *BasicRemote)send(str string, blocking bool, referenceStream ...io.ReadW
     }
   }()
 
-  if str != PingHeader && str != PingRespHeader && str != HandShakeHeader { //--------------------------
+  if str != PingHeader && str != PingRespHeader && str != HandShakeHeader && str != CloseHeader { //--------------------------
     fmt.Printf("[Remote] Sending %q\n", str) //--------------------------
   } //--------------------------
 
@@ -357,7 +357,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
       splitted := strings.Split(scanner.Text(), ",")
 
       str := strings.Join(splitted, ",")//--------------------------
-      if str != PingHeader && str != HandShakeHeader && str != PingRespHeader { //--------------------------
+      if str != PingHeader && str != HandShakeHeader && str != PingRespHeader && str != CloseHeader { //--------------------------
         fmt.Printf("[Remote] Received %q\n", str) //--------------------------
       } //--------------------------
 

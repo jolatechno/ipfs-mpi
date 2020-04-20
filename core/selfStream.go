@@ -18,7 +18,7 @@ var (
   StreamEnded = errors.New("Stream closed")
 
   StandardStreamTimeout = 2 * time.Minute
-  StandardCheckingInterval = 2 * time.Second
+  StandardCheckingInterval = 300 * time.Millisecond
 )
 
 func NewStream(pid protocol.ID) SelfStream {
