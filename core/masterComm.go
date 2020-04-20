@@ -304,7 +304,7 @@ func (c *BasicMasterComm)Reset(i int, slaveId int) {
 
   fmt.Printf("[MasterComm] reseting %d for the %dth time\n", i, c.Comm.SlaveIds[i]) //--------------------------
 
-  for {
+  for c.Check() {
     addr, err := c.SlaveComm().Host().NewPeer(c.Comm.Base)
     if err != nil {
       panic(err) //will be handlled by the recover

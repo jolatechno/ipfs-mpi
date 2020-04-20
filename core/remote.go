@@ -315,11 +315,11 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...string) {
     }()
 
     for _, msg := range msgs {
-      r.send(msg, true, stream)
+      r.send(msg, false, stream)
     }
 
     for _, msg := range *r.Sent {
-      r.send(fmt.Sprintf("%s,%s", MessageHeader, msg), true, stream)
+      r.send(fmt.Sprintf("%s,%s", MessageHeader, msg), false, stream)
     }
   }()
 
