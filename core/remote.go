@@ -23,8 +23,8 @@ var (
   PingRespHeader = "PingResp"
   ResetHeader = "Reset"
 
-  StandardTimeout = 2 * time.Second
-  StandardPingInterval = 2 * time.Second
+  StandardTimeout = 300 * time.Millisecond //Will be increase later
+  StandardPingInterval = 300 * time.Millisecond //Will be increase later
 
   NilStreamError = errors.New("nil stream")
   ErrorInterval = 4 * time.Second
@@ -169,7 +169,7 @@ func (r *BasicRemote)send(str string, blocking bool, referenceStream ...io.ReadW
     }
   }()
 
-  if str != PingHeader && str != PingRespHeader { //--------------------------
+  if /*str != PingHeader &&*/ str != PingRespHeader { //--------------------------
     fmt.Printf("[Remote] Sending %q\n", str) //--------------------------
   } //--------------------------
 
