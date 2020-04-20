@@ -244,7 +244,9 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...string) {
 
   defer func() {
     r.StreamMutex.Unlock()
-    r.raiseCheck(recover().(error), stream)
+    if err := recover(); err != nil {
+      r.raiseCheck(err.(error), stream)
+    }
   }()
 
   offset := r.Received
@@ -254,7 +256,9 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...string) {
     r.WriteMutex.Lock()
     defer func() {
       r.WriteMutex.Unlock()
-      r.raiseCheck(recover().(error), stream)
+      if err := recover(); err != nil {
+        r.raiseCheck(err.(error), stream)
+      }
     }()
 
     for _, msg := range msgs {
@@ -272,7 +276,9 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...string) {
 
   go func() {
     defer func() {
-      r.raiseCheck(recover().(error), stream)
+      if err := recover(); err != nil {
+        r.raiseCheck(err.(error), stream)
+      }
     }()
 
     for r.Check() && r.Stream() == stream {
