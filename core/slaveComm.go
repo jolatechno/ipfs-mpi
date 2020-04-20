@@ -60,7 +60,7 @@ func ParamFromString(msg string) (Param, error) {
   list := make([]peer.ID, n)
 
   if len(addrs) != n {
-    return param, errors.New("lsit length and comm size don't match")
+    return param, errors.New("list length and comm size don't match")
   }
 
   for i, addr := range addrs {
@@ -186,7 +186,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
 
     comm.Remote(i).SetErrorHandler(func(err error) {
 
-      fmt.Printf("[SlaveComm] %d disconnected from %d\n", comm.Idx, i) //--------------------------
+      fmt.Printf("[SlaveComm] %d hanged-up on %d\n", i, comm.Idx) //--------------------------
 
       go comm.Raise(SetNonPanic(err))
       if comm.Remote(i).Stream() != io.ReadWriteCloser(nil) {
@@ -200,7 +200,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
       comm.Close()
     })
 
-    proto := protocol.ID(fmt.Sprintf("%d/%s/%s", i, param.Id, string(base)))
+    proto := protocol.ID(fmt.Sprintf("%d/%d/%s/%s", i, param.Idx, param.Id, string(base)))
     host.SetStreamHandler(proto, func(stream network.Stream) {
       comm.Mutex.Lock()
       defer comm.Mutex.Unlock()
@@ -377,7 +377,7 @@ func (c *BasicSlaveComm)Close() error {
       }
 
       if i != 0 && c.Idx != 0 {
-        proto := protocol.ID(fmt.Sprintf("%d/%s/%s", i, c.Id, string(c.Base)))
+        proto := protocol.ID(fmt.Sprintf("%d/%d/%s/%s", i, c.Idx, c.Id, string(c.Base)))
         c.CommHost.RemoveStreamHandler(proto)
       }
 
@@ -408,7 +408,7 @@ func (c *BasicSlaveComm)Connect(i int, addr peer.ID, msgs ...string) error {
 
   pid := c.Base
   if c.Idx != 0 {
-    pid = protocol.ID(fmt.Sprintf("%d/%s/%s", c.Idx, c.Id, string(c.Base)))
+    pid = protocol.ID(fmt.Sprintf("%d/%d/%s/%s", c.Idx, i, c.Id, string(c.Base)))
   }
 
   rwi, err := timeout.MakeTimeout(func() (interface{}, error) {
