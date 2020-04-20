@@ -88,7 +88,7 @@ type Remote interface {
   SetPingInterval(time.Duration)
   SetPingTimeout(time.Duration)
   Stream() io.ReadWriteCloser
-  Reset(io.ReadWriteCloser)
+  Reset(io.ReadWriteCloser, ...string)
   Get() string
   GetHandshake() chan bool
   Send(string)

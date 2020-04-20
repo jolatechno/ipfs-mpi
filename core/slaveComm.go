@@ -220,7 +220,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
       }
 
       comm.SlaveIds[i] = slaveId
-      comm.Remote(i).Reset(stream)
+      comm.Remote(i).Reset(stream, fmt.Sprint(comm.SlaveId))
     })
   }
 
@@ -438,13 +438,39 @@ func (c *BasicSlaveComm)Connect(i int, addr peer.ID, msgs ...string) error {
 
     _, err = writer.WriteString(msg)
     if err != nil {
+      rwc.Close()
       return err
     }
 
     err = writer.Flush()
     if err != nil {
+      rwc.Close()
       return err
     }
+  }
+
+  if c.Idx != 0 {
+    c.Mutex.Lock()
+    defer c.Mutex.Unlock()
+
+    str, err := bufio.NewReader(rwc).ReadString('\n')
+    if err != nil {
+      rwc.Close()
+      return err
+    }
+
+    slaveId, err := strconv.Atoi(str[:len(str) - 1])
+    if err != nil {
+      rwc.Close()
+      return err
+    }
+
+    if slaveId <= c.SlaveIds[i] {
+      rwc.Close()
+      return err
+    }
+
+    c.SlaveIds[i] = slaveId
   }
 
   c.Remote(i).Reset(rwc)

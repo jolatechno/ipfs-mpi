@@ -285,7 +285,7 @@ func (r *BasicRemote)Close() error {
   return nil
 }
 
-func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
+func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...string) {
   if !r.Check() {
     return
   }
@@ -313,6 +313,10 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
       r.WriteMutex.Unlock()
       recover()
     }()
+
+    for _, msg := range msgs {
+      r.send(msg, true, stream)
+    }
 
     for _, msg := range *r.Sent {
       r.send(fmt.Sprintf("%s,%s", MessageHeader, msg), true, stream)
