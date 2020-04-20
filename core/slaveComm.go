@@ -166,8 +166,6 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
       continue
     }
 
-    comm.SlaveIds[i] = -1
-
     (*comm.Remotes)[i], err = NewRemote()
     if err != nil {
       return nil, err
@@ -214,13 +212,28 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
         return
       }
 
-      if slaveId <= comm.SlaveIds[i] {
+      if slaveId < comm.SlaveIds[i] {
         stream.Close()
         return
       }
 
-      comm.SlaveIds[i] = slaveId
-      comm.Remote(i).Reset(stream, fmt.Sprint(comm.SlaveId))
+      comm.SlaveIds[i] = slaveId + 1
+
+      writer := bufio.NewWriter(stream)
+
+      _, err = writer.WriteString(fmt.Sprintf("%d\n", comm.SlaveId))
+      if err != nil {
+        stream.Close()
+        return
+      }
+
+      err = writer.Flush()
+      if err != nil {
+        stream.Close()
+        return
+      }
+
+      comm.Remote(i).Reset(stream)
     })
   }
 
@@ -248,7 +261,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     }
 
     go func(wp *sync.WaitGroup) {
-      err := comm.Connect(i, (*param.Addrs)[i], fmt.Sprintf("%d\n", param.SlaveId))
+      err := comm.Connect(i, (*param.Addrs)[i], fmt.Sprint("%d\n", param.SlaveId))
       if err != nil {
           go comm.Remote(i).Raise(err)
       }
@@ -465,12 +478,12 @@ func (c *BasicSlaveComm)Connect(i int, addr peer.ID, msgs ...string) error {
       return err
     }
 
-    if slaveId <= c.SlaveIds[i] {
+    if slaveId < c.SlaveIds[i] {
       rwc.Close()
       return err
     }
 
-    c.SlaveIds[i] = slaveId
+    c.SlaveIds[i] = slaveId + 1
   }
 
   c.Remote(i).Reset(rwc)
