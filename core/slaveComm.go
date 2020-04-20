@@ -253,7 +253,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     }
 
     go func(wp *sync.WaitGroup) {
-      err := comm.Connect(i, (*param.Addrs)[i], fmt.Sprint("%d\n", param.SlaveId))
+      err := comm.Connect(i, (*param.Addrs)[i], fmt.Sprint(param.SlaveId))
       if err != nil {
           go comm.Remote(i).Raise(err)
       }
