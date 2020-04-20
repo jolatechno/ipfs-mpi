@@ -200,7 +200,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
       comm.Close()
     })
 
-    proto := protocol.ID(fmt.Sprintf("%d/%d/%s/%s", i, param.Idx, param.Id, string(base)))
+      proto := protocol.ID(fmt.Sprintf("%d/%d/%s/%s", i, param.Idx, param.Id, string(base)))
     host.SetStreamHandler(proto, func(stream network.Stream) {
       comm.Mutex.Lock()
       defer comm.Mutex.Unlock()
