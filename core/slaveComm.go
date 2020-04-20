@@ -161,6 +161,11 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     comm.Close()
   })
 
+  r, ok := (*comm.Remotes)[0].(*BasicRemote) //--------------------------
+  if ok { //--------------------------
+    r.Id = param.Idx //--------------------------
+  } //--------------------------
+
   for j := 1; j < comm.N; j++ {
     i := j
 
