@@ -35,6 +35,10 @@ var (
 func send(stream io.ReadWriteCloser, str string) error {
   defer recover()
 
+  if str != PingHeader && str != HandShakeHeader && str != PingRespHeader && str != CloseHeader { //--------------------------
+    fmt.Printf("[Remote] Sent %q\n", str) //--------------------------
+  } //--------------------------
+
   writer := bufio.NewWriter(stream)
 
   _, err := writer.WriteString(str + "\n")

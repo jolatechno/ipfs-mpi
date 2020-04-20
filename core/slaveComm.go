@@ -447,19 +447,7 @@ func (c *BasicSlaveComm)Connect(i int, addr peer.ID, msgs ...string) error {
   }
 
   for _, msg := range msgs {
-    writer := bufio.NewWriter(rwc)
-
-    _, err = writer.WriteString(msg)
-    if err != nil {
-      rwc.Close()
-      return err
-    }
-
-    err = writer.Flush()
-    if err != nil {
-      rwc.Close()
-      return err
-    }
+    send(rwc, msg)
   }
 
   if c.Idx != 0 {
