@@ -23,8 +23,8 @@ var (
   PingRespHeader = "PingResp"
   ResetHeader = "Reset"
 
-  StandardTimeout = 300 * time.Millisecond //Will be increase later
-  StandardPingInterval = 300 * time.Millisecond //Will be increase later
+  StandardTimeout = 1500 * time.Millisecond //Will be increase later
+  StandardPingInterval = 700 * time.Millisecond //Will be increase later
 
   NilStreamError = errors.New("nil stream")
   ErrorInterval = 4 * time.Second
@@ -160,9 +160,6 @@ type BasicRemote struct {
   HandshakeMessage int
   ReceivedHandshakeMessage int
   Standard standardFunctionsCloser
-
-  Idx int //--------------------------
-  Id int //--------------------------
 }
 
 func (r *BasicRemote)send(str string, blocking bool, referenceStream ...io.ReadWriteCloser) {
@@ -172,8 +169,8 @@ func (r *BasicRemote)send(str string, blocking bool, referenceStream ...io.ReadW
     }
   }()
 
-  if str != PingHeader /*&& str != PingRespHeader*/ && str != HandShakeHeader { //--------------------------
-    fmt.Printf("[Remote] %d,%d Sending %q\n", r.Id, r.Idx, str) //--------------------------
+  if str != PingHeader && str != PingRespHeader && str != HandShakeHeader { //--------------------------
+    fmt.Printf("[Remote] Sending %q\n", str) //--------------------------
   } //--------------------------
 
   if stream := r.Stream(); stream != io.ReadWriteCloser(nil) {
@@ -300,8 +297,6 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
     return
   }
 
-  fmt.Printf("[Remote] %d,%d Reset non-nil\n", r.Id, r.Idx) //--------------------------
-
   defer func() {
     r.StreamMutex.Unlock()
     if err := recover(); err != nil {
@@ -362,8 +357,8 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
       splitted := strings.Split(scanner.Text(), ",")
 
       str := strings.Join(splitted, ",")//--------------------------
-      if str != PingHeader && str != HandShakeHeader /*&& str != PingRespHeader*/ { //--------------------------
-        fmt.Printf("[Remote] %d,%d Received %q\n", r.Id, r.Idx, str) //--------------------------
+      if str != PingHeader && str != HandShakeHeader && str != PingRespHeader { //--------------------------
+        fmt.Printf("[Remote] Received %q\n", str) //--------------------------
       } //--------------------------
 
       switch splitted[0] {

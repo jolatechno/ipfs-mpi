@@ -175,11 +175,6 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
       return nil, err
     }
 
-    r, ok := (*comm.Comm.Remotes)[i].(*BasicRemote) //--------------------------
-    if ok { //--------------------------
-      r.Idx = i //--------------------------
-    } //--------------------------
-
     comm.SlaveComm().Remote(i).SetResetHandler(func(i int, slaveId int) {
       comm.Reset(i, slaveId)
     })

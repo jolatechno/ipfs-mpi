@@ -161,11 +161,6 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     comm.Close()
   })
 
-  r, ok := (*comm.Remotes)[0].(*BasicRemote) //--------------------------
-  if ok { //--------------------------
-    r.Id = param.Idx //--------------------------
-  } //--------------------------
-
   for j := 1; j < comm.N; j++ {
     i := j
 
@@ -177,12 +172,6 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     if err != nil {
       return nil, err
     }
-
-    r, ok := (*comm.Remotes)[i].(*BasicRemote) //--------------------------
-    if ok { //--------------------------
-      r.Idx = i //--------------------------
-      r.Id = param.Idx //--------------------------
-    } //--------------------------
 
     comm.Remote(i).SetErrorHandler(func(err error) {
 
@@ -204,8 +193,6 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     host.SetStreamHandler(proto, func(stream network.Stream) {
       comm.Mutex.Lock()
       defer comm.Mutex.Unlock()
-
-      fmt.Println("[Remote] [StreamHandler]") //--------------------------
 
       str, err := bufio.NewReader(stream).ReadString('\n')
       if err != nil {
@@ -288,9 +275,6 @@ type BasicSlaveComm struct {
 }
 
 func (c *BasicSlaveComm)Start() {
-
-  fmt.Println("[SlaveComm] Starting", c.Idx) //--------------------------
-
   defer func() {
     if err := recover(); err != nil {
       c.Raise(err.(error))
@@ -382,6 +366,8 @@ func (c *BasicSlaveComm)Close() error {
       }
 
       go func() {
+        defer recover()
+
         if c.Idx == 0 {
           c.Remote(i).CloseRemote()
         }
