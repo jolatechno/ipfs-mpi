@@ -32,6 +32,19 @@ var (
   nilRemoteResetHandler = func(int, int) {}
 )
 
+func send(stream io.ReadWriteCloser, str string) error {
+  defer recover()
+
+  writer := bufio.NewWriter(stream)
+
+  _, err := writer.WriteString(str + "\n")
+  if err != nil {
+    return err
+  }
+
+  return writer.Flush()
+}
+
 func NewChannelBool() *safeChannelBool {
   return &safeChannelBool {
     Chan: make(chan bool),
@@ -63,21 +76,6 @@ func (c *safeChannelBool)Close() {
   }()
 
   c.Ended = true
-
-  /*if !c.Ended {
-    c.Ended = true
-
-    for {
-      select {
-      default:
-        break
-      case <- c.Chan:
-        continue
-      }
-    }
-
-    close(c.Chan)
-  }*/
 }
 
 func NewChannelString() *safeChannelString {
@@ -114,21 +112,6 @@ func (c *safeChannelString)Close() {
   }()
 
   c.Ended = true
-
-  /*if !c.Ended {
-    c.Ended = true
-
-    for {
-      select {
-      default:
-        break
-      case <- c.Chan:
-        continue
-      }
-    }
-
-    close(c.Chan)
-  }*/
 }
 
 func NewRemote() (Remote, error) {
@@ -162,53 +145,11 @@ type BasicRemote struct {
   Standard standardFunctionsCloser
 }
 
-func (r *BasicRemote)send(str string, blocking bool, referenceStream ...io.ReadWriteCloser) error {
-  defer func() {
-    if err := recover(); err != nil {
-      r.Raise(err.(error))
-    }
-  }()
-
-  if str != PingHeader && str != PingRespHeader && str != HandShakeHeader && str != CloseHeader { //--------------------------
-    fmt.Printf("[Remote] Sending %q\n", str) //--------------------------
-  } //--------------------------
-
-  if stream := r.Stream(); stream != io.ReadWriteCloser(nil) {
-    if len(referenceStream) == 1 && referenceStream[0] != stream {
-      return nil
-    }
-
-    writer := bufio.NewWriter(stream)
-
-    _, err := writer.WriteString(str + "\n")
-    if err != nil {
-      if stream == r.Stream() {
-        return err
-      }
-
-      return nil
-    }
-
-    flush := func() error {
-      err := writer.Flush()
-      if err != nil {
-        if stream == r.Stream() {
-          return err
-        }
-      }
-
-      return nil
-    }
-
-    if blocking {
-      return flush()
-    } else {
-      go r.Raise(flush())
-    }
-
+func (r *BasicRemote)raiseCheck(err error, stream io.ReadWriteCloser) bool {
+  if r.Stream() == stream {
+    r.Raise(err)
   }
-
-  return nil
+  return err == nil
 }
 
 func (r *BasicRemote)SetResetHandler(handler func(int, int)) {
@@ -224,11 +165,13 @@ func (r *BasicRemote)SetPingTimeout(timeoutDuration time.Duration) {
 }
 
 func (r *BasicRemote)RequestReset(i int, slaveId int) {
-  r.Raise(r.send(fmt.Sprintf("%s,%d,%d", ResetHeader, i, slaveId), false))
+  stream := r.Stream()
+  go r.raiseCheck(send(stream, fmt.Sprintf("%s,%d,%d", ResetHeader, i, slaveId)), stream)
 }
 
 func (r *BasicRemote)CloseRemote() {
-  r.Raise(r.send(CloseHeader, true))
+  stream := r.Stream()
+  go r.raiseCheck(send(stream, CloseHeader), stream)
 }
 
 func (r *BasicRemote)Send(msg string) {
@@ -236,11 +179,11 @@ func (r *BasicRemote)Send(msg string) {
   *r.Sent = append(*r.Sent, msg)
   r.WriteMutex.Unlock()
 
-  r.send(fmt.Sprintf("%s,%s", MessageHeader, msg), false)
+  go r.Raise(send(r.Stream(), fmt.Sprintf("%s,%s", MessageHeader, msg)))
 }
 
 func (r *BasicRemote)SendHandshake() {
-  r.send(HandShakeHeader, false)
+  go r.Raise(send(r.Stream(), HandShakeHeader))
 }
 
 func (r *BasicRemote)Get() string {
@@ -301,9 +244,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...string) {
 
   defer func() {
     r.StreamMutex.Unlock()
-    if err := recover(); err != nil {
-      r.Raise(err.(error))
-    }
+    r.raiseCheck(recover().(error), stream)
   }()
 
   offset := r.Received
@@ -313,38 +254,32 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...string) {
     r.WriteMutex.Lock()
     defer func() {
       r.WriteMutex.Unlock()
-      if err := recover(); err != nil {
-        r.Raise(err.(error))
-      }
+      r.raiseCheck(recover().(error), stream)
     }()
 
     for _, msg := range msgs {
-      err := r.send(msg, true, stream)
-      if err != nil {
-        panic(err)
+      if !r.raiseCheck(send(stream, msg), stream) {
+        return
       }
     }
 
     for _, msg := range *r.Sent {
-      err := r.send(fmt.Sprintf("%s,%s", MessageHeader, msg), true, stream)
-      if err != nil {
-        panic(err)
+      if !r.raiseCheck(send(stream, fmt.Sprintf("%s,%s", MessageHeader, msg)), stream) {
+        return
       }
     }
   }()
 
   go func() {
     defer func() {
-      if err := recover(); err != nil {
-        r.Raise(err.(error))
-      }
+      r.raiseCheck(recover().(error), stream)
     }()
 
     for r.Check() && r.Stream() == stream {
       time.Sleep(r.PingInterval)
 
       err := timeout.MakeSimpleTimeout(func() error {
-        r.send(PingHeader, false, stream)
+        go r.raiseCheck(send(stream, PingHeader), stream)
         _, ok := <- pingChan.Chan
         if ok {
           return nil
@@ -403,7 +338,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...string) {
         go r.HandshakeChan.Send(true)
 
       case PingHeader:
-        r.send(PingRespHeader, false, stream)
+        go r.raiseCheck(send(stream, PingRespHeader), stream)
 
       case PingRespHeader:
         go pingChan.Send(true)
@@ -434,9 +369,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...string) {
 
     pingChan.Close()
 
-    if err := scanner.Err(); err != nil && r.Stream() == stream {
-      r.Raise(err)
-    }
+    r.raiseCheck(scanner.Err(), stream)
 
     if !r.Check() {
       r.ReadChan.Close()
