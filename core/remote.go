@@ -10,7 +10,7 @@ import (
   "sync"
   "time"
 
-  "github.com/jolatechno/go-timeout"
+  //"github.com/jolatechno/go-timeout" unused for now
 )
 
 var (
@@ -278,7 +278,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...string) {
     }
   }()
 
-  go func() {
+  /*go func() {  removed pinging for testing purpose
     defer func() {
       if err := recover(); err != nil {
         r.raiseCheck(err.(error), stream)
@@ -301,7 +301,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...string) {
         r.Raise(err)
       }
     }
-  }()
+  }()*/
 
   go func() {
     defer func() {
