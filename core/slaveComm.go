@@ -219,15 +219,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
 
       comm.SlaveIds[i] = slaveId + 1
 
-      writer := bufio.NewWriter(stream)
-
-      _, err = writer.WriteString(fmt.Sprintf("%d\n", comm.SlaveId))
-      if err != nil {
-        stream.Close()
-        return
-      }
-
-      err = writer.Flush()
+      err = send(stream, fmt.Sprint(comm.SlaveId))
       if err != nil {
         stream.Close()
         return
@@ -447,7 +439,11 @@ func (c *BasicSlaveComm)Connect(i int, addr peer.ID, msgs ...string) error {
   }
 
   for _, msg := range msgs {
-    send(rwc, msg)
+    err := send(rwc, msg)
+    if err != nil {
+      rwc.Close()
+      return err
+    }
   }
 
   if c.Idx != 0 {
