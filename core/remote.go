@@ -23,7 +23,7 @@ var (
   PingRespHeader = "PingResp"
   ResetHeader = "Reset"
 
-  StandardTimeout = 1500 * time.Millisecond //Will be increase later
+  StandardTimeout = 2 * time.Second //Will be increase later
   StandardPingInterval = 700 * time.Millisecond //Will be increase later
 
   NilStreamError = errors.New("nil stream")
