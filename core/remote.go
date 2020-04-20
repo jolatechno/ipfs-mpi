@@ -35,6 +35,10 @@ var (
 func send(stream io.ReadWriteCloser, str string) error {
   defer recover()
 
+  if stream == io.ReadWriteCloser(nil) {
+    return nil
+  }
+
   if str != PingHeader && str != HandShakeHeader && str != PingRespHeader && str != CloseHeader { //--------------------------
     fmt.Printf("[Remote] Sent %q\n", str) //--------------------------
   } //--------------------------
@@ -46,7 +50,8 @@ func send(stream io.ReadWriteCloser, str string) error {
     return err
   }
 
-  return writer.Flush()
+  err = writer.Flush()
+  return err
 }
 
 func NewChannelBool() *safeChannelBool {
