@@ -97,7 +97,7 @@ func NewMpi(ctx context.Context, config Config) (Mpi, error) {
   go func() {
     for mpi.Check() {
       time.Sleep(ThrottleDuration)
-      
+
       occupied, err := store.Occupied()
       if err != nil {
         return

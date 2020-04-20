@@ -160,6 +160,9 @@ type BasicRemote struct {
   HandshakeMessage int
   ReceivedHandshakeMessage int
   Standard standardFunctionsCloser
+
+  Idx int //--------------------------
+  Id int //--------------------------
 }
 
 func (r *BasicRemote)send(str string, blocking bool, referenceStream ...io.ReadWriteCloser) {
@@ -169,8 +172,8 @@ func (r *BasicRemote)send(str string, blocking bool, referenceStream ...io.ReadW
     }
   }()
 
-  if /*str != PingHeader &&*/ str != PingRespHeader { //--------------------------
-    fmt.Printf("[Remote] Sending %q\n", str) //--------------------------
+  if str != PingHeader && str != PingRespHeader && str != HandShakeHeader { //--------------------------
+    fmt.Printf("[Remote] %d,%d Sending %q\n", r.Id, r.Idx, str) //--------------------------
   } //--------------------------
 
   if stream := r.Stream(); stream != io.ReadWriteCloser(nil) {
@@ -297,6 +300,8 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
     return
   }
 
+  fmt.Printf("[Remote] %d,%d Reset non-nil\n", r.Id, r.Idx) //--------------------------
+
   defer func() {
     r.StreamMutex.Unlock()
     if err := recover(); err != nil {
@@ -339,13 +344,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
       }, r.PingTimeout)
 
       if err != nil {
-        if stream == r.Stream() {
-          if err == errors.New("Channel closed") {
-            r.Raise(err)
-          } else {
-            r.Raise(errors.New("Ping timeout"))
-          }
-        }
+        r.Raise(err)
       }
     }
   }()
@@ -364,7 +363,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser) {
 
       str := strings.Join(splitted, ",")//--------------------------
       if str != PingHeader && str != PingRespHeader { //--------------------------
-        fmt.Printf("[Remote] Received %q\n", str) //--------------------------
+        fmt.Printf("[Remote] %d,%d Received %q\n", r.Id, r.Idx, str) //--------------------------
       } //--------------------------
 
       switch splitted[0] {

@@ -173,6 +173,12 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
       return nil, err
     }
 
+    r, ok := (*comm.Remotes)[i].(*BasicRemote) //--------------------------
+    if ok { //--------------------------
+      r.Idx = i //--------------------------
+      r.Id = param.Idx //--------------------------
+    } //--------------------------
+
     comm.Remote(i).SetErrorHandler(func(err error) {
 
       fmt.Printf("[SlaveComm] %d disconnected from %d\n", comm.Idx, i) //--------------------------
