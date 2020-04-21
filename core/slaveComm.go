@@ -404,7 +404,7 @@ func (c *BasicSlaveComm)Close() error {
 func (c *BasicSlaveComm)Connect(i int, addr peer.ID, msgs ...string) error {
 
   if c.Idx == 0 { //--------------------------
-    fmt.Printf("[MasterComm] connecting to %d with address: %q\n", i, addr) //--------------------------
+    fmt.Printf("[MasterComm] connecting to %d reset of %d with address: %q\n", c.SlaveIds[i], i, addr) //--------------------------
   } //--------------------------
 
   defer func() {

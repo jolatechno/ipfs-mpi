@@ -120,6 +120,8 @@ github.com/jolatechno/go-timeout v0.0.0-20200411125652-7b3152960795 h1:9WgdmfWr/
 github.com/jolatechno/go-timeout v0.0.0-20200411125652-7b3152960795/go.mod h1:paJwIP2pqExVj8gEqc5Kz6kEhgkoUad8eRNAYi2EH7I=
 github.com/jolatechno/go-timeout v0.0.0-20200418073152-4b2fffd6ee58 h1:1JUa9A8Iko6yUnowo8sQxRqFagkeh6LsHcmgl6s+6lw=
 github.com/jolatechno/go-timeout v0.0.0-20200418073152-4b2fffd6ee58/go.mod h1:paJwIP2pqExVj8gEqc5Kz6kEhgkoUad8eRNAYi2EH7I=
+github.com/jolatechno/go-timeout v0.0.0-20200421091832-05f54f6ce401 h1:jHwRnYZtD/uKOX3Up7+ngov3K980TBaHXE8PxvMBr+E=
+github.com/jolatechno/go-timeout v0.0.0-20200421091832-05f54f6ce401/go.mod h1:paJwIP2pqExVj8gEqc5Kz6kEhgkoUad8eRNAYi2EH7I=
 github.com/jolatechno/ipfs-mpi/core v0.0.0-20200402125506-8091fb1a3606 h1:z4qrJn6khEkaInOLB8xUjqDItDGJa1v4eFBmDNqOaWE=
 github.com/jolatechno/ipfs-mpi/core v0.0.0-20200402125506-8091fb1a3606/go.mod h1:awbRXEkOTFNgcUqT0BhgBBlGqtlagHOPoxgr+2HMWjU=
 github.com/jolatechno/ipfs-mpi/core v0.0.0-20200402135516-306c7f168c36 h1:9hzDopwWO3vdBn6DmeTbJDp+AkAVTdAEnnvy5xS9M0A=
@@ -757,6 +759,8 @@ github.com/jolatechno/ipfs-mpi/core v0.0.0-20200421084324-b003bb04c0ac h1:F5UE4t
 github.com/jolatechno/ipfs-mpi/core v0.0.0-20200421084324-b003bb04c0ac/go.mod h1:ubl9ypw9qA/wup+lpOpi/J4eDQVzjIb+X6Dzdt+AE4o=
 github.com/jolatechno/ipfs-mpi/core v0.0.0-20200421085520-6487bb205351 h1:cxxbzVrJAfNa3cneYs8aoAxbl1glbOxzBSsc1IeHMWA=
 github.com/jolatechno/ipfs-mpi/core v0.0.0-20200421085520-6487bb205351/go.mod h1:ubl9ypw9qA/wup+lpOpi/J4eDQVzjIb+X6Dzdt+AE4o=
+github.com/jolatechno/ipfs-mpi/core v0.0.0-20200421092756-f63a01bf8527 h1:7LdDkSYHGpBJlEGy8VvX5q31rQZCpbiAceEu3vlVTYA=
+github.com/jolatechno/ipfs-mpi/core v0.0.0-20200421092756-f63a01bf8527/go.mod h1:W2gWEyE4V66qnxyCgG4eN3EM+XBqkEnbDbZLpCg/ZQU=
 github.com/jrick/logrotate v1.0.0/go.mod h1:LNinyqDIJnpAur+b8yyulnQw/wDuN1+BYKlTRt3OuAQ=
 github.com/kami-zh/go-capturer v0.0.0-20171211120116-e492ea43421d/go.mod h1:P2viExyCEfeWGU259JnaQ34Inuec4R38JCyBx2edgD0=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=

@@ -6,6 +6,7 @@ import (
   "context"
   "sync"
   "errors"
+  "io"
 
   "github.com/libp2p/go-libp2p-core/protocol"
   "github.com/libp2p/go-libp2p-core/peer"
@@ -236,6 +237,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
     comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
       comm.Raise(SetNonPanic(err))
+      comm.SlaveComm().Remote(i).Reset(io.ReadWriteCloser(nil))
       comm.Reset(i, -1)
     })
 
