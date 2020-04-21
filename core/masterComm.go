@@ -303,7 +303,7 @@ func (c *BasicMasterComm)Reset(i int, slaveId int) {
 
   c.Comm.SlaveIds[i]++
 
-  c.Raise(errors.New(fmt.Sprintf("reseting %d for the %dth time", i, c.Comm.SlaveIds[i])))
+  c.Raise(SetNonPanic(errors.New(fmt.Sprintf("reseting %d for the %dth time", i, c.Comm.SlaveIds[i]))))
 
   for c.Check() {
     addr, err := c.SlaveComm().Host().NewPeer(c.Comm.Base)

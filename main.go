@@ -3,14 +3,16 @@ package main
 import (
   "errors"
   "context"
-  "bufio"
+  //"bufio"
   "strings"
   "strconv"
-  "os"
+  //"os"
   "fmt"
   "log"
 
   "github.com/jolatechno/ipfs-mpi/core"
+
+  "github.com/carmark/pseudo-terminal-go/terminal"
 )
 
 const (
@@ -44,9 +46,19 @@ func main(){
     fmt.Println("swarm listening on ", addr)
   }
 
-  scanner := bufio.NewScanner(os.Stdin)
-  for store.Check() && scanner.Scan() {
-    cmd := scanner.Text()
+  term, err := terminal.NewWithStdInOut()
+	if err != nil {
+		panic(err)
+	}
+	defer term.ReleaseFromStdInOut() // defer this
+
+  //scanner := bufio.NewScanner(os.Stdin)
+  for store.Check()/* && scanner.Scan()*/ {
+    //cmd := scanner.Text()
+    cmd, err:= term.ReadLine()
+    if err != nil {
+      panic(err)
+    }
 
     splitted := strings.Split(cmd, " ")
     if len(splitted) == 0 {
@@ -109,7 +121,7 @@ func main(){
     }
   }
 
-  if err := scanner.Err(); err != nil {
+  /*if err := scanner.Err(); err != nil {
     panic(err)
-  }
+  }*/
 }
