@@ -17,18 +17,18 @@ ipfs add -r example_interpreters
 Which will give an output resembling :
 
 ```
-added QmQVixfS5Hb2uVy9jhVYogntCmTP7HD99omcL9doizhajL example_interpreters/echo/__pycache__/utils.cpython-37.pyc
+added QmWnZhpMzobocK3LqYokq6WNjsnNoszJcgBwjbABwmYMHS example_interpreters/echo/__pycache__/utils.cpython-37.pyc
 added QmYjH4sibLpCSNCVbHXhfCZY78Ckj2aDDMWFwup7NGJ3JD example_interpreters/echo/init.py
-added QmWR3NepbDyh7BP6tSfmxAR5Qj7tKG6tA87efVMxQ1grr6 example_interpreters/echo/run.py
+added QmTaujxGjagaps15tSBWrFU3aHHucBGtMuxr1mgiQjzrMf example_interpreters/echo/run.py
 
 ...
 
-added Qmci7BaxqTX2k5YPnt7UhoxLcE9bTUZGgA4epMBmh9ouxm example_interpreters/round_echo
-added QmaYuPXKLbyo9QVJrbkN8W5TkgDV1r8SsMnEjg9fbh58BR example_interpreters
- 9.33 KiB / 9.33 KiB [=========================================================================] 100.00%
+added QmTgg9mvFT9ZLMewcywrTxXchGfdfNcEU1DaNHZXkd7jBM example_interpreters/round_echo
+added QmaczSWUzonPp9C2cE52UgNiKpzbtz571pJr6dB65kseVg example_interpreters
+ 8.89 KiB / 8.89 KiB [===========================================================================] 100.00%
  ```
 
-Where the line corresponding to the whole directory is `added QmaYuPXKLbyo9QVJrbkN8W5TkgDV1r8SsMnEjg9fbh58BR example_interpreters`, so the ipfs-store that you should use will be `QmaYuPXKLbyo9QVJrbkN8W5TkgDV1r8SsMnEjg9fbh58BR/`
+Where the line corresponding to the whole directory is `added QmaczSWUzonPp9C2cE52UgNiKpzbtz571pJr6dB65kseVg example_interpreters`, so the ipfs-store that you should use will be `QmaczSWUzonPp9C2cE52UgNiKpzbtz571pJr6dB65kseVg/`
 
 ## How to build ?
 
@@ -65,7 +65,7 @@ For example :
 You can list all installed interpreters using :
 
 ```
-List
+list
 ```
 
 #### Start
@@ -73,7 +73,7 @@ List
 You can start a interpreter using :
 
 ```
-Start file n args...
+start file n args...
 ```
 
 with `file` being the name of the interpreter, `n` the size the number of peers to connect to and `args` a list of argument to pass to the interpreter
@@ -83,7 +83,7 @@ with `file` being the name of the interpreter, `n` the size the number of peers 
 You can add interpreters using :
 
 ```
-Add interpreters...
+add interpreters...
 ```
 
 with `interpreters` being a list of interpreter names.
@@ -93,14 +93,14 @@ with `interpreters` being a list of interpreter names.
 You can delete interpreters using :
 
 ```
-Del interpreters...
+del interpreters...
 ```
 
 with `interpreters` being a list of interpreter names.
 
 #### exit
 
-You can close the interface using `exit`.
+You can cleanly exit the interface using `exit` (using `ctrl+c` will have exactly the same effect).
 
 ## Usage
 

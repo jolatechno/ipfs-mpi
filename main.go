@@ -48,7 +48,8 @@ func main(){
 
   term, err := terminal.NewWithStdInOut()
 	if err != nil {
-		panic(err)
+    store.Close()
+    return
 	}
 	defer term.ReleaseFromStdInOut() // defer this
 
@@ -57,7 +58,8 @@ func main(){
     //cmd := scanner.Text()
     cmd, err:= term.ReadLine()
     if err != nil {
-      panic(err)
+      store.Close()
+      return
     }
 
     splitted := strings.Split(cmd, " ")
@@ -69,13 +71,13 @@ func main(){
     default:
       store.Raise(core.CommandNotUnderstood)
 
-    case "List":
+    case "list":
       list := store.Store().List()
       for _, f := range list {
         fmt.Println(" ", f)
       }
 
-    case "Start":
+    case "start":
       if len(splitted) < 3 {
         store.Raise(errors.New("No size given"))
         continue
@@ -97,7 +99,7 @@ func main(){
         }
       }()
 
-    case "Add":
+    case "add":
       if len(splitted) < 2 {
         store.Raise(errors.New("No file given"))
         continue
@@ -107,7 +109,7 @@ func main(){
         go store.Add(f)
       }
 
-    case "Del":
+    case "del":
       if len(splitted) < 2 {
         store.Raise(errors.New("No file given"))
         continue
