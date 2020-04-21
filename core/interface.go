@@ -30,7 +30,6 @@ var (
   InterfaceSendHeader = "Send"
   InterfaceResetHeader = "Reset"
   InterfaceRequestHeader = "Req"
-  InterfaceExitHeader = "Exit"
 
   logFormat = "\033[34m%s\033[0m\n"
   masterLogFormat = "\033[32m%s\033[0m\n"
@@ -112,13 +111,13 @@ func (s *StdInterface)Start() {
 
     for s.Check() && scanner.Scan() {
       splitted := strings.Split(scanner.Text(), ",")
+      if !s.Check() { //can happen after a long wait
+        break
+      }
 
       switch splitted[0] {
       default:
         s.Raise(HeaderNotUnderstood)
-
-      case InterfaceExitHeader:
-        s.Close()
 
       case InterfaceRequestHeader:
         if len(splitted) < 2 {
@@ -174,9 +173,7 @@ func (s *StdInterface)Start() {
       }
     }
 
-    if err := scanner.Err(); err != nil {
-      s.Raise(err)
-    }
+    //we don't care about error at the end of here
   }()
 }
 
