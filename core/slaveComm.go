@@ -157,19 +157,12 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
         continue
       }
 
-      if i != 0 && comm.Idx != 0 {
+      if i != 0 {
         proto := protocol.ID(fmt.Sprintf("%d/%d/%d/%s/%s", i, comm.Idx, comm.SlaveIds[comm.Idx], comm.Id, string(comm.Base)))
         comm.CommHost.RemoveStreamHandler(proto)
       }
 
-      go func() {
-        defer recover()
-
-        if comm.Idx == 0 {
-          comm.Remote(i).CloseRemote()
-        }
-        comm.Remote(i).Close()
-      }()
+      go comm.Remote(i).Close()
 
     }
 

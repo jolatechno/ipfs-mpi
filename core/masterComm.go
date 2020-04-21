@@ -157,9 +157,31 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
       CommHost: host,
       Base: base,
       Remotes: &remotes,
-      Standard: NewStandardInterface(MasterCommHeader),
     },
   }
+
+  close := func() error {
+
+    fmt.Printf("[MasterComm] Closing") //--------------------------
+
+    go comm.SlaveComm().Interface().Close()
+
+    for j := 1; j < comm.Comm.N; j++ {
+      i := j
+
+      go func() {
+        defer recover()
+
+        comm.SlaveComm().Remote(i).CloseRemote()
+        comm.SlaveComm().Remote(i).Close()
+      }()
+
+    }
+
+    return nil
+  }
+
+  comm.Comm.Standard = NewStandardInterface(MasterCommHeader, close)
 
   defer func() {
     if err := recover(); err != nil {
