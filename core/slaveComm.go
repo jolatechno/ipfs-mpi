@@ -142,8 +142,41 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     CommHost: host,
     Base: base,
     Remotes: &remotes,
-    Standard: NewStandardInterface(SlaveCommHeader),
   }
+
+  close := func() error {
+
+    fmt.Printf("[SlaveComm] Closing the %dth reset of %d\n", comm.SlaveIds[comm.Idx], comm.Idx) //--------------------------
+
+    go comm.Interface().Close()
+
+    for j := 0; j < comm.N; j++ {
+      i := j
+
+      if i == comm.Idx {
+        continue
+      }
+
+      if i != 0 && comm.Idx != 0 {
+        proto := protocol.ID(fmt.Sprintf("%d/%d/%d/%s/%s", i, comm.Idx, comm.SlaveIds[comm.Idx], comm.Id, string(comm.Base)))
+        comm.CommHost.RemoveStreamHandler(proto)
+      }
+
+      go func() {
+        defer recover()
+
+        if comm.Idx == 0 {
+          comm.Remote(i).CloseRemote()
+        }
+        comm.Remote(i).Close()
+      }()
+
+    }
+
+    return nil
+  }
+
+  comm.Standard = NewStandardInterface(SlaveCommHeader, close)
 
   defer func() {
     if err := recover(); err != nil {
@@ -360,45 +393,7 @@ func (c *BasicSlaveComm)Host() ExtHost {
 }
 
 func (c *BasicSlaveComm)Close() error {
-  defer func() {
-    if err := recover(); err != nil {
-      c.Raise(err.(error))
-    }
-  }()
-
-  if c.Check() {
-
-    fmt.Printf("[SlaveComm] Closing the %dth reset of %d\n", c.SlaveIds[c.Idx], c.Idx) //--------------------------
-
-    c.Standard.Close()
-
-    go c.Interface().Close()
-
-    for j := 0; j < c.N; j++ {
-      i := j
-
-      if i == c.Idx {
-        continue
-      }
-
-      if i != 0 && c.Idx != 0 {
-        proto := protocol.ID(fmt.Sprintf("%d/%d/%d/%s/%s", i, c.Idx, c.SlaveIds[c.Idx], c.Id, string(c.Base)))
-        c.CommHost.RemoveStreamHandler(proto)
-      }
-
-      go func() {
-        defer recover()
-
-        if c.Idx == 0 {
-          c.Remote(i).CloseRemote()
-        }
-        c.Remote(i).Close()
-      }()
-
-    }
-  }
-
-  return nil
+  return c.Standard.Close()
 }
 
 func (c *BasicSlaveComm)Connect(i int, addr peer.ID, msgs ...string) error {

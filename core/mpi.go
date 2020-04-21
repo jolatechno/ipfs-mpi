@@ -81,8 +81,34 @@ func NewMpi(ctx context.Context, config Config) (Mpi, error) {
     Ipfs_store: config.Ipfs_store,
     MpiHost: host,
     MpiStore: store,
-    Standard: NewStandardInterface(MpiHeader),
   }
+
+  close := func() error {
+    mpi.Ctx.Done()
+
+    err :=mpi.Store().Close()
+    if err != nil {
+      return err
+    }
+
+    err = mpi.Host().Close()
+    if err != nil {
+      return err
+    }
+
+    mpi.ToClose.Range(func(key interface{}, value interface{}) bool {
+      closer, ok := value.(io.Closer)
+      if ok {
+        closer.Close()
+      }
+      
+      return true
+    })
+
+    return nil
+  }
+
+  mpi.Standard = NewStandardInterface(MpiHeader, close)
 
   defer func() {
     if err := recover(); err != nil {
@@ -204,25 +230,7 @@ func (m *BasicMpi)Del(f string) error {
 }
 
 func (m *BasicMpi)Close() error {
-  defer recover()
-
-  if m.Check() {
-    m.Standard.Close()
-
-    m.Ctx.Done()
-
-    err := m.Store().Close()
-    if err != nil {
-      return err
-    }
-
-    err = m.Host().Close()
-    if err != nil {
-      return err
-    }
-  }
-
-  return nil
+  return m.Standard.Close()
 }
 
 func (m *BasicMpi)Add(f string) error {

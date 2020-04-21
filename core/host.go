@@ -155,7 +155,7 @@ func NewHost(ctx context.Context, bootstrapPeers ...maddr.Multiaddr) (ExtHost, e
     StreamHandlers: streamHandlers,
     Routing: routingDiscovery,
     PeerStores: make(map[protocol.ID] peerstore.Peerstore),
-    Standard: NewStandardInterface(HostHeader),
+    Standard: NewStandardInterface(HostHeader, h.Close),
   }, nil
 }
 
@@ -169,12 +169,7 @@ type BasicExtHost struct {
 }
 
 func (h *BasicExtHost)Close() error {
-  if h.Check() {
-    h.Standard.Close()
-    return h.Host.Close()
-  }
-
-  return nil
+  return h.Standard.Close()
 }
 
 func (h *BasicExtHost)SetCloseHandler(handler func()) {

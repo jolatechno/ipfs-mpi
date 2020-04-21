@@ -123,7 +123,7 @@ func (c *safeChannelString)Close() {
 }
 
 func NewRemote() (Remote, error) {
-  return &BasicRemote {
+  remote :=  &BasicRemote {
     ResetHandler: &nilRemoteResetHandler,
     PingInterval: StandardPingInterval,
     PingTimeout: StandardTimeout,
@@ -132,8 +132,20 @@ func NewRemote() (Remote, error) {
     Sent: &[]string{},
     Rw: nil,
     Received: 0,
-    Standard: NewStandardInterface(RemoteHeader),
-  }, nil
+  }
+
+  close := func() error {
+    if stream := remote.Stream(); stream != io.ReadWriteCloser(nil) {
+      stream.Close()
+      remote.Rw = io.ReadWriteCloser(nil)
+    }
+
+    return nil
+  }
+
+  remote.Standard = NewStandardInterface(RemoteHeader, close)
+
+  return remote, nil
 }
 
 type BasicRemote struct {
@@ -225,17 +237,7 @@ func (r *BasicRemote)Stream() io.ReadWriteCloser {
 }
 
 func (r *BasicRemote)Close() error {
-  defer recover()
-
-  if r.Check() {
-    r.Standard.Close()
-
-    if stream := r.Stream(); stream != io.ReadWriteCloser(nil) {
-      stream.Close()
-      r.Rw = io.ReadWriteCloser(nil)
-    }
-  }
-  return nil
+  return r.Standard.Close()
 }
 
 func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...string) {

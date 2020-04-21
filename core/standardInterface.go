@@ -80,11 +80,12 @@ func (err *HeadedError)Error() string {
   return fmt.Sprintf(AlertFormat, err.Header, err.Err.Error())
 }
 
-func NewStandardInterface(header string) standardFunctionsCloser {
+func NewStandardInterface(header string, additionalHandler ...func() error) standardFunctionsCloser {
   return &BasicFunctionsCloser {
     Header: header,
     EndHandler: &nilEndHandler,
     ErrorHandler: &nilErrorHandler,
+    AdditionalHandler: additionalHandler,
   }
 }
 
@@ -93,6 +94,7 @@ type BasicFunctionsCloser struct {
   Mutex sync.Mutex
   Ended bool
   EndHandler *func()
+  AdditionalHandler []func() error
   ErrorHandler *func(error)
 }
 
@@ -118,6 +120,13 @@ func (b *BasicFunctionsCloser)Close() error {
   }()
 
   if !b.Ended {
+    for _, handler := range b.AdditionalHandler {
+      err := handler()
+      if err != nil {
+        return err
+      }
+    }
+    
     (*b.EndHandler)()
 
     b.Ended = true
