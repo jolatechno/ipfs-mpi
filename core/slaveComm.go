@@ -21,8 +21,14 @@ var (
   SlaveCommHeader = "SlaveComm"
 )
 
-func ParamFromString(msg string) (Param, error) {
+func ParamFromString(msg string) (_ Param, err error) {
   param := Param{}
+
+  len_msg := len(msg) - 1
+  if msg[len_msg] == '\n' {
+    msg = msg[:len_msg]
+  }
+
   splitted := strings.Split(msg, ",")
   if len(splitted) != 6 {
     return param, errors.New("Param dosen't have the right number fields")
@@ -36,30 +42,34 @@ func ParamFromString(msg string) (Param, error) {
     return param, errors.New("bool header not understood")
   }
 
-  idx, err := strconv.Atoi(splitted[1])
+  param.Idx, err = strconv.Atoi(splitted[1])
   if err != nil {
     return param, err
   }
 
-  slaveId, err := strconv.Atoi(splitted[2])
+  param.N, err = strconv.Atoi(splitted[2])
   if err != nil {
     return param, err
   }
 
-  n, err := strconv.Atoi(splitted[3])
-  if err != nil {
-    return param, err
+  slaveIds := strings.Split(splitted[3], ";")
+  param.SlaveIds = make([]int, param.N)
+
+  if len(slaveIds) != param.N {
+    return param, errors.New("list length and comm size don't match")
   }
 
-  len_addrs := len(splitted[5]) - 1
-  if splitted[5][len_addrs] == '\n' {
-    splitted[5] = splitted[5][:len_addrs]
+  for i, id := range slaveIds {
+    param.SlaveIds[i], err = strconv.Atoi(id)
+    if err != nil {
+      return param, err
+    }
   }
 
   addrs := strings.Split(splitted[5], ";")
-  list := make([]peer.ID, n)
+  list := make([]peer.ID, param.N)
 
-  if len(addrs) != n {
+  if len(addrs) != param.N {
     return param, errors.New("list length and comm size don't match")
   }
 
@@ -72,10 +82,6 @@ func ParamFromString(msg string) (Param, error) {
     }
   }
 
-  param.Idx = idx
-  param.SlaveId = slaveId
-  param.N = n
-  param.Id = splitted[4]
   param.Addrs = &list
 
   return param, nil
@@ -84,25 +90,22 @@ func ParamFromString(msg string) (Param, error) {
 type Param struct {
   Init bool
   Idx int
-  SlaveId int
   N int
   Id string
   Addrs *[]peer.ID
+  SlaveIds []int
 }
 
 func (p *Param)String() string {
   addrs := make([]string, p.N)
+  slaveIds := make([]string, p.N)
 
-  i := 1
-  if p.Init {
-    i = p.Idx + 1
-  }
+  for i := 1; i < p.N; i++ {
+    slaveIds[i] = fmt.Sprint(p.SlaveIds[i])
 
-  for ;i < p.N; i++ {
-    if i == p.Idx {
+    if i == p.Idx || (p.Init && i <= p.Idx){
       continue
     }
-
     addrs[i] = peer.IDB58Encode((*p.Addrs)[i])
   }
 
@@ -112,7 +115,8 @@ func (p *Param)String() string {
   }
 
   joinedAddress := strings.Join(addrs, ";")
-  return fmt.Sprintf("%d,%d,%d,%d,%s,%s", initInt, p.Idx, p.SlaveId, p.N, p.Id, joinedAddress)
+  joinedSlaveIds := strings.Join(slaveIds, ";")
+  return fmt.Sprintf("%d,%d,%d,%s,%s,%s", initInt, p.Idx, p.N, joinedSlaveIds, p.Id, joinedAddress)
 }
 
 func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, base protocol.ID, param Param, file string, n int, i int) (_ SlaveComm, err error) {
@@ -126,8 +130,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
 
   remotes := make([]Remote, param.N)
   comm := BasicSlaveComm {
-    SlaveIds: make([]int, n),
-    SlaveId: param.SlaveId,
+    SlaveIds: param.SlaveIds,
     Ctx: ctx,
     Inter: inter,
     Id: param.Id,
@@ -194,7 +197,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
       comm.Close()
     })
 
-    proto := protocol.ID(fmt.Sprintf("%d/%d/%s/%s", i, param.Idx, param.Id, string(base)))
+    proto := protocol.ID(fmt.Sprintf("%d/%d/%d/%s/%s", i, comm.Idx, comm.SlaveIds[comm.Idx], comm.Id, string(base)))
     host.SetStreamHandler(proto, func(stream network.Stream) {
       comm.Mutex.Lock()
       defer comm.Mutex.Unlock()
@@ -218,7 +221,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
 
       comm.SlaveIds[i] = slaveId + 1
 
-      err = send(stream, fmt.Sprint(comm.SlaveId))
+      err = send(stream, fmt.Sprint(comm.SlaveIds[comm.Idx]))
       if err != nil {
         stream.Close()
         return
@@ -252,7 +255,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     }
 
     go func(wp *sync.WaitGroup) {
-      err := comm.Connect(i, (*param.Addrs)[i], fmt.Sprint(param.SlaveId))
+      err := comm.Connect(i, (*param.Addrs)[i], fmt.Sprint(comm.SlaveIds[comm.Idx]))
       if err != nil {
           go comm.Remote(i).Raise(err)
       }
@@ -295,7 +298,7 @@ type BasicSlaveComm struct {
 
 func (c *BasicSlaveComm)Start() {
 
-  fmt.Printf("[SlaveComm] starting the %dth reset of %d\n", c.SlaveId, c.Idx) //--------------------------
+  fmt.Printf("[SlaveComm] starting the %dth reset of %d\n", c.SlaveIds[c.Idx], c.Idx) //--------------------------
 
   defer func() {
     if err := recover(); err != nil {
@@ -369,7 +372,7 @@ func (c *BasicSlaveComm)Close() error {
 
   if c.Check() {
 
-    fmt.Printf("[SlaveComm] Closing the %dth reset of %d\n", c.SlaveId, c.Idx) //--------------------------
+    fmt.Printf("[SlaveComm] Closing the %dth reset of %d\n", c.SlaveIds[c.Idx], c.Idx) //--------------------------
 
     c.Standard.Close()
 
@@ -383,7 +386,7 @@ func (c *BasicSlaveComm)Close() error {
       }
 
       if i != 0 && c.Idx != 0 {
-        proto := protocol.ID(fmt.Sprintf("%d/%d/%s/%s", i, c.Idx, c.Id, string(c.Base)))
+        proto := protocol.ID(fmt.Sprintf("%d/%d/%d/%s/%s", i, c.Idx, c.SlaveIds[c.Idx], c.Id, string(c.Base)))
         c.CommHost.RemoveStreamHandler(proto)
       }
 
@@ -416,7 +419,7 @@ func (c *BasicSlaveComm)Connect(i int, addr peer.ID, msgs ...string) error {
 
   pid := c.Base
   if c.Idx != 0 {
-    pid = protocol.ID(fmt.Sprintf("%d/%d/%s/%s", c.Idx, i, c.Id, string(c.Base)))
+    pid = protocol.ID(fmt.Sprintf("%d/%d/%d/%s/%s", c.Idx, i, c.SlaveIds[i], c.Id, string(c.Base)))
   }
 
   rwi, err := timeout.MakeTimeout(func() (interface{}, error) {
@@ -443,30 +446,6 @@ func (c *BasicSlaveComm)Connect(i int, addr peer.ID, msgs ...string) error {
       rwc.Close()
       return err
     }
-  }
-
-  if c.Idx != 0 {
-    c.Mutex.Lock()
-    defer c.Mutex.Unlock()
-
-    str, err := bufio.NewReader(rwc).ReadString('\n')
-    if err != nil {
-      rwc.Close()
-      return err
-    }
-
-    slaveId, err := strconv.Atoi(str[:len(str) - 1])
-    if err != nil {
-      rwc.Close()
-      return err
-    }
-
-    if slaveId < c.SlaveIds[i] {
-      rwc.Close()
-      return err
-    }
-
-    c.SlaveIds[i] = slaveId + 1
   }
 
   c.Remote(i).Reset(rwc)
