@@ -8,11 +8,11 @@ import (
   "strings"
   "strconv"
   "sync"
-  "bufio"
 
   "github.com/libp2p/go-libp2p-core/protocol"
   "github.com/libp2p/go-libp2p-core/peer"
   "github.com/libp2p/go-libp2p-core/network"
+  "github.com/libp2p/go-libp2p-core/helpers"
 
   "github.com/jolatechno/go-timeout"
 )
@@ -141,8 +141,12 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     Remotes: &remotes,
   }
 
+  proto := protocol.ID(fmt.Sprintf("%d/%d/%s/%s", comm.Idx, comm.SlaveIds[comm.Idx], comm.Id, string(comm.Base)))
+
   close := func() error { //fmt.Printf("[SlaveComm] Closing the %dth reset of %d\n", comm.SlaveIds[comm.Idx], comm.Idx) //--------------------------
     go comm.Interface().Close()
+
+    comm.CommHost.RemoveStreamHandler(proto)
 
     for j := 0; j < comm.N; j++ {
       i := j
@@ -151,13 +155,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
         continue
       }
 
-      if i != 0 {
-        proto := protocol.ID(fmt.Sprintf("%d/%d/%d/%s/%s", i, comm.Idx, comm.SlaveIds[comm.Idx], comm.Id, string(comm.Base)))
-        comm.CommHost.RemoveStreamHandler(proto)
-      }
-
       go comm.Remote(i).Close()
-
     }
 
     return nil
@@ -219,33 +217,52 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     comm.Remote(i).SetCloseHandler(func() {
       comm.Close()
     })
-
-    proto := protocol.ID(fmt.Sprintf("%d/%d/%d/%s/%s", i, comm.Idx, comm.SlaveIds[comm.Idx], comm.Id, string(base)))
-    host.SetStreamHandler(proto, func(stream network.Stream) {
-      comm.Mutex.Lock()
-      defer comm.Mutex.Unlock()
-
-      str, err := bufio.NewReader(stream).ReadString('\n')
-      if err != nil {
-        stream.Close()
-        return
-      }
-
-      slaveId, err := strconv.Atoi(str[:len(str) - 1])
-      if err != nil {
-        stream.Close()
-        return
-      }
-
-      if slaveId < comm.SlaveIds[i] {
-        stream.Close()
-        return
-      }
-
-      comm.SlaveIds[i] = slaveId
-      comm.Remote(i).Reset(stream)
-    })
   }
+  
+  matcher, err := helpers.MultistreamSemverMatcher(proto)
+  if err != nil {
+    return nil, err
+  }
+
+  match := func(p string) bool {
+    splitted := strings.Split(p, "/")
+    if len(splitted) < 3 {
+      return false
+    }
+
+    joined := strings.Join(splitted[2:], "/")
+    return matcher(joined)
+  }
+
+  handler := func(stream network.Stream) {
+    pid := string(stream.Protocol())
+    splitted := strings.Split(pid, "/")
+
+    i, err := strconv.Atoi(splitted[0])
+    if err != nil {
+      stream.Close()
+      return
+    }
+
+    slaveId, err := strconv.Atoi(splitted[1])
+    if err != nil {
+      stream.Close()
+      return
+    }
+
+    comm.Mutex.Lock()
+    defer comm.Mutex.Unlock()
+
+    if slaveId < comm.SlaveIds[i] {
+      stream.Close()
+      return
+    }
+
+    comm.SlaveIds[i] = slaveId
+    comm.Remote(i).Reset(stream)
+  }
+
+  host.SetStreamHandlerMatch(proto, match, handler)
 
   if param.Init {
     comm.Remote(0).SendHandshake()
@@ -271,7 +288,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     }
 
     go func(wp *sync.WaitGroup) {
-      err := comm.Connect(i, (*param.Addrs)[i], fmt.Sprint(comm.SlaveIds[comm.Idx]))
+      err := comm.Connect(i, (*param.Addrs)[i])
       if err != nil {
           go comm.Remote(i).Raise(err)
       }
@@ -389,7 +406,7 @@ func (c *BasicSlaveComm)Connect(i int, addr peer.ID, msgs ...string) error {
 
   pid := c.Base
   if c.Idx != 0 {
-    pid = protocol.ID(fmt.Sprintf("%d/%d/%d/%s/%s", c.Idx, i, c.SlaveIds[i], c.Id, string(c.Base)))
+    pid = protocol.ID(fmt.Sprintf("%d/%d/%d/%d/%s/%s", c.Idx, c.SlaveIds[c.Idx], i, c.SlaveIds[i], c.Id, string(c.Base)))
   }
 
   rwi, err := timeout.MakeTimeout(func() (interface{}, error) {
