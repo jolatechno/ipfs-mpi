@@ -5,6 +5,7 @@ import (
   "fmt"
   "context"
   "sync"
+  "errors"
 
   "github.com/libp2p/go-libp2p-core/protocol"
   "github.com/libp2p/go-libp2p-core/peer"
@@ -302,7 +303,7 @@ func (c *BasicMasterComm)Reset(i int, slaveId int) {
 
   c.Comm.SlaveIds[i]++
 
-  fmt.Printf("[MasterComm] reseting %d for the %dth time\n", i, c.Comm.SlaveIds[i]) //--------------------------
+  c.Raise(errors.New(fmt.Sprintf("reseting %d for the %dth time", i, c.Comm.SlaveIds[i])))
 
   for c.Check() {
     addr, err := c.SlaveComm().Host().NewPeer(c.Comm.Base)

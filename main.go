@@ -18,8 +18,8 @@ const (
 )
 
 func main(){
-  fmt.Println("String libp2p-mpi daemon")
-  
+  fmt.Println("Starting libp2p-mpi daemon...")
+
   ctx := context.Background()
 
   config, quiet, err := ParseFlag()
