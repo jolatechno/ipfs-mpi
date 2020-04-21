@@ -188,7 +188,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     })
 
     comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
-      comm.Raise(SetNonPanic(err))
+      go comm.Raise(err)
       wg.DoneAll(i)
     })
 
@@ -236,8 +236,13 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     i := j
 
     comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
-      comm.Raise(SetNonPanic(err))
-      comm.SlaveComm().Remote(i).Reset(io.ReadWriteCloser(nil))
+      go comm.Raise(err)
+      go comm.Raise(SetNonPanic(NewHeadedError(errors.New(fmt.Sprintf("%d hanged-up", i)), MasterCommHeader)))
+
+      if comm.SlaveComm().Remote(i).Stream() != io.ReadWriteCloser(nil) {
+        comm.SlaveComm().Remote(i).Reset(io.ReadWriteCloser(nil))
+      }
+
       comm.Reset(i, -1)
     })
 

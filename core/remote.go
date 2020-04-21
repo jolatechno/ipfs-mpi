@@ -11,8 +11,6 @@ import (
   "time"
 
   "github.com/libp2p/go-libp2p-core/network"
-
-  //"github.com/jolatechno/go-timeout"
 )
 
 var (
@@ -22,7 +20,6 @@ var (
   MessageHeader = "Msg"
   CloseHeader = "Close"
   PingHeader = "Ping"
-  //PingRespHeader = "PingResp"
   ResetHeader = "Reset"
 
   StandardTimeout = 2 * time.Second //Will be increase later
@@ -41,7 +38,7 @@ func send(stream io.ReadWriteCloser, str string) error {
     return nil
   }
 
-  if str != PingHeader && str != HandShakeHeader /*&& str != PingRespHeader*/ && str != CloseHeader { //--------------------------
+  if str != PingHeader && str != HandShakeHeader && str != CloseHeader { //--------------------------
     fmt.Printf("[Remote] Sent %q\n", str) //--------------------------
   } //--------------------------
 
@@ -273,14 +270,14 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...string) {
     }()
 
     for _, msg := range msgs {
-      if !r.raiseCheck(send(stream, msg), stream) {
-        return
+      if err := send(stream, msg); err != nil {
+        panic(err)
       }
     }
 
     for _, msg := range *r.Sent {
-      if !r.raiseCheck(send(stream, fmt.Sprintf("%s,%s", MessageHeader, msg)), stream) {
-        return
+      if err := send(stream, fmt.Sprintf("%s,%s", MessageHeader, msg)); err != nil {
+        panic(err)
       }
     }
   }()
@@ -295,19 +292,6 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...string) {
     for r.Check() && r.Stream() == stream {
       time.Sleep(r.PingInterval)
       go r.raiseCheck(send(stream, PingHeader), stream)
-      /*
-      err := timeout.MakeSimpleTimeout(func() error {
-        go r.raiseCheck(send(stream, PingHeader), stream)
-        _, ok := <- pingChan.Chan
-        if ok {
-          return nil
-        }
-        return errors.New("Channel closed")
-      }, r.PingTimeout)
-
-      if err != nil {
-        r.Raise(err)
-      }*/
     }
   }()
 
@@ -326,7 +310,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...string) {
       splitted := strings.Split(scanner.Text(), ",")
 
       str := strings.Join(splitted, ",")//--------------------------
-      if str != PingHeader && str != HandShakeHeader /*&& str != PingRespHeader*/ && str != CloseHeader { //--------------------------
+      if str != PingHeader && str != HandShakeHeader && str != CloseHeader { //--------------------------
         fmt.Printf("[Remote] Received %q\n", str) //--------------------------
       } //--------------------------
 
