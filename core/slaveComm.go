@@ -52,7 +52,9 @@ func ParamFromString(msg string) (_ Param, err error) {
     return param, err
   }
 
-  slaveIds := strings.Split(splitted[3], ";")
+  param.Id = splitted[3]
+
+  slaveIds := strings.Split(splitted[4], ";")
   param.SlaveIds = make([]int, param.N)
 
   if len(slaveIds) != param.N {
@@ -92,8 +94,9 @@ type Param struct {
   Idx int
   N int
   Id string
-  Addrs *[]peer.ID
   SlaveIds []int
+  Addrs *[]peer.ID
+
 }
 
 func (p *Param)String() string {
@@ -116,7 +119,7 @@ func (p *Param)String() string {
 
   joinedAddress := strings.Join(addrs, ";")
   joinedSlaveIds := strings.Join(slaveIds, ";")
-  return fmt.Sprintf("%d,%d,%d,%s,%s,%s", initInt, p.Idx, p.N, joinedSlaveIds, p.Id, joinedAddress)
+  return fmt.Sprintf("%d,%d,%d,%s,%s,%s", initInt, p.Idx, p.N, p.Id, joinedSlaveIds, joinedAddress)
 }
 
 func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, base protocol.ID, param Param, file string, n int, i int) (_ SlaveComm, err error) {
