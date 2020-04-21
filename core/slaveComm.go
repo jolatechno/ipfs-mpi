@@ -100,10 +100,10 @@ func (p *Param)String() string {
   addrs := make([]string, p.N)
   slaveIds := make([]string, p.N)
 
-  for i := 1; i < p.N; i++ {
+  for i := 0; i < p.N; i++ {
     slaveIds[i] = fmt.Sprint(p.SlaveIds[i])
 
-    if i == p.Idx || (p.Init && i <= p.Idx){
+    if i == 0 || i == p.Idx || (p.Init && i <= p.Idx){
       continue
     }
     addrs[i] = peer.IDB58Encode((*p.Addrs)[i])
