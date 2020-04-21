@@ -160,10 +160,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     },
   }
 
-  close := func() error {
-
-    fmt.Println("[MasterComm] Closing") //--------------------------
-
+  close := func() error { //fmt.Println("[MasterComm] Closing") //--------------------------
     go comm.SlaveComm().Interface().Close()
 
     for j := 1; j < comm.Comm.N; j++ {
@@ -331,7 +328,7 @@ func (c *BasicMasterComm)Reset(i int, slaveId int) {
   c.SlaveComm().Remote(i).CloseRemote()
 
   c.Comm.SlaveIds[i]++
-  
+
   go c.Raise(SetNonPanic(NewHeadedError(errors.New(fmt.Sprintf("reseting %d for the %dth time", i, c.Comm.SlaveIds[i])), MasterCommHeader)))
 
   for c.Check() {

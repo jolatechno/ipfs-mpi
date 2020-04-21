@@ -37,11 +37,9 @@ func send(stream io.ReadWriteCloser, str string) error {
   if stream == io.ReadWriteCloser(nil) {
     return nil
   }
-
-  if str != PingHeader && str != HandShakeHeader && str != CloseHeader { //--------------------------
+  /*if str != PingHeader && str != HandShakeHeader && str != CloseHeader { //--------------------------
     fmt.Printf("[Remote] Sent %q\n", str) //--------------------------
-  } //--------------------------
-
+  } //--------------------------*/
   writer := bufio.NewWriter(stream)
 
   _, err := writer.WriteString(str + "\n")
@@ -309,12 +307,10 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...string) {
       stream.(network.Stream).SetReadDeadline(time.Now().Add(r.PingTimeout))
 
       splitted := strings.Split(scanner.Text(), ",")
-
-      str := strings.Join(splitted, ",")//--------------------------
+      /*str := strings.Join(splitted, ",")//--------------------------
       if str != PingHeader && str != HandShakeHeader && str != CloseHeader { //--------------------------
         fmt.Printf("[Remote] Received %q\n", str) //--------------------------
-      } //--------------------------
-
+      } //--------------------------*/
       switch splitted[0] {
       default:
         r.Raise(HeaderNotUnderstood)

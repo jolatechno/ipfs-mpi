@@ -122,10 +122,7 @@ func (p *Param)String() string {
   return fmt.Sprintf("%d,%d,%d,%s,%s,%s", initInt, p.Idx, p.N, p.Id, joinedSlaveIds, joinedAddress)
 }
 
-func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, base protocol.ID, param Param, file string, n int, i int) (_ SlaveComm, err error) {
-
-  fmt.Println("[SlaveComm] New", param) //--------------------------
-
+func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, base protocol.ID, param Param, file string, n int, i int) (_ SlaveComm, err error) { //fmt.Println("[SlaveComm] New", param) //--------------------------
   inter, err := NewInterface(ctx, file, n, i)
   if err != nil {
     return nil, err
@@ -144,10 +141,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     Remotes: &remotes,
   }
 
-  close := func() error {
-
-    fmt.Printf("[SlaveComm] Closing the %dth reset of %d\n", comm.SlaveIds[comm.Idx], comm.Idx) //--------------------------
-
+  close := func() error { //fmt.Printf("[SlaveComm] Closing the %dth reset of %d\n", comm.SlaveIds[comm.Idx], comm.Idx) //--------------------------
     go comm.Interface().Close()
 
     for j := 0; j < comm.N; j++ {
@@ -318,10 +312,7 @@ type BasicSlaveComm struct {
   Standard standardFunctionsCloser
 }
 
-func (c *BasicSlaveComm)Start() {
-
-  fmt.Printf("[SlaveComm] starting the %dth reset of %d\n", c.SlaveIds[c.Idx], c.Idx) //--------------------------
-
+func (c *BasicSlaveComm)Start() { //fmt.Printf("[SlaveComm] starting the %dth reset of %d\n", c.SlaveIds[c.Idx], c.Idx) //--------------------------
   defer func() {
     if err := recover(); err != nil {
       c.Raise(err.(error))
@@ -390,11 +381,6 @@ func (c *BasicSlaveComm)Close() error {
 }
 
 func (c *BasicSlaveComm)Connect(i int, addr peer.ID, msgs ...string) error {
-
-  if c.Idx == 0 { //--------------------------
-    fmt.Printf("[MasterComm] connecting to the %dth reset of %d with address: %q\n", c.SlaveIds[i], i, addr) //--------------------------
-  } //--------------------------
-
   defer func() {
     if err := recover(); err != nil {
       c.Raise(err.(error))
