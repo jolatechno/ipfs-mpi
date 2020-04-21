@@ -219,14 +219,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
         return
       }
 
-      comm.SlaveIds[i] = slaveId + 1
-
-      err = send(stream, fmt.Sprint(comm.SlaveIds[comm.Idx]))
-      if err != nil {
-        stream.Close()
-        return
-      }
-
+      comm.SlaveIds[i] = slaveId
       comm.Remote(i).Reset(stream)
     })
   }

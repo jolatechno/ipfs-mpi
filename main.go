@@ -90,10 +90,12 @@ func main(){
         continue
       }
 
-      err = store.Start(splitted[1], n, splitted[3:]...)
-      if err != nil {
-        store.Raise(err)
-      }
+      go func() {
+        err = store.Start(splitted[1], n, splitted[3:]...)
+        if err != nil {
+          store.Raise(err)
+        }
+      }()
 
     case "Add":
       if len(splitted) < 2 {
@@ -102,7 +104,7 @@ func main(){
       }
 
       for _, f := range splitted[1:] {
-        store.Add(f)
+        go store.Add(f)
       }
 
     case "Del":
@@ -112,7 +114,7 @@ func main(){
       }
 
       for _, f := range splitted[1:] {
-        store.Del(f)
+        go store.Del(f)
       }
 
     case "exit":
