@@ -17,7 +17,6 @@ var (
 
   StreamEnded = errors.New("Stream closed")
 
-  StandardStreamTimeout = 2 * time.Minute
   StandardCheckingInterval = 300 * time.Millisecond
 )
 
@@ -32,8 +31,8 @@ func NewStream(pid protocol.ID) SelfStream {
     ReadPipe: readPipe,
     WritePipeReversed: writePipeReversed,
     ReadPipeReversed: readPipeReversed,
-    WriteTimeout: StandardStreamTimeout,
-    ReadTimeout: StandardStreamTimeout,
+    WriteTimeout: -1,
+    ReadTimeout: -1,
 		Pid: pid,
 
   }
@@ -136,6 +135,8 @@ func (b *CloseableBuffer)Read(p []byte) (int, error) {
     return nil
   }, StandardCheckingInterval)
 
+  b.ReadTimeout = -1
+
   if n == nil {
     n = 0
   }
@@ -164,6 +165,8 @@ func (b *CloseableBuffer) Write(p []byte) (int, error) {
     return nil
   }, StandardCheckingInterval)
 
+  b.WriteTimeout = -1
+
   if n == nil {
     n = 0
   }
@@ -179,14 +182,18 @@ func (b *CloseableBuffer)Conn() network.Conn {
 	return nil
 }
 
-func (b *CloseableBuffer)SetDeadline(time.Time) error {
-	return nil
-}
-
-func (b *CloseableBuffer)SetReadDeadline(time.Time) error {
+func (b *CloseableBuffer)SetDeadline(t time.Time) error { //shouldn't be like that
+  b.SetReadDeadline(t)
+  b.SetWriteDeadline(t)
   return nil
 }
 
-func (b *CloseableBuffer)SetWriteDeadline(time.Time) error {
+func (b *CloseableBuffer)SetReadDeadline(t time.Time) error {
+  b.ReadTimeout = t.Sub(time.Now())
+  return nil
+}
+
+func (b *CloseableBuffer)SetWriteDeadline(t time.Time) error {
+  b.WriteTimeout = t.Sub(time.Now())
   return nil
 }

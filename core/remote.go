@@ -10,7 +10,9 @@ import (
   "sync"
   "time"
 
-  "github.com/jolatechno/go-timeout"
+  "github.com/libp2p/go-libp2p-core/network"
+
+  //"github.com/jolatechno/go-timeout"
 )
 
 var (
@@ -20,11 +22,11 @@ var (
   MessageHeader = "Msg"
   CloseHeader = "Close"
   PingHeader = "Ping"
-  PingRespHeader = "PingResp"
+  //PingRespHeader = "PingResp"
   ResetHeader = "Reset"
 
   StandardTimeout = 2 * time.Second //Will be increase later
-  StandardPingInterval = 700 * time.Millisecond //Will be increase later
+  StandardPingInterval = 500 * time.Millisecond //Will be increase later
 
   NilStreamError = errors.New("nil stream")
   ErrorInterval = 4 * time.Second
@@ -39,7 +41,7 @@ func send(stream io.ReadWriteCloser, str string) error {
     return nil
   }
 
-  if str != PingHeader && str != HandShakeHeader && str != PingRespHeader && str != CloseHeader { //--------------------------
+  if str != PingHeader && str != HandShakeHeader /*&& str != PingRespHeader*/ && str != CloseHeader { //--------------------------
     fmt.Printf("[Remote] Sent %q\n", str) //--------------------------
   } //--------------------------
 
@@ -292,7 +294,8 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...string) {
 
     for r.Check() && r.Stream() == stream {
       time.Sleep(r.PingInterval)
-
+      go r.raiseCheck(send(stream, PingHeader), stream)
+      /*
       err := timeout.MakeSimpleTimeout(func() error {
         go r.raiseCheck(send(stream, PingHeader), stream)
         _, ok := <- pingChan.Chan
@@ -304,7 +307,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...string) {
 
       if err != nil {
         r.Raise(err)
-      }
+      }*/
     }
   }()
 
@@ -318,16 +321,21 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...string) {
     scanner := bufio.NewScanner(stream)
 
     for r.Check() &&  r.Stream() == stream && scanner.Scan() {
+      stream.(network.Stream).SetReadDeadline(time.Now().Add(r.PingTimeout))
+
       splitted := strings.Split(scanner.Text(), ",")
 
       str := strings.Join(splitted, ",")//--------------------------
-      if str != PingHeader && str != HandShakeHeader && str != PingRespHeader && str != CloseHeader { //--------------------------
+      if str != PingHeader && str != HandShakeHeader /*&& str != PingRespHeader*/ && str != CloseHeader { //--------------------------
         fmt.Printf("[Remote] Received %q\n", str) //--------------------------
       } //--------------------------
 
       switch splitted[0] {
       default:
         r.Raise(HeaderNotUnderstood)
+
+      case PingHeader:
+        continue
 
       case ResetHeader:
         if len(splitted) < 2 {
@@ -351,12 +359,6 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...string) {
 
       case HandShakeHeader:
         go r.HandshakeChan.Send(true)
-
-      case PingHeader:
-        go r.raiseCheck(send(stream, PingRespHeader), stream)
-
-      case PingRespHeader:
-        go pingChan.Send(true)
 
       case CloseHeader:
         r.Close()
