@@ -162,7 +162,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
   close := func() error {
 
-    fmt.Printf("[MasterComm] Closing") //--------------------------
+    fmt.Println("[MasterComm] Closing") //--------------------------
 
     go comm.SlaveComm().Interface().Close()
 
