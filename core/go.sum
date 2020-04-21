@@ -164,6 +164,8 @@ github.com/jolatechno/go-timeout v0.0.0-20200411125652-7b3152960795 h1:9WgdmfWr/
 github.com/jolatechno/go-timeout v0.0.0-20200411125652-7b3152960795/go.mod h1:paJwIP2pqExVj8gEqc5Kz6kEhgkoUad8eRNAYi2EH7I=
 github.com/jolatechno/go-timeout v0.0.0-20200418073152-4b2fffd6ee58 h1:1JUa9A8Iko6yUnowo8sQxRqFagkeh6LsHcmgl6s+6lw=
 github.com/jolatechno/go-timeout v0.0.0-20200418073152-4b2fffd6ee58/go.mod h1:paJwIP2pqExVj8gEqc5Kz6kEhgkoUad8eRNAYi2EH7I=
+github.com/jolatechno/go-timeout v0.0.0-20200421091832-05f54f6ce401 h1:jHwRnYZtD/uKOX3Up7+ngov3K980TBaHXE8PxvMBr+E=
+github.com/jolatechno/go-timeout v0.0.0-20200421091832-05f54f6ce401/go.mod h1:paJwIP2pqExVj8gEqc5Kz6kEhgkoUad8eRNAYi2EH7I=
 github.com/jolatechno/ipfs-mpi/core/api v0.0.0-20200326154905-cc98433525c8 h1:7PnnP5TUoRBKNSkqtYFczliw2uHfgSjqnwqjywQImWI=
 github.com/jolatechno/ipfs-mpi/core/api v0.0.0-20200326154905-cc98433525c8/go.mod h1:xDHNmsZoJI+LZ+MavGORGvSsb27kQK8NvrByTs8dklo=
 github.com/jolatechno/ipfs-mpi/core/api v0.0.0-20200326160430-5d34320b37d4 h1:Iut0TrrtMkLkWbsB3OiRK9xokl3buQHjh+lYZ+jjHuk=

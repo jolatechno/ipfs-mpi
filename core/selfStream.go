@@ -189,11 +189,11 @@ func (b *CloseableBuffer)SetDeadline(t time.Time) error { //shouldn't be like th
 }
 
 func (b *CloseableBuffer)SetReadDeadline(t time.Time) error {
-  b.ReadTimeout = t.Sub(time.Now())
+  b.ReadTimeout = t.Sub(time.Now()) //can cause bug but ok for now
   return nil
 }
 
 func (b *CloseableBuffer)SetWriteDeadline(t time.Time) error {
-  b.WriteTimeout = t.Sub(time.Now())
+  b.WriteTimeout = t.Sub(time.Now()) //can cause bug but ok for now
   return nil
 }
