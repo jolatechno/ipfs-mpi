@@ -180,12 +180,8 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     }
 
     comm.Remote(i).SetErrorHandler(func(err error) {
-      go func() {
-        comm.Raise(SetNonPanic(err))
-
-        fmt.Println(SetNonPanic(NewHeadedError(errors.New(fmt.Sprintf("%d hanged-up on %d", i, comm.Idx)), SlaveCommHeader)))  //--------------------------
-        comm.Raise(SetNonPanic(NewHeadedError(errors.New(fmt.Sprintf("%d hanged-up on %d", i, comm.Idx)), SlaveCommHeader)))
-      }()
+      go comm.Raise(SetNonPanic(err))
+      go comm.Raise(SetNonPanic(NewHeadedError(errors.New(fmt.Sprintf("%d hanged-up on %d", i, comm.Idx)), SlaveCommHeader)))
 
       if comm.Remote(i).Stream() != io.ReadWriteCloser(nil) {
         comm.Remote(i).Reset(io.ReadWriteCloser(nil))
