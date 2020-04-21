@@ -331,7 +331,7 @@ func (c *BasicMasterComm)Reset(i int, slaveId int) {
   c.SlaveComm().Remote(i).CloseRemote()
 
   c.Comm.SlaveIds[i]++
-
+  
   go c.Raise(SetNonPanic(NewHeadedError(errors.New(fmt.Sprintf("reseting %d for the %dth time", i, c.Comm.SlaveIds[i])), MasterCommHeader)))
 
   for c.Check() {

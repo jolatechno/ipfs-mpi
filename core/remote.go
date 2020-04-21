@@ -246,18 +246,17 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...string) {
   }
 
   r.StreamMutex.Lock()
-
-  r.Rw = stream
-  if stream == io.ReadWriteCloser(nil) {
-    return
-  }
-
   defer func() {
     r.StreamMutex.Unlock()
     if err := recover(); err != nil {
       r.raiseCheck(err.(error), stream)
     }
   }()
+
+  r.Rw = stream
+  if stream == io.ReadWriteCloser(nil) {
+    return
+  }
 
   offset := r.Received
   pingChan := NewChannelBool()
