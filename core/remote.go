@@ -267,12 +267,9 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...string) {
     }
   }
 
-  stream.(network.Stream).SetReadDeadline(time.Now().Add(r.PingTimeout))
   scan := bufio.NewScanner(stream)
 
-  if err := send(stream, ResetHandShakeHeader); err != nil {
-    panic(err)
-  }
+  go r.raiseCheck(send(stream, ResetHandShakeHeader), stream)
   if scan.Text() != ResetHandShakeHeader {
     panic(HeaderNotUnderstood)
   }
