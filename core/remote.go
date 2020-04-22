@@ -244,8 +244,10 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...string) {
   }
 
   r.StreamMutex.Lock()
+  r.WriteMutex.Lock()
   defer func() {
     r.StreamMutex.Unlock()
+    r.WriteMutex.Unlock()
     if err := recover(); err != nil {
       r.raiseCheck(err.(error), stream)
     }
@@ -256,30 +258,22 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...string) {
     return
   }
 
-  offset := r.Received
+  for _, msg := range msgs {
+    if err := send(stream, msg); err != nil {
+      panic(err)
+    }
+  }
+
+  received := ResetReader(r.Received, *r.Sent, func(msg string) {
+    if err := send(stream, fmt.Sprintf("%s,%s", MessageHeader, msg)); err != nil {
+      panic(err)
+    }
+  }, func(msg string) {
+    r.Received++
+    r.ReadChan.Send(msg)
+  })
+
   pingChan := NewChannelBool()
-
-  go func() {
-    r.WriteMutex.Lock()
-    defer func() {
-      r.WriteMutex.Unlock()
-      if err := recover(); err != nil {
-        r.raiseCheck(err.(error), stream)
-      }
-    }()
-
-    for _, msg := range msgs {
-      if err := send(stream, msg); err != nil {
-        panic(err)
-      }
-    }
-
-    for _, msg := range *r.Sent {
-      if err := send(stream, fmt.Sprintf("%s,%s", MessageHeader, msg)); err != nil {
-        panic(err)
-      }
-    }
-  }()
 
   go func() {
     defer func() {
@@ -351,15 +345,8 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...string) {
           continue
         }
 
-        msg := strings.Join(splitted[1:], ",")
+        received(strings.Join(splitted[1:], ","))
 
-        if offset > 0 {
-          offset --
-          continue
-        }
-
-        r.Received++
-        go r.ReadChan.Send(msg)
       }
     }
 

@@ -27,6 +27,25 @@ type standardFunctions interface {
 
 //-------
 
+func ResetReader(received int, sent []string, sendToRemote func(string), pushToComm func(string)) (readFromRemote func(string)) {
+  offset := received
+
+  for _, msg := range sent {
+    sendToRemote(msg)
+  }
+
+  return func(msg string) {
+    if offset > 0 {
+      offset--
+      return
+    }
+
+    pushToComm(msg)
+  }
+}
+
+//-------
+
 type Mpi interface {
   standardFunctionsCloser
 
