@@ -260,19 +260,16 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...string) {
     return
   }
 
-  scanner := bufio.NewScanner(stream)
-  stream.(network.Stream).SetReadDeadline(time.Now().Add(r.PingTimeout))
-
   for _, msg := range msgs {
     if err := send(stream, msg); err != nil {
       panic(err)
     }
   }
 
-  go r.raiseCheck(send(stream, HandShakeHeader), stream)
-  if scanner.Text() != HandShakeHeader {
+  /*go r.raiseCheck(send(stream, HandShakeHeader), stream)
+  if bufio.NewScanner(stream).Text() != HandShakeHeader {
     panic(HeaderNotUnderstood)
-  }
+  }*/
 
   received := ResetReader(r.Received, *r.Sent, func(msg string) {
     if err := send(stream, fmt.Sprintf("%s,%s", MessageHeader, msg)); err != nil {
@@ -304,6 +301,8 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...string) {
         r.Raise(err.(error))
       }
     }()
+
+    scanner := bufio.NewScanner(stream)
 
     for r.Check() &&  r.Stream() == stream && scanner.Scan() {
       stream.(network.Stream).SetReadDeadline(time.Now().Add(r.PingTimeout))
