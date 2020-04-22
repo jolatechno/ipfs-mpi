@@ -197,11 +197,13 @@ func (r *BasicRemote)Send(msg string) {
   *r.Sent = append(*r.Sent, msg)
   r.WriteMutex.Unlock()
 
-  go r.Raise(send(r.Stream(), fmt.Sprintf("%s,%s", MessageHeader, msg)))
+  stream := r.Stream()
+  go r.raiseCheck(send(stream, fmt.Sprintf("%s,%s", MessageHeader, msg)), stream)
 }
 
 func (r *BasicRemote)SendHandshake() {
-  go r.Raise(send(r.Stream(), HandShakeHeader))
+  stream := r.Stream()
+  go r.raiseCheck(send(stream, HandShakeHeader), stream)
 }
 
 func (r *BasicRemote)Get() string {
