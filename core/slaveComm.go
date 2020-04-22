@@ -266,7 +266,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
 
   if param.Init {
     comm.Remote(0).SendHandshake()
-    <- comm.Remote(0).GetHandshake()
+    comm.Remote(0).WaitHandshake()
   }
 
   var wg sync.WaitGroup
@@ -301,7 +301,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
 
   if param.Init {
     comm.Remote(0).SendHandshake()
-    <- comm.Remote(0).GetHandshake()
+    comm.Remote(0).WaitHandshake()
   }
 
   comm.Interface().SetResetHandler(func(i int) {

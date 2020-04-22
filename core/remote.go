@@ -32,19 +32,11 @@ var (
   nilRemoteResetHandler = func(int, int) {}
 )
 
-func sendNoFlush(stream io.ReadWriteCloser, strs ...string) (*bufio.Writer, error) {
+func sendNoFlush(writer *bufio.Writer, strs ...string) error {
   defer recover()
 
-  if stream == io.ReadWriteCloser(nil) {
-    return nil, NilStreamError
-  }
-  /*if str != PingHeader && str != HandShakeHeader && str != CloseHeader { //--------------------------
-    fmt.Printf("[Remote] Sent %q\n", str) //--------------------------
-  } //--------------------------*/
-  writer := bufio.NewWriter(stream)
-
   _, err := writer.WriteString(strings.Join(strs, ",") + "\n")
-  return writer, err
+  return err
 }
 
 func send(stream io.ReadWriteCloser, strs ...string) error {
@@ -54,7 +46,9 @@ func send(stream io.ReadWriteCloser, strs ...string) error {
     return nil
   }
 
-  writer, err := sendNoFlush(stream, strs...)
+  writer := bufio.NewWriter(stream)
+
+  err := sendNoFlush(writer, strs...)
   if err != nil {
     return err
   }
@@ -222,8 +216,8 @@ func (r *BasicRemote)Get() string {
   return <- r.ReadChan.Chan
 }
 
-func (r *BasicRemote)GetHandshake() chan bool {
-  return r.HandshakeChan.Chan
+func (r *BasicRemote)WaitHandshake() {
+  <- r.HandshakeChan.Chan
 }
 
 func (r *BasicRemote)SetErrorHandler(handler func(error)) {
@@ -272,14 +266,18 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...string) {
     return
   }
 
+  writer := bufio.NewWriter(stream)
+
   for _, msg := range msgs {
-    if err := send(stream, msg); err != nil {
+    if err := sendNoFlush(writer, msg); err != nil {
       panic(err)
     }
+
+    go r.raiseCheck(writer.Flush(), stream)
   }
 
   received := ResetReader(r.Received, *r.Sent, func(msg string) {
-    writer, err := sendNoFlush(stream, MessageHeader, msg)
+    err := sendNoFlush(writer, MessageHeader, msg)
     if err != nil {
       panic(err)
     }

@@ -225,7 +225,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
         return
       }
 
-      <- comm.SlaveComm().Remote(i).GetHandshake()
+      comm.SlaveComm().Remote(i).WaitHandshake()
 
       wg.DoneFirst(i)
     }()
@@ -243,7 +243,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     comm.SlaveComm().Remote(i).SendHandshake()
 
     go func() {
-      <- comm.SlaveComm().Remote(i).GetHandshake()
+      comm.SlaveComm().Remote(i).WaitHandshake()
 
       wg.DoneSecond(i)
     }()

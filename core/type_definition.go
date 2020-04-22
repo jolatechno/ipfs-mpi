@@ -109,7 +109,7 @@ type Remote interface {
   Stream() io.ReadWriteCloser
   Reset(io.ReadWriteCloser, ...string)
   Get() string
-  GetHandshake() chan bool
+  WaitHandshake()
   Send(string)
   SendHandshake()
 }
