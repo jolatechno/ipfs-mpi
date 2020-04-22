@@ -114,6 +114,8 @@ github.com/jbenet/goprocess v0.1.3 h1:YKyIEECS/XvcfHtBzxtjBBbWK+MbvA6dG8ASiqwvr1
 github.com/jbenet/goprocess v0.1.3/go.mod h1:5yspPrukOVuOLORacaBi858NqyClJPQxYZlqdZVfqY4=
 github.com/jessevdk/go-flags v0.0.0-20141203071132-1679536dcc89/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
 github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
+github.com/jolatechno/go-ipfs-directory_size_ls v0.0.0-20200422092545-131678ddf19f h1:61vjPQxYUBC9aMd/6LQF56P9nBy1Hszb72wpdyQyc1Q=
+github.com/jolatechno/go-ipfs-directory_size_ls v0.0.0-20200422092545-131678ddf19f/go.mod h1:QJbSPrxfjsF9rhnNjjHVZxSVr1pbWOvDB+8Urql5ryc=
 github.com/jolatechno/go-timeout v0.0.0-20200402071232-e1164f166d08 h1:sShtSX3Wm2zVSiSmtpIu0WpT6Vs8/t4dydDAiPGfASw=
 github.com/jolatechno/go-timeout v0.0.0-20200402071232-e1164f166d08/go.mod h1:paJwIP2pqExVj8gEqc5Kz6kEhgkoUad8eRNAYi2EH7I=
 github.com/jolatechno/go-timeout v0.0.0-20200411125652-7b3152960795 h1:9WgdmfWr/NtUyLen14R2SuHYFoJAnUcgniyHhNFkyiI=
@@ -779,6 +781,8 @@ github.com/jolatechno/ipfs-mpi/core v0.0.0-20200421211850-0f1af08be724 h1:eRgZ8D
 github.com/jolatechno/ipfs-mpi/core v0.0.0-20200421211850-0f1af08be724/go.mod h1:W2gWEyE4V66qnxyCgG4eN3EM+XBqkEnbDbZLpCg/ZQU=
 github.com/jolatechno/ipfs-mpi/core v0.0.0-20200422074809-cc1542bcba07 h1:bsEWLJ2DK7gGOLbVyY+kIZuAu5i7fhz4pWmgdlbTZbw=
 github.com/jolatechno/ipfs-mpi/core v0.0.0-20200422074809-cc1542bcba07/go.mod h1:W2gWEyE4V66qnxyCgG4eN3EM+XBqkEnbDbZLpCg/ZQU=
+github.com/jolatechno/ipfs-mpi/core v0.0.0-20200422094744-da58608143a8 h1:D9Ioamiqs9I91xzTbQ8F9kxa2lh5aNNnkrLz6E2fhz0=
+github.com/jolatechno/ipfs-mpi/core v0.0.0-20200422094744-da58608143a8/go.mod h1:aFjl2lG6vlnLiiHxpdKd9GXeyREG5qfnwhJWt1EO1mY=
 github.com/jrick/logrotate v1.0.0/go.mod h1:LNinyqDIJnpAur+b8yyulnQw/wDuN1+BYKlTRt3OuAQ=
 github.com/kami-zh/go-capturer v0.0.0-20171211120116-e492ea43421d/go.mod h1:P2viExyCEfeWGU259JnaQ34Inuec4R38JCyBx2edgD0=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=
