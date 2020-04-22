@@ -6,6 +6,10 @@
 
 Message Passing Interface computing using libp2p as a back-bone to build computational pool.
 
+## How does it work ?
+
+The basic algorithms behind libp2p-mpi are described in the [core/README.md](./core/README.md) file.
+
 ## How to build an interpreter directory ?
 
 This example needs to be added to ipfs :
@@ -23,12 +27,12 @@ added QmTaujxGjagaps15tSBWrFU3aHHucBGtMuxr1mgiQjzrMf example_interpreters/echo/r
 
 ...
 
-added QmTgg9mvFT9ZLMewcywrTxXchGfdfNcEU1DaNHZXkd7jBM example_interpreters/round_echo
-added QmaczSWUzonPp9C2cE52UgNiKpzbtz571pJr6dB65kseVg example_interpreters
- 8.89 KiB / 8.89 KiB [===========================================================================] 100.00%
+added QmZAupFwx1qJ7ieY3rpeer6V1dasXsxNLQ9kFK3CvLh6sb example_interpreters/round_echo
+added QmTQx9KrsfgkCucWAPxcsdfvfVbd2n5v5Z1fkxJj1h8bbH example_interpreters
+ 12.44 KiB / 12.44 KiB [=========================================================================] 100.00%
  ```
 
-Where the line corresponding to the whole directory is `added QmaczSWUzonPp9C2cE52UgNiKpzbtz571pJr6dB65kseVg example_interpreters`, so the ipfs-store that you should use will be `QmaczSWUzonPp9C2cE52UgNiKpzbtz571pJr6dB65kseVg/`
+Where the line corresponding to the whole directory is `added QmTQx9KrsfgkCucWAPxcsdfvfVbd2n5v5Z1fkxJj1h8bbH example_interpreters`, so the ipfs-store that you should use will be `QmTQx9KrsfgkCucWAPxcsdfvfVbd2n5v5Z1fkxJj1h8bbH/`
 
 ## How to build ?
 
@@ -60,7 +64,7 @@ For example :
 
 ### Commands
 
-#### List
+#### list
 
 You can list all installed interpreters using :
 
@@ -68,7 +72,7 @@ You can list all installed interpreters using :
 list
 ```
 
-#### Start
+#### start
 
 You can start a interpreter using :
 
@@ -78,7 +82,7 @@ start file n args...
 
 with `file` being the name of the interpreter, `n` the size the number of peers to connect to and `args` a list of argument to pass to the interpreter
 
-#### Add
+#### add
 
 You can add interpreters using :
 
@@ -88,7 +92,7 @@ add interpreters...
 
 with `interpreters` being a list of interpreter names.
 
-#### Del
+#### del
 
 You can delete interpreters using :
 

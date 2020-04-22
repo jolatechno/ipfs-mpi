@@ -14,10 +14,20 @@ if __name__ == "__main__":
 
         utils.Log(f"sending \"{ msg }\"")
         utils.Send(1, msg)
-        resp = utils.Read(n - 1, 20)
-        utils.Log(f"{ n - 1 } responded \"{ resp }\"")
+        resp = utils.Read(1, 20)
+        utils.Log(f"1 responded \"{ resp }\"")
+
+    elif i == n - 1:
+        msg = utils.Read(i - 1)
+        utils.Log(f"echo \"{ msg }\"")
+        utils.Log(f"{ i } sending \"echo { msg }\" to { i - 1 }")
+        utils.Send(i - 1, f"echo { msg }")
 
     else:
         msg = utils.Read(i - 1)
         utils.Log(f"{ i } sending \"{ msg }\" to { i + 1 }")
-        utils.Send((i + 1)%n, msg)
+        utils.Send((i + 1), msg)
+
+        msg = utils.Read(i + 1)
+        utils.Log(f"{ i } sending \"{ msg }\" to { i - 1 }")
+        utils.Send(i - 1, msg)
