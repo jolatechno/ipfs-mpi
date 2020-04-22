@@ -10,6 +10,7 @@ import (
   "bytes"
 
   shell "github.com/ipfs/go-ipfs-api"
+  new_shell "github.com/jolatechno/go-ipfs-directory_size_ls"
 )
 
 const (
@@ -123,7 +124,7 @@ func NewStore(url string, path string, ipfs_store string) (Store, error) {
       return nil, err
   }
 
-  List, err := store.Shell.List(ipfs_store)
+  List, err := new_shell.List(store.Shell, ipfs_store)
   if err != nil {
     return nil, err
   }
@@ -256,21 +257,19 @@ func (s *IpfsShell)Del(f string, failed bool) error {
     createEmptyFile(s.Path + FailedHeader + f)
 
   } else {
-    List, err := s.Shell.List(s.IpfsStore)
+    List, err := new_shell.List(s.Shell, s.IpfsStore)
     if err != nil {
       return  NewHeadedError(err, IpfsHeader)
     }
 
-    if shellHas(List, f) {
-      size, err := occupied(s.Path + InstalledHeader + f)
-      if err != nil {
-        return NewHeadedError(err, IpfsHeader)
+    for _, obj := range List {
+      if obj.Name == f {
+        s.Accessible = append(s.Accessible, object {
+          Name: f,
+          Size: obj.Size,
+        })
+        return nil
       }
-
-      s.Accessible = append(s.Accessible, object {
-        Name: f,
-        Size: size,
-      })
     }
 
   }

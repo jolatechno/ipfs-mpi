@@ -156,6 +156,8 @@ github.com/jbenet/goprocess v0.1.3/go.mod h1:5yspPrukOVuOLORacaBi858NqyClJPQxYZl
 github.com/jellevandenhooff/dkim v0.0.0-20150330215556-f50fe3d243e1/go.mod h1:E0B/fFc00Y+Rasa88328GlI/XbtyysCtTHZS8h7IrBU=
 github.com/jessevdk/go-flags v0.0.0-20141203071132-1679536dcc89/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
 github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
+github.com/jolatechno/go-ipfs-directory_size_ls v0.0.0-20200422092545-131678ddf19f h1:61vjPQxYUBC9aMd/6LQF56P9nBy1Hszb72wpdyQyc1Q=
+github.com/jolatechno/go-ipfs-directory_size_ls v0.0.0-20200422092545-131678ddf19f/go.mod h1:QJbSPrxfjsF9rhnNjjHVZxSVr1pbWOvDB+8Urql5ryc=
 github.com/jolatechno/go-timeout v0.0.0-20200401165658-31a45c1ac8e5 h1:Vr8kVdELCudR4s68CXUBJp/DJHFhIMSaxRMBgAHon0w=
 github.com/jolatechno/go-timeout v0.0.0-20200401165658-31a45c1ac8e5/go.mod h1:paJwIP2pqExVj8gEqc5Kz6kEhgkoUad8eRNAYi2EH7I=
 github.com/jolatechno/go-timeout v0.0.0-20200402071232-e1164f166d08 h1:sShtSX3Wm2zVSiSmtpIu0WpT6Vs8/t4dydDAiPGfASw=

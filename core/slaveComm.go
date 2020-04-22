@@ -218,7 +218,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
       comm.Close()
     })
   }
-  
+
   matcher, err := helpers.MultistreamSemverMatcher(proto)
   if err != nil {
     return nil, err
@@ -427,14 +427,6 @@ func (c *BasicSlaveComm)Connect(i int, addr peer.ID, msgs ...string) error {
     return errors.New("couldn't convert interface")
   }
 
-  for _, msg := range msgs {
-    err := send(rwc, msg)
-    if err != nil {
-      rwc.Close()
-      return err
-    }
-  }
-
-  c.Remote(i).Reset(rwc)
+  c.Remote(i).Reset(rwc, msgs...)
   return nil
 }
