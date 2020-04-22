@@ -16,6 +16,7 @@ import (
 var (
   RemoteHeader = "Remote"
 
+  ResetHandShakeHeader = "ResetHandShake"
   HandShakeHeader = "HandShake"
   MessageHeader = "Msg"
   CloseHeader = "Close"
@@ -31,7 +32,7 @@ var (
   nilRemoteResetHandler = func(int, int) {}
 )
 
-func send(stream io.ReadWriteCloser, str string) error {
+func send(stream io.ReadWriteCloser, strs ...string) error {
   defer recover()
 
   if stream == io.ReadWriteCloser(nil) {
@@ -42,7 +43,7 @@ func send(stream io.ReadWriteCloser, str string) error {
   } //--------------------------*/
   writer := bufio.NewWriter(stream)
 
-  _, err := writer.WriteString(str + "\n")
+  _, err := writer.WriteString(strings.Join(strs, ",") + "\n")
   if err != nil {
     return err
   }
@@ -184,7 +185,7 @@ func (r *BasicRemote)SetPingTimeout(timeoutDuration time.Duration) {
 
 func (r *BasicRemote)RequestReset(i int, slaveId int) {
   stream := r.Stream()
-  go r.raiseCheck(send(stream, fmt.Sprintf("%s,%d,%d", ResetHeader, i, slaveId)), stream)
+  go r.raiseCheck(send(stream, ResetHeader, fmt.Sprint(i), fmt.Sprint(slaveId)), stream)
 }
 
 func (r *BasicRemote)CloseRemote() {
@@ -198,7 +199,7 @@ func (r *BasicRemote)Send(msg string) {
   r.WriteMutex.Unlock()
 
   stream := r.Stream()
-  go r.raiseCheck(send(stream, fmt.Sprintf("%s,%s", MessageHeader, msg)), stream)
+  go r.raiseCheck(send(stream, MessageHeader, msg), stream)
 }
 
 func (r *BasicRemote)SendHandshake() {
@@ -266,14 +267,18 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...string) {
     }
   }
 
-  go r.raiseCheck(send(stream, HandShakeHeader), stream)
   stream.(network.Stream).SetReadDeadline(time.Now().Add(r.PingTimeout))
-  if bufio.NewScanner(stream).Text() != HandShakeHeader {
+  scan := bufio.NewScanner(stream)
+
+  if err := send(stream, ResetHandShakeHeader); err != nil {
+    panic(err)
+  }
+  if scan.Text() != ResetHandShakeHeader {
     panic(HeaderNotUnderstood)
   }
 
   received := ResetReader(r.Received, *r.Sent, func(msg string) {
-    if err := send(stream, fmt.Sprintf("%s,%s", MessageHeader, msg)); err != nil {
+    if err := send(stream, MessageHeader, msg); err != nil {
       panic(err)
     }
   }, func(msg string) {
