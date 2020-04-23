@@ -261,6 +261,8 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...interface{}) {
     return
   }
 
+  fmt.Println("[Remote] Reseting") //--------------------------
+
   for _, msg := range msgs {
     _, err := fmt.Fprintln(stream, msg)
     panic(err)
