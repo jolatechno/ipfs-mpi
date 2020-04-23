@@ -261,8 +261,6 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...interface{}) {
     return
   }
 
-  writer := bufio.NewWriter(stream)
-
   for _, msg := range msgs {
     _, err := fmt.Fprintln(stream, msg)
     panic(err)
@@ -271,8 +269,6 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...interface{}) {
   received := ResetReader(r.Received, *r.Sent, func(msg string) {
     _, err := fmt.Fprintf(stream, "%s,%s\n", MessageHeader, msg)
     panic(err)
-
-    go r.raiseCheck(writer.Flush(), stream)
   }, func(msg string) {
     r.Received++
     r.ReadChan.Send(msg)
@@ -303,15 +299,12 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...interface{}) {
 
     scanner := bufio.NewScanner(stream)
 
+    fmt.Println("[Remote] Listening") //--------------------------
+
     for r.Check() &&  r.Stream() == stream && scanner.Scan() {
       stream.(network.Stream).SetReadDeadline(time.Now().Add(r.PingTimeout))
 
       splitted := strings.Split(scanner.Text(), ",")
-      
-      str := strings.Join(splitted, ",")//--------------------------
-      if str != PingHeader && str != HandShakeHeader && str != CloseHeader { //--------------------------
-        fmt.Printf("[Remote] Received %q\n", str) //--------------------------
-      } //--------------------------
 
       switch splitted[0] {
       default:

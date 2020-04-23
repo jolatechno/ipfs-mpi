@@ -117,7 +117,7 @@ func (p *Param)String() string {
   return fmt.Sprintf("%d,%d,%d,%s,%s,%s", initInt, p.Idx, p.N, p.Id, joinedSlaveIds, joinedAddress)
 }
 
-func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, base protocol.ID, param Param, file string, n int, i int) (_ SlaveComm, err error) {
+func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, base protocol.ID, param Param, file string, n int, i int) (_ SlaveComm, err error) { //fmt.Println("[SlaveComm] New", param) //--------------------------
   inter, err := NewInterface(ctx, file, n, i)
   if err != nil {
     return nil, err

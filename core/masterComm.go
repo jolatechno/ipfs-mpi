@@ -129,8 +129,6 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   }
 
   addrs := make([]peer.ID, n)
-  lastReseted := make([]time.Time, n)
-
   for i := 0; i < n; i++ {
     if i == 0 {
       addrs[i] = host.ID()
@@ -140,8 +138,6 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
         return nil, err
       }
     }
-
-    lastReseted[i] = time.Now().Add(-1 * (ResetCooldown + time.Second))
   }
 
   remotes := make([]Remote, n)
