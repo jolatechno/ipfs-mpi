@@ -109,7 +109,6 @@ func NewRemote() (Remote, error) {
     ReadChan: NewChannelString(),
     HandshakeChan: NewChannelBool(),
     Sent: &[]string{},
-    Rw: nil,
     Received: 0,
   }
 
@@ -260,17 +259,17 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...interface{}) {
   if stream == io.ReadWriteCloser(nil) {
     return
   }
-
-  fmt.Println("[Remote] Reseting") //--------------------------
-
+  
   for _, msg := range msgs {
-    _, err := fmt.Fprintln(stream, msg)
-    panic(err)
+    if _, err := fmt.Fprintln(stream, msg); err != nil {
+      panic(err)
+    }
   }
 
   received := ResetReader(r.Received, *r.Sent, func(msg string) {
-    _, err := fmt.Fprintf(stream, "%s,%s\n", MessageHeader, msg)
-    panic(err)
+    if _, err := fmt.Fprintf(stream, "%s,%s\n", MessageHeader, msg); err != nil {
+      panic(err)
+    }
   }, func(msg string) {
     r.Received++
     r.ReadChan.Send(msg)
@@ -287,8 +286,9 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...interface{}) {
 
     for r.Check() && r.Stream() == stream {
       time.Sleep(r.PingInterval)
-      _, err := fmt.Fprintln(stream, PingHeader)
-      panic(err)
+      if _, err := fmt.Fprintln(stream, PingHeader); err != nil {
+        panic(err)
+      }
     }
   }()
 
@@ -300,8 +300,6 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...interface{}) {
     }()
 
     scanner := bufio.NewScanner(stream)
-
-    fmt.Println("[Remote] Listening") //--------------------------
 
     for r.Check() &&  r.Stream() == stream && scanner.Scan() {
       stream.(network.Stream).SetReadDeadline(time.Now().Add(r.PingTimeout))
