@@ -111,7 +111,7 @@ func (c *safeChannelString)Close() {
   }
 }
 
-func NewRemote() (Remote, error) {
+func NewRemote(slaveId int) (Remote, error) {
   remote :=  &BasicRemote {
     ResetHandler: &nilRemoteResetHandler,
     PingInterval: StandardPingInterval,
@@ -120,6 +120,7 @@ func NewRemote() (Remote, error) {
     HandshakeChan: NewChannelBool(),
     SendChan: NewChannelString(),
     Sent: &[]string{},
+    Id: slaveId,
     Received: 0,
   }
 
@@ -145,6 +146,7 @@ type BasicRemote struct {
   HandshakeChan *safeChannelBool
   SendChan *safeChannelString
 
+  Id int
   ResetHandler *func(int, int)
   PingInterval time.Duration
   PingTimeout time.Duration
@@ -156,8 +158,14 @@ type BasicRemote struct {
   Standard standardFunctionsCloser
 }
 
-func (r *BasicRemote)raiseCheck(err error, stream io.ReadWriteCloser) bool {
-  if r.Stream() == stream {
+func (r *BasicRemote)check(stream io.ReadWriteCloser, slaveId int) bool {
+  r.StreamMutex.Lock()
+  defer r.StreamMutex.Unlock()
+  return stream == r.Rw && slaveId == r.Id && r.Check()
+}
+
+func (r *BasicRemote)raiseCheck(err error, stream io.ReadWriteCloser, slaveId int) bool {
+  if r.check(stream, slaveId) {
     r.Raise(err)
   }
   return err == nil
@@ -230,12 +238,18 @@ func (r *BasicRemote)Stream() io.ReadWriteCloser {
   return r.Rw
 }
 
+func (r *BasicRemote)SlaveId() int {
+  r.StreamMutex.Lock()
+  defer r.StreamMutex.Unlock()
+  return r.Id
+}
+
 func (r *BasicRemote)Close() error {
   return r.Standard.Close()
 }
 
-func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...interface{}) {
-  if !r.Check() {
+func (r *BasicRemote)Reset(stream io.ReadWriteCloser, slaveId int, msgs ...interface{}) {
+  if !r.Check() || (slaveId < r.SlaveId() && stream != io.ReadWriteCloser(nil)) {
     return
   }
 
@@ -245,7 +259,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...interface{}) {
     r.StreamMutex.Unlock()
     r.WriteMutex.Unlock()
     if err := recover(); err != nil {
-      r.raiseCheck(err.(error), stream)
+      r.raiseCheck(err.(error), stream, slaveId)
     }
   }()
 
@@ -262,7 +276,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...interface{}) {
   r.SendChan = sendChan
 
   go func() {
-    for r.Check() && r.Stream() == stream {
+    for r.check(stream, slaveId) {
       msg, ok := <- sendChan.Chan
       if !ok {
         return
@@ -273,7 +287,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...interface{}) {
       } //--------------------------
 
       if _, err := fmt.Fprintln(stream, msg); err != nil {
-        r.raiseCheck(err, stream)
+        r.raiseCheck(err, stream, slaveId)
       }
     }
   }()
@@ -294,11 +308,11 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...interface{}) {
   go func() {
     defer func() {
       if err := recover(); err != nil {
-        r.raiseCheck(err.(error), stream)
+        r.raiseCheck(err.(error), stream, slaveId)
       }
     }()
 
-    for r.Check() && r.Stream() == stream {
+    for r.check(stream, slaveId) {
       time.Sleep(r.PingInterval)
       go sendChan.Send(PingHeader)
     }
@@ -307,13 +321,13 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...interface{}) {
   go func() {
     defer func() {
       if err := recover(); err != nil {
-        r.Raise(err.(error))
+        r.raiseCheck(err.(error), stream, slaveId)
       }
     }()
 
     scanner := bufio.NewScanner(stream)
 
-    for r.Check() &&  r.Stream() == stream && scanner.Scan() {
+    for r.check(stream, slaveId) && scanner.Scan() {
       stream.(network.Stream).SetReadDeadline(time.Now().Add(r.PingTimeout))
 
       splitted := strings.Split(scanner.Text(), ",")
@@ -370,7 +384,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...interface{}) {
 
     pingChan.Close()
 
-    r.raiseCheck(scanner.Err(), stream)
+    r.raiseCheck(scanner.Err(), stream, slaveId)
 
     if !r.Check() {
       r.ReadChan.Close()

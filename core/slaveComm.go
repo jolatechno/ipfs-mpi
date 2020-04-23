@@ -125,18 +125,18 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
 
   remotes := make([]Remote, param.N)
   comm := BasicSlaveComm {
-    SlaveIds: param.SlaveIds,
     Ctx: ctx,
     Inter: inter,
     Id: param.Id,
     N: param.N,
     Idx: param.Idx,
     CommHost: host,
+    SlaveId: param.SlaveIds[param.Idx],
     Base: base,
     Remotes: &remotes,
   }
 
-  proto := protocol.ID(fmt.Sprintf("%d/%d/%s/%s", comm.Idx, comm.SlaveIds[comm.Idx], comm.Id, string(comm.Base)))
+  proto := protocol.ID(fmt.Sprintf("%d/%d/%s/%s", comm.Idx, param.SlaveIds[comm.Idx], comm.Id, string(comm.Base)))
 
   close := func() error { //fmt.Printf("[SlaveComm] Closing the %dth reset of %d\n", comm.SlaveIds[comm.Idx], comm.Idx) //--------------------------
     go comm.Interface().Close()
@@ -164,7 +164,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     }
   }()
 
-  (*comm.Remotes)[0], err = NewRemote()
+  (*comm.Remotes)[0], err = NewRemote(0)
   if err != nil {
     return nil, err
   }
@@ -178,14 +178,14 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     comm.Close()
   })
 
-  comm.Remote(0).Reset(zeroRw)
+  comm.Remote(0).Reset(zeroRw, 0)
 
   for i := 1; i < comm.N; i++ {
     if i == comm.Idx {
       continue
     }
 
-    (*comm.Remotes)[i], err = NewRemote()
+    (*comm.Remotes)[i], err = NewRemote(param.SlaveIds[i])
     if err != nil {
       return nil, err
     }
@@ -202,10 +202,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
       go comm.Raise(SetNonPanic(err))
       go comm.Raise(SetNonPanic(NewHeadedError(errors.New(fmt.Sprintf("%d hanged-up on %d", i, comm.Idx)), SlaveCommHeader)))
 
-      if comm.Remote(i).Stream() != io.ReadWriteCloser(nil) {
-        comm.Remote(i).Reset(io.ReadWriteCloser(nil))
-      }
-
+      comm.Remote(i).Reset(io.ReadWriteCloser(nil), 0)
       comm.RequestReset(i)
     })
 
@@ -245,16 +242,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
       return
     }
 
-    comm.SlaveIdMutex.Lock()
-    defer comm.SlaveIdMutex.Unlock()
-
-    if slaveId < comm.SlaveIds[i] {
-      stream.Close()
-      return
-    }
-
-    comm.SlaveIds[i] = slaveId
-    comm.Remote(i).Reset(stream)
+    comm.Remote(i).Reset(stream, slaveId)
   }
 
   host.SetStreamHandlerMatch(proto, match, handler)
@@ -299,7 +287,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
 
   comm.Interface().SetResetHandler(func(i int) {
     comm.RequestReset(i)
-    comm.Remote(i).Reset(io.ReadWriteCloser(nil))
+    comm.Remote(i).Reset(io.ReadWriteCloser(nil), 0)
   })
 
   comm.Start()
@@ -311,10 +299,10 @@ type BasicSlaveComm struct {
   SlaveIdMutex sync.Mutex
   RemotesMutex sync.Mutex
 
-  SlaveIds []int
   Ctx context.Context
   Inter Interface
   Id string
+  SlaveId int
   N int
   Idx int
   CommHost ExtHost
@@ -360,7 +348,7 @@ func (c *BasicSlaveComm)Interface() Interface {
 }
 
 func (c *BasicSlaveComm)RequestReset(i int) {
-  c.Remote(0).RequestReset(i, c.SlaveIds[i])
+  c.Remote(0).RequestReset(i, c.Remote(i).SlaveId())
 }
 
 func (c *BasicSlaveComm)SetErrorHandler(handler func(error)) {
@@ -390,12 +378,6 @@ func (c *BasicSlaveComm)Remote(idx int) Remote {
   return (*c.Remotes)[idx]
 }
 
-func (c *BasicSlaveComm)SlaveId(idx int) int {
-  c.RemotesMutex.Lock()
-  defer c.RemotesMutex.Unlock()
-  return c.SlaveIds[idx]
-}
-
 func (c *BasicSlaveComm)Host() ExtHost {
   return c.CommHost
 }
@@ -413,9 +395,12 @@ func (c *BasicSlaveComm)Connect(i int, addr peer.ID, msgs ...interface{}) error 
     }
   }()
 
+  remote := c.Remote(i)
+  slaveId := remote.SlaveId()
+
   pid := c.Base
   if c.Idx != 0 {
-    pid = protocol.ID(fmt.Sprintf("%d/%d/%d/%d/%s/%s", c.Idx, c.SlaveIds[c.Idx], i, c.SlaveIds[i], c.Id, string(c.Base)))
+    pid = protocol.ID(fmt.Sprintf("%d/%d/%d/%d/%s/%s", c.Idx, c.SlaveId, i, slaveId, c.Id, string(c.Base)))
   }
 
   rwi, err := timeout.MakeTimeout(func() (interface{}, error) {
@@ -436,6 +421,6 @@ func (c *BasicSlaveComm)Connect(i int, addr peer.ID, msgs ...interface{}) error 
     return errors.New("couldn't convert interface")
   }
 
-  (*c.Remotes)[i].Reset(rwc, msgs...)
+  remote.Reset(rwc, slaveId, msgs...)
   return nil
 }

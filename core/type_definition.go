@@ -95,20 +95,20 @@ type SlaveComm interface {
   Host() ExtHost
   Interface() Interface
   Remote(int) Remote
-  SlaveId(int) int
   Connect(int, peer.ID, ...interface{}) error
 }
 
 type Remote interface {
   standardFunctionsCloser
 
+  SlaveId() int
   SetResetHandler(func(int, int))
   RequestReset(int, int)
   CloseRemote()
   SetPingInterval(time.Duration)
   SetPingTimeout(time.Duration)
   Stream() io.ReadWriteCloser
-  Reset(io.ReadWriteCloser, ...interface{})
+  Reset(stream io.ReadWriteCloser, slaveId int, msgs...interface{})
   Get() string
   WaitHandshake()
   Send(string)

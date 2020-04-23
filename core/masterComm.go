@@ -143,8 +143,8 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   remotes := make([]Remote, n)
   comm := BasicMasterComm {
     Addrs: &addrs,
+    SlaveIds: make([]int, n),
     Comm: BasicSlaveComm {
-      SlaveIds: make([]int, n),
       Ctx: ctx,
       Inter: inter,
       Id: id,
@@ -185,7 +185,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   wg := NewSafeWaitgroupTwice(n, n - 1)
 
   for i := 1; i < n; i++ {
-    (*comm.Comm.Remotes)[i], err = NewRemote()
+    (*comm.Comm.Remotes)[i], err = NewRemote(0)
     if err != nil {
       return nil, err
     }
@@ -213,7 +213,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
         Idx: i,
         N: n,
         Id: id,
-        SlaveIds: comm.Comm.SlaveIds,
+        SlaveIds: comm.SlaveIds,
         Addrs: &addrs,
       })
       if err != nil {
@@ -255,7 +255,8 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
       go comm.Raise(SetNonPanic(NewHeadedError(errors.New(fmt.Sprintf("%d hanged-up", i)), MasterCommHeader)))
 
       if comm.SlaveComm().Remote(i).Stream() != io.ReadWriteCloser(nil) {
-        comm.SlaveComm().Remote(i).Reset(io.ReadWriteCloser(nil))
+        remote := comm.SlaveComm().Remote(i)
+        remote.Reset(io.ReadWriteCloser(nil), remote.SlaveId())
       }
 
       comm.Reset(i, -1)
@@ -279,6 +280,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
 type BasicMasterComm struct {
   Mutex sync.Mutex
+  SlaveIds []int
   Addrs *[]peer.ID
   Ctx context.Context
   Comm BasicSlaveComm
@@ -321,15 +323,15 @@ func (c *BasicMasterComm)Reset(i int, slaveId int) {
     }
   }()
 
-  if slaveId != c.Comm.SlaveIds[i] && slaveId != -1 {
+  if slaveId != c.SlaveIds[i] && slaveId != -1 {
     return
   }
 
   c.SlaveComm().Remote(i).CloseRemote()
 
-  c.Comm.SlaveIds[i]++
+  c.SlaveIds[i]++
 
-  go c.Raise(SetNonPanic(NewHeadedError(errors.New(fmt.Sprintf("reseting %d for the %dth time", i, c.Comm.SlaveIds[i])), MasterCommHeader)))
+  go c.Raise(SetNonPanic(NewHeadedError(errors.New(fmt.Sprintf("reseting %d for the %dth time", i, c.SlaveIds[i])), MasterCommHeader)))
 
   for c.Check() {
     addr, err := c.SlaveComm().Host().NewPeer(c.Comm.Base)
@@ -344,7 +346,7 @@ func (c *BasicMasterComm)Reset(i int, slaveId int) {
       Idx: i,
       N: c.Comm.N,
       Id: c.Comm.Id,
-      SlaveIds: c.Comm.SlaveIds,
+      SlaveIds: c.SlaveIds,
       Addrs: c.Addrs,
     })
     if err == nil {
