@@ -429,6 +429,6 @@ func (c *BasicSlaveComm)Connect(i int, addr peer.ID, msgs ...interface{}) error 
     return errors.New("couldn't convert interface")
   }
 
-  c.Remote(i).Reset(rwc, msgs...)
+  (*c.Remotes)[i].Reset(rwc, msgs...)
   return nil
 }
