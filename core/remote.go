@@ -271,7 +271,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...interface{}) {
       }
 
       if _, err := fmt.Fprintln(stream, msg); err != nil {
-        panic(err)
+        r.raiseCheck(err, stream)
       }
     }
   }()
