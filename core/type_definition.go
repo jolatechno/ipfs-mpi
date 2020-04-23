@@ -95,7 +95,7 @@ type SlaveComm interface {
   Host() ExtHost
   Interface() Interface
   Remote(int) Remote
-  Connect(int, peer.ID, ...string) error
+  Connect(int, peer.ID, ...interface{}) error
 }
 
 type Remote interface {
@@ -107,7 +107,7 @@ type Remote interface {
   SetPingInterval(time.Duration)
   SetPingTimeout(time.Duration)
   Stream() io.ReadWriteCloser
-  Reset(io.ReadWriteCloser, ...string)
+  Reset(io.ReadWriteCloser, ...interface{})
   Get() string
   WaitHandshake()
   Send(string)

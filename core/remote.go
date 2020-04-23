@@ -241,7 +241,7 @@ func (r *BasicRemote)Close() error {
   return r.Standard.Close()
 }
 
-func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...string) {
+func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...interface{}) {
   if !r.Check() {
     return
   }

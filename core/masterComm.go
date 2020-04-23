@@ -212,14 +212,14 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     })
 
     go func() {
-      err := comm.SlaveComm().Connect(i, addrs[i], fmt.Sprint(&Param {
+      err := comm.SlaveComm().Connect(i, addrs[i], &Param {
         Init: true,
         Idx: i,
         N: n,
         Id: id,
         SlaveIds: comm.Comm.SlaveIds,
         Addrs: &addrs,
-      }))
+      })
       if err != nil {
         comm.SlaveComm().Remote(i).Raise(err)
         return
@@ -339,14 +339,14 @@ func (c *BasicMasterComm)Reset(i int, slaveId int) {
 
     (*c.Addrs)[i] = addr
 
-    err = c.SlaveComm().Connect(i, addr, fmt.Sprint(&Param {
+    err = c.SlaveComm().Connect(i, addr, &Param {
       Init: false,
       Idx: i,
       N: c.Comm.N,
       Id: c.Comm.Id,
       SlaveIds: c.Comm.SlaveIds,
       Addrs: c.Addrs,
-    }))
+    })
     if err == nil {
       break
     }
