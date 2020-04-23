@@ -123,7 +123,6 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     return nil, err
   }
 
-  remotes := make([]Remote, param.N)
   comm := BasicSlaveComm {
     Ctx: ctx,
     Inter: inter,
@@ -133,7 +132,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     CommHost: host,
     SlaveId: param.SlaveIds[param.Idx],
     Base: base,
-    Remotes: &remotes,
+    Remotes: make([]Remote, param.N),
   }
 
   proto := protocol.ID(fmt.Sprintf("%d/%d/%s/%s", comm.Idx, param.SlaveIds[comm.Idx], comm.Id, string(comm.Base)))
@@ -164,7 +163,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     }
   }()
 
-  (*comm.Remotes)[0], err = NewRemote(0)
+  comm.Remotes[0], err = NewRemote(0)
   if err != nil {
     return nil, err
   }
@@ -185,7 +184,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
       continue
     }
 
-    (*comm.Remotes)[i], err = NewRemote(param.SlaveIds[i])
+    comm.Remotes[i], err = NewRemote(param.SlaveIds[i])
     if err != nil {
       return nil, err
     }
@@ -307,7 +306,7 @@ type BasicSlaveComm struct {
   Idx int
   CommHost ExtHost
   Base protocol.ID
-  Remotes *[]Remote
+  Remotes []Remote
   Standard standardFunctionsCloser
 }
 
@@ -375,7 +374,7 @@ func (c *BasicSlaveComm)Remote(idx int) Remote {
 
   c.RemotesMutex.Lock()
   defer c.RemotesMutex.Unlock()
-  return (*c.Remotes)[idx]
+  return c.Remotes[idx]
 }
 
 func (c *BasicSlaveComm)Host() ExtHost {
@@ -395,7 +394,7 @@ func (c *BasicSlaveComm)Connect(i int, addr peer.ID, msgs ...interface{}) error 
     }
   }()
 
-  remote := c.Remote(i)
+  remote := c.Remotes[i]
   slaveId := remote.SlaveId()
 
   pid := c.Base

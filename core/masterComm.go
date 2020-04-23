@@ -140,7 +140,6 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     }
   }
 
-  remotes := make([]Remote, n)
   comm := BasicMasterComm {
     Addrs: &addrs,
     SlaveIds: make([]int, n),
@@ -152,7 +151,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
       Idx: 0,
       CommHost: host,
       Base: base,
-      Remotes: &remotes,
+      Remotes: make([]Remote, n),
     },
   }
 
@@ -185,7 +184,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
   wg := NewSafeWaitgroupTwice(n, n - 1)
 
   for i := 1; i < n; i++ {
-    (*comm.Comm.Remotes)[i], err = NewRemote(0)
+    comm.Comm.Remotes[i], err = NewRemote(0)
     if err != nil {
       return nil, err
     }
