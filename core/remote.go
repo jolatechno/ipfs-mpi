@@ -260,11 +260,15 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...interface{}) {
   r.SendChan = sendChan
 
   go func() {
-    for {
+    for r.Check() && r.Stream() == stream {
       msg, ok := <- sendChan.Chan
       if !ok {
         return
       }
+
+      if msg != PingHeader && msg != HandShakeHeader /*&& msg != PingRespHeader*/ && msg != CloseHeader { //--------------------------
+        fmt.Printf("[Remote] Sent %q\n", msg) //--------------------------
+      } //--------------------------
 
       if _, err := fmt.Fprintln(stream, msg); err != nil {
         r.raiseCheck(err, stream)
