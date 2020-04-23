@@ -67,8 +67,6 @@ func (c *safeChannelBool)Close() {
     for len(c.Chan) > 0 {
       <- c.Chan
     }
-
-    //close(c.Chan)
   }
 }
 
@@ -110,8 +108,6 @@ func (c *safeChannelString)Close() {
     for len(c.Chan) > 0 {
       <- c.Chan
     }
-
-    //close(c.Chan)
   }
 }
 
@@ -194,8 +190,8 @@ func (r *BasicRemote)CloseRemote() {
 
 func (r *BasicRemote)Send(msg string) {
   r.WriteMutex.Lock()
+  defer r.WriteMutex.Unlock()
   *r.Sent = append(*r.Sent, msg)
-  r.WriteMutex.Unlock()
 
   go r.SendChan.Send(MessageHeader + "," + msg)
 }

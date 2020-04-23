@@ -278,7 +278,6 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 }
 
 type BasicMasterComm struct {
-  Mutex sync.Mutex
   Addrs *[]peer.ID
   Ctx context.Context
   Comm BasicSlaveComm
@@ -309,9 +308,9 @@ func (c *BasicMasterComm)SlaveComm() SlaveComm {
 }
 
 func (c *BasicMasterComm)Reset(i int, slaveId int) {
-  c.Mutex.Lock()
+  c.Comm.RemotesMutex.Lock()
   defer func() {
-    c.Mutex.Unlock()
+    c.Comm.RemotesMutex.Unlock()
     if err := recover(); err != nil {
       c.Raise(err.(error))
     }
