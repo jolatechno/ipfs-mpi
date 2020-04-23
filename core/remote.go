@@ -190,12 +190,12 @@ func (r *BasicRemote)SetPingTimeout(timeoutDuration time.Duration) {
 
 func (r *BasicRemote)RequestReset(i int, slaveId int) {
   stream := r.Stream()
-  go r.raiseCheck(send(stream, ResetHeader, fmt.Sprint(i), fmt.Sprint(slaveId)), stream)
+  r.raiseCheck(send(stream, ResetHeader, fmt.Sprint(i), fmt.Sprint(slaveId)), stream)
 }
 
 func (r *BasicRemote)CloseRemote() {
   stream := r.Stream()
-  go r.raiseCheck(send(stream, CloseHeader), stream)
+  r.raiseCheck(send(stream, CloseHeader), stream)
 }
 
 func (r *BasicRemote)Send(msg string) {
@@ -204,12 +204,12 @@ func (r *BasicRemote)Send(msg string) {
   r.WriteMutex.Unlock()
 
   stream := r.Stream()
-  go r.raiseCheck(send(stream, MessageHeader, msg), stream)
+  r.raiseCheck(send(stream, MessageHeader, msg), stream)
 }
 
 func (r *BasicRemote)SendHandshake() {
   stream := r.Stream()
-  go r.raiseCheck(send(stream, HandShakeHeader), stream)
+  r.raiseCheck(send(stream, HandShakeHeader), stream)
 }
 
 func (r *BasicRemote)Get() string {

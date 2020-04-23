@@ -169,7 +169,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
       go func() {
         defer recover()
 
-        comm.SlaveComm().Remote(i).CloseRemote()
+        go comm.SlaveComm().Remote(i).CloseRemote()
         comm.SlaveComm().Remote(i).Close()
       }()
 
