@@ -306,6 +306,11 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
 
   comm.Start()
 
+  if !param.Init {
+    go comm.Remote(0).SendHandshake()
+    comm.Remote(0).WaitHandshake()
+  }
+
   return &comm, nil
 }
 
