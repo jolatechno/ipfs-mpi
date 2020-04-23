@@ -185,18 +185,11 @@ func (r *BasicRemote)RequestReset(i int, slaveId int) {
     return
   }
 
-  _, err := fmt.Fprintf(stream, "%s,%d,%d\n", ResetHeader, i, slaveId)
-  r.raiseCheck(err, stream)
+  go r.SendChan.Send(fmt.Sprintf("%s,%d,%d", ResetHeader, i, slaveId))
 }
 
 func (r *BasicRemote)CloseRemote() {
-  stream := r.Stream()
-  if stream == io.ReadWriteCloser(nil) {
-    return
-  }
-
-  _, err := fmt.Fprintln(stream, CloseHeader)
-  r.raiseCheck(err, stream)
+  go r.SendChan.Send(CloseHeader)
 }
 
 func (r *BasicRemote)Send(msg string) {
@@ -204,17 +197,11 @@ func (r *BasicRemote)Send(msg string) {
   *r.Sent = append(*r.Sent, msg)
   r.WriteMutex.Unlock()
 
-  go r.SendChan.Send(msg)
+  go r.SendChan.Send(MessageHeader + "," + msg)
 }
 
 func (r *BasicRemote)SendHandshake() {
-  stream := r.Stream()
-  if stream == io.ReadWriteCloser(nil) {
-    return
-  }
-
-  _, err := fmt.Fprintln(stream, HandShakeHeader)
-  r.raiseCheck(err, stream)
+  go r.SendChan.Send(HandShakeHeader)
 }
 
 func (r *BasicRemote)Get() string {
@@ -283,7 +270,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...interface{}) {
         return
       }
 
-      if _, err := fmt.Fprintf(stream, "%s,%s\n", MessageHeader, msg); err != nil {
+      if _, err := fmt.Fprintln(stream, msg); err != nil {
         panic(err)
       }
     }
@@ -296,7 +283,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...interface{}) {
   }
 
   received := ResetReader(r.Received, *r.Sent, func(msg string) {
-    go sendChan.Send(msg)
+    go sendChan.Send(MessageHeader + "," + msg)
   }, func(msg string) {
     r.Received++
     r.ReadChan.Send(msg)
