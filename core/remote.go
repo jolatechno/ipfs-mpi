@@ -277,9 +277,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...interface{}) {
   }()
 
   for _, msg := range msgs {
-    if _, err := fmt.Fprintln(stream, msg); err != nil {
-      panic(err)
-    }
+    go sendChan.Send(fmt.Sprint(msg))
   }
 
   received := ResetReader(r.Received, *r.Sent, func(msg string) {
