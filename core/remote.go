@@ -259,7 +259,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...interface{}) {
   if stream == io.ReadWriteCloser(nil) {
     return
   }
-  
+
   for _, msg := range msgs {
     if _, err := fmt.Fprintln(stream, msg); err != nil {
       panic(err)
@@ -305,6 +305,11 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...interface{}) {
       stream.(network.Stream).SetReadDeadline(time.Now().Add(r.PingTimeout))
 
       splitted := strings.Split(scanner.Text(), ",")
+
+      str := strings.Join(splitted, ",") //--------------------------
+      if str != PingHeader && str != HandShakeHeader /*&& str != PingRespHeader*/ && str != CloseHeader { //--------------------------
+        fmt.Printf("[Remote] Sent %q\n", str) //--------------------------
+      } //--------------------------
 
       switch splitted[0] {
       default:
