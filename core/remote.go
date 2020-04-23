@@ -68,7 +68,7 @@ func (c *safeChannelBool)Close() {
       <- c.Chan
     }
 
-    close(c.Chan)
+    //close(c.Chan)
   }
 }
 
@@ -111,7 +111,7 @@ func (c *safeChannelString)Close() {
       <- c.Chan
     }
 
-    close(c.Chan)
+    //close(c.Chan)
   }
 }
 
