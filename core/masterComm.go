@@ -308,6 +308,10 @@ func (c *BasicMasterComm)SlaveComm() SlaveComm {
 }
 
 func (c *BasicMasterComm)Reset(i int, slaveId int) {
+  if i == 0 {
+    c.Raise(errors.New("Requesting self remote"))
+  }
+
   c.Comm.RemotesMutex.Lock()
   defer func() {
     c.Comm.RemotesMutex.Unlock()
@@ -320,7 +324,7 @@ func (c *BasicMasterComm)Reset(i int, slaveId int) {
     return
   }
 
-  c.SlaveComm().Remote(i).CloseRemote()
+  (*c.Comm.Remotes)[i].CloseRemote()
 
   c.Comm.SlaveIds[i]++
 
