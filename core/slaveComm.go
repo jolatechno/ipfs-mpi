@@ -265,7 +265,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
   host.SetStreamHandlerMatch(proto, match, handler)
 
   if param.Init {
-    comm.Remote(0).SendHandshake()
+    go comm.Remote(0).SendHandshake()
     comm.Remote(0).WaitHandshake()
   }
 
@@ -300,7 +300,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
   wg.Wait()
 
   if param.Init {
-    comm.Remote(0).SendHandshake()
+    go comm.Remote(0).SendHandshake()
     comm.Remote(0).WaitHandshake()
   }
 

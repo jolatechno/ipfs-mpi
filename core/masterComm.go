@@ -240,7 +240,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
       continue
     }
 
-    comm.SlaveComm().Remote(i).SendHandshake()
+    go comm.SlaveComm().Remote(i).SendHandshake()
 
     go func() {
       comm.SlaveComm().Remote(i).WaitHandshake()
@@ -266,7 +266,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     })
 
     if wg.Check(i) {
-      comm.SlaveComm().Remote(i).SendHandshake()
+      go comm.SlaveComm().Remote(i).SendHandshake()
     } else {
       comm.Reset(i, -1)
     }
