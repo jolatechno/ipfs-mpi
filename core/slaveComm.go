@@ -245,8 +245,8 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
       return
     }
 
-    comm.Mutex.Lock()
-    defer comm.Mutex.Unlock()
+    comm.SlaveIdMutex.Lock()
+    defer comm.SlaveIdMutex.Unlock()
 
     if slaveId < comm.SlaveIds[i] {
       stream.Close()
@@ -308,7 +308,9 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
 }
 
 type BasicSlaveComm struct {
-  Mutex sync.Mutex
+  SlaveIdMutex sync.Mutex
+  RemotesMutex sync.Mutex
+
   SlaveIds []int
   SlaveId int
   Ctx context.Context
@@ -383,6 +385,9 @@ func (c *BasicSlaveComm)Remote(idx int) Remote {
     c.Raise(errors.New("Requesting self remote"))
     return Remote(nil)
   }
+
+  c.RemotesMutex.Lock()
+  defer c.RemotesMutex.Unlock()
   return (*c.Remotes)[idx]
 }
 
