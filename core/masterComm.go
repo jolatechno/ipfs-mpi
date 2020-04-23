@@ -278,6 +278,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 }
 
 type BasicMasterComm struct {
+  Mutex sync.Mutex
   Addrs *[]peer.ID
   Ctx context.Context
   Comm BasicSlaveComm
@@ -312,9 +313,9 @@ func (c *BasicMasterComm)Reset(i int, slaveId int) {
     c.Raise(errors.New("Requesting self remote"))
   }
 
-  c.Comm.RemotesMutex.Lock()
+  c.Mutex.Lock()
   defer func() {
-    c.Comm.RemotesMutex.Unlock()
+    c.Mutex.Unlock()
     if err := recover(); err != nil {
       c.Raise(err.(error))
     }
@@ -324,7 +325,7 @@ func (c *BasicMasterComm)Reset(i int, slaveId int) {
     return
   }
 
-  (*c.Comm.Remotes)[i].CloseRemote()
+  c.SlaveComm().Remote(i).CloseRemote()
 
   c.Comm.SlaveIds[i]++
 
@@ -347,8 +348,8 @@ func (c *BasicMasterComm)Reset(i int, slaveId int) {
       Addrs: c.Addrs,
     })
     if err == nil {
-      (*c.Comm.Remotes)[i].WaitHandshake()
-      go (*c.Comm.Remotes)[i].SendHandshake()
+      c.SlaveComm().Remote(i).WaitHandshake()
+      go c.SlaveComm().Remote(i).SendHandshake()
 
       break
     }

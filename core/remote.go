@@ -254,6 +254,8 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...interface{}) {
     return
   }
 
+  fmt.Println("[Remote] Reset") //--------------------------
+
   r.SendChan.Close()
 
   sendChan := NewChannelString()

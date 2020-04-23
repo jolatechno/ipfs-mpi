@@ -95,6 +95,7 @@ type SlaveComm interface {
   Host() ExtHost
   Interface() Interface
   Remote(int) Remote
+  SlaveId(int) int
   Connect(int, peer.ID, ...interface{}) error
 }
 

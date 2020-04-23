@@ -312,7 +312,6 @@ type BasicSlaveComm struct {
   RemotesMutex sync.Mutex
 
   SlaveIds []int
-  SlaveId int
   Ctx context.Context
   Inter Interface
   Id string
@@ -391,6 +390,12 @@ func (c *BasicSlaveComm)Remote(idx int) Remote {
   return (*c.Remotes)[idx]
 }
 
+func (c *BasicSlaveComm)SlaveId(idx int) int {
+  c.RemotesMutex.Lock()
+  defer c.RemotesMutex.Unlock()
+  return c.SlaveIds[idx]
+}
+
 func (c *BasicSlaveComm)Host() ExtHost {
   return c.CommHost
 }
@@ -400,7 +405,9 @@ func (c *BasicSlaveComm)Close() error {
 }
 
 func (c *BasicSlaveComm)Connect(i int, addr peer.ID, msgs ...interface{}) error {
+  c.RemotesMutex.Lock()
   defer func() {
+    c.RemotesMutex.Unlock()
     if err := recover(); err != nil {
       c.Raise(err.(error))
     }
