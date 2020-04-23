@@ -16,7 +16,7 @@ import (
 var (
   RemoteHeader = "Remote"
 
-  ResetHandShakeHeader = "ResetHandShake"
+  //ResetHandShakeHeader = "ResetHandShake"
   HandShakeHeader = "HandShake"
   MessageHeader = "Msg"
   CloseHeader = "Close"
@@ -307,10 +307,12 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...interface{}) {
       stream.(network.Stream).SetReadDeadline(time.Now().Add(r.PingTimeout))
 
       splitted := strings.Split(scanner.Text(), ",")
-      /*str := strings.Join(splitted, ",")//--------------------------
+      
+      str := strings.Join(splitted, ",")//--------------------------
       if str != PingHeader && str != HandShakeHeader && str != CloseHeader { //--------------------------
         fmt.Printf("[Remote] Received %q\n", str) //--------------------------
-      } //--------------------------*/
+      } //--------------------------
+
       switch splitted[0] {
       default:
         r.Raise(HeaderNotUnderstood)
