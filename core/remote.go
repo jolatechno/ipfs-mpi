@@ -272,11 +272,13 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...interface{}) {
   }
 
   r.SendChan.Close()
-  r.SendChan = NewChannelString()
+
+  sendChan := NewChannelString()
+  r.SendChan = sendChan
 
   go func() {
     for {
-      msg, ok := <- r.SendChan.Chan
+      msg, ok := <- sendChan.Chan
       if !ok {
         return
       }
@@ -294,7 +296,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...interface{}) {
   }
 
   received := ResetReader(r.Received, *r.Sent, func(msg string) {
-    go r.SendChan.Send(msg)
+    go sendChan.Send(msg)
   }, func(msg string) {
     r.Received++
     r.ReadChan.Send(msg)

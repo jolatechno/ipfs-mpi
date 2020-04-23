@@ -20,7 +20,7 @@ import (
   "github.com/libp2p/go-libp2p-core/network"
   "github.com/libp2p/go-libp2p-core/connmgr"
   "github.com/libp2p/go-libp2p-peerstore/pstoremem"
-  "github.com/libp2p/go-libp2p-discovery"
+  //"github.com/libp2p/go-libp2p-discovery"
   "github.com/libp2p/go-libp2p-core/helpers"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
   mdns_discovery "github.com/libp2p/go-libp2p/p2p/discovery"
@@ -30,6 +30,8 @@ import (
 
 var (
   HostHeader = "Host"
+
+  LookUpInterval = 10 * time.Second
 )
 
 //this part was stollen from [https://github.com/libp2p/go-libp2p-examples/blob/master/chat-with-mdns/mdns.go]
@@ -45,7 +47,7 @@ func (n *discoveryNotifee) HandlePeerFound(pi peer.AddrInfo) {
 //Initialize the MDNS service
 func initMDNS(ctx context.Context, peerhost host.Host, rendezvous string) chan peer.AddrInfo {
 	// An hour might be a long long period in practical applications. But this is fine for us
-	ser, err := mdns_discovery.NewMdnsService(ctx, peerhost, 3 * time.Minute, rendezvous)
+	ser, err := mdns_discovery.NewMdnsService(ctx, peerhost, LookUpInterval, rendezvous)
 	if err != nil {
 		panic(err)
 	}
@@ -145,7 +147,7 @@ func NewHost(ctx context.Context, bootstrapPeers ...maddr.Multiaddr) (ExtHost, e
 		}()
 	}
 
-  routingDiscovery := discovery.NewRoutingDiscovery(kademliaDHT)
+  //routingDiscovery := discovery.NewRoutingDiscovery(kademliaDHT)
 
   var streamHandlers sync.Map
 
@@ -153,7 +155,7 @@ func NewHost(ctx context.Context, bootstrapPeers ...maddr.Multiaddr) (ExtHost, e
     Ctx: ctx,
     Host: h,
     StreamHandlers: streamHandlers,
-    Routing: routingDiscovery,
+    //Routing: routingDiscovery,
     PeerStores: make(map[protocol.ID] peerstore.Peerstore),
     Standard: NewStandardInterface(HostHeader, h.Close),
   }, nil
@@ -163,7 +165,7 @@ type BasicExtHost struct {
   Ctx context.Context
   Host host.Host
   StreamHandlers sync.Map
-  Routing *discovery.RoutingDiscovery
+  //Routing *discovery.RoutingDiscovery
   PeerStores map[protocol.ID] peerstore.Peerstore
   Standard standardFunctionsCloser
 }
@@ -267,7 +269,7 @@ func (h *BasicExtHost)Listen(pid protocol.ID, rendezvous string) {
 
   h.PeerStores[pid] = pstoremem.NewPeerstore()
   h.PeerStores[pid].AddAddrs(h.ID(), h.Addrs(), peerstore.TempAddrTTL)
-  discovery.Advertise(h.Ctx, h.Routing, rendezvous)
+  //discovery.Advertise(h.Ctx, h.Routing, rendezvous)
   mdnsPeerChan := initMDNS(h.Ctx, h, rendezvous)
 
   discoveryHandler := func(peer peer.AddrInfo) {
@@ -291,7 +293,7 @@ func (h *BasicExtHost)Listen(pid protocol.ID, rendezvous string) {
     }
   }()
 
-  go func() {
+  /*go func() {
     defer recover()
 
     for h.Check() {
@@ -303,7 +305,7 @@ func (h *BasicExtHost)Listen(pid protocol.ID, rendezvous string) {
         discoveryHandler(peer)
       }
     }
-  }()
+  }()*/
 }
 
 func (h *BasicExtHost)NewPeer(base protocol.ID) (peer.ID, error) {
