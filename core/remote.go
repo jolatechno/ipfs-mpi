@@ -298,9 +298,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, msgs ...interface{}) {
 
     for r.Check() && r.Stream() == stream {
       time.Sleep(r.PingInterval)
-      if _, err := fmt.Fprintln(stream, PingHeader); err != nil {
-        panic(err)
-      }
+      go sendChan.Send(PingHeader)
     }
   }()
 
