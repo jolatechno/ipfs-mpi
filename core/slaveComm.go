@@ -386,6 +386,10 @@ func (c *BasicSlaveComm)Check() bool {
 }
 
 func (c *BasicSlaveComm)Remote(idx int) Remote {
+  if c.Idx == idx {
+    c.Raise(errors.New("Requesting self remote"))
+    return Remote(nil)
+  }
   return (*c.Remotes)[idx]
 }
 
