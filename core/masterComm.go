@@ -150,8 +150,6 @@ func NewMasterComm(ctx context.Context, slaveComm SlaveComm, param Param) (_ Mas
   })
 
   close := func() error { //fmt.Println("[MasterComm] Closing") //--------------------------
-    go comm.SlaveComm().Interface().Close()
-
     for j := 1; j < param.N; j++ {
       i := j
 
@@ -163,6 +161,9 @@ func NewMasterComm(ctx context.Context, slaveComm SlaveComm, param Param) (_ Mas
       }()
 
     }
+
+    go comm.SlaveComm().Interface().Close()
+    go comm.SlaveComm().Close()
 
     return nil
   }
@@ -336,8 +337,8 @@ func (c *BasicMasterComm)Reset(i int, slaveId int) {
       Addrs: c.Param.Addrs,
     })
     if err == nil {
-      c.SlaveComm().Remote(i).WaitHandshake()
       go c.SlaveComm().Remote(i).SendHandshake()
+      c.SlaveComm().Remote(i).WaitHandshake()
 
       break
     }

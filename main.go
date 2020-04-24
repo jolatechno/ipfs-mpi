@@ -29,18 +29,17 @@ func main(){
     panic(err)
   }
 
-  host, err := NewHost(ctx, config.BootstrapPeers...)
+  host, err := core.NewHost(ctx, config.BootstrapPeers...)
   if err != nil {
-    return nil, err
+    panic(err)
   }
 
-  store, err := NewStore(config.Url, config.Path, config.Ipfs_store)
+  store, err := core.NewStore(config.Url, config.Path, config.Ipfs_store)
   if err != nil {
-    return nil, err
+    panic(err)
   }
 
-  mpi, err := core.NewMpi(ctx, config,
-    )
+  mpi, err := core.NewMpi(ctx, config, host, store)
   if err != nil {
     panic(err)
   }
@@ -50,6 +49,7 @@ func main(){
     core.NewMasterSlaveComm,
     core.NewMasterComm,
     core.NewInterface,
+    core.NewRemote,
   )
 
   mpi.SetErrorHandler(func(err error) {

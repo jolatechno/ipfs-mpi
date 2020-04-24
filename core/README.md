@@ -4,7 +4,7 @@
 
 ## How does it work?
 
-### Interfaces
+### _Interfaces_
 
 All of the interfaces use by the main [mpi](./mpi.go) interface are defined in the [type_definition.go](./type_definition.go) file.
 
@@ -38,7 +38,7 @@ The [MasterComm](./masterComm.go) interface is a wrap-around of the `SlaveComm` 
 
 The [standardInterface](./standardInterface.go) interface is used in all other classes to handle the functions in the `standardFunctionsCloser` interface.
 
-## Peer reset
+### _Peer reset_
 
 The peer reset algorithm of libp2p-mpi is also defined in the [type_definition.go](./type_definition.go) file in the `ResetReader` function:
 

@@ -42,13 +42,15 @@ go build
 
 ## Getting started
 
+### _Starting_
+
 You should first launch the ipfs daemon with `ipfs daemon` which will output :
 
 ```
 API server listening on /ip4/127.0.0.1/tcp/5001
 ```
 
-Where `/ip4/127.0.0.1/tcp/5001` is the url of the ipfs daemon.
+Where `/ip4/127.0.0.1/tcp/5001` is the url of the ipfs daemon (note that `/ip4/127.0.0.1/tcp/5001` is the default url for both ipfs and libp2p-mpi so you probably won't have to specify it).
 
 You can then run the libp2p-mpi dameon using :
 
@@ -62,7 +64,9 @@ For example :
 ./libp2p-mpi -ipfs-api  /ip4/127.0.0.1/tcp/5001 -ipfs-store Qmb5pxxiBDKiX9zZT3uPHeXYdAQ2keyNyk7QjzvbuAPkSe/
 ```
 
-### Commands
+You can use `./libp2p-mpi -h` for more info on config options.
+
+### _Commands_
 
 #### list
 
