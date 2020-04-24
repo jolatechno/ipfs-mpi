@@ -9,7 +9,7 @@ import (
   "io"
 
   "github.com/libp2p/go-libp2p-core/protocol"
-  "github.com/libp2p/go-libp2p-core/peer"
+  //"github.com/libp2p/go-libp2p-core/peer"
 )
 
 var (
@@ -122,43 +122,37 @@ func (wg *safeWaitgroupTwice)WaitSecond() {
   wg.WG2.Wait()
 }
 
-func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, id string, file string, args ...string) (_ MasterComm, err error) {
-  inter, err := NewInterface(ctx, file, n, 0, args...)
-  if err != nil {
-    return nil, err
-  }
+func NewMasterSlaveComm(ctx context.Context, host ExtHost, base protocol.ID, param Param, inter Interface) (_ SlaveComm, err error) {
+  comm := BasicSlaveComm {
+      Ctx: ctx,
+      Inter: inter,
+      Param: param,
+      CommHost: host,
+      Base: base,
+      Remotes: make([]Remote, param.N),
+    }
 
-  addrs := make([]peer.ID, n)
-  for i := 0; i < n; i++ {
-    if i == 0 {
-      addrs[i] = host.ID()
-    } else {
-      addrs[i], err = host.NewPeer(base)
+    for i := 1; i < param.N; i++ {
+      comm.Remotes[i], err = NewRemote(0)
       if err != nil {
         return nil, err
       }
     }
-  }
 
+    return &comm, nil
+}
+
+func NewMasterComm(ctx context.Context, slaveComm SlaveComm, param Param) (_ MasterComm, err error) {
   comm := BasicMasterComm {
-    Addrs: &addrs,
-    SlaveIds: make([]int, n),
-    Comm: BasicSlaveComm {
-      Ctx: ctx,
-      Inter: inter,
-      Id: id,
-      N: n,
-      Idx: 0,
-      CommHost: host,
-      Base: base,
-      Remotes: make([]Remote, n),
-    },
+    Ctx: ctx,
+    Param: param,
+    Comm: slaveComm,
   }
 
   close := func() error { //fmt.Println("[MasterComm] Closing") //--------------------------
     go comm.SlaveComm().Interface().Close()
 
-    for j := 1; j < comm.Comm.N; j++ {
+    for j := 1; j < param.N; j++ {
       i := j
 
       go func() {
@@ -173,7 +167,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     return nil
   }
 
-  comm.Comm.Standard = NewStandardInterface(MasterCommHeader, close)
+  comm.Standard = NewStandardInterface(MasterCommHeader, close)
 
   defer func() {
     if err := recover(); err != nil {
@@ -181,16 +175,9 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     }
   }()
 
-  wg := NewSafeWaitgroupTwice(n, n - 1)
+  wg := NewSafeWaitgroupTwice(param.N, param.N - 1)
 
-  for i := 1; i < n; i++ {
-    comm.Comm.Remotes[i], err = NewRemote(0)
-    if err != nil {
-      return nil, err
-    }
-  }
-
-  for j := 1; j < n; j++ {
+  for j := 1; j < param.N; j++ {
     i := j
 
     comm.SlaveComm().Remote(i).SetResetHandler(func(i int, slaveId int) {
@@ -207,13 +194,13 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
     })
 
     go func() {
-      err := comm.SlaveComm().Connect(i, addrs[i], &Param {
+      err := comm.SlaveComm().Connect(i, param.Addrs[i], &Param {
         Init: true,
         Idx: i,
-        N: n,
-        Id: id,
-        SlaveIds: comm.SlaveIds,
-        Addrs: &addrs,
+        N: param.N,
+        Id: param.Id,
+        SlaveIds: param.SlaveIds,
+        Addrs: param.Addrs,
       })
       if err != nil {
         comm.SlaveComm().Remote(i).Raise(err)
@@ -228,7 +215,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
   wg.WaitFirst()
 
-  for j := 1; j < n; j ++ {
+  for j := 1; j < param.N; j ++ {
     i := j
 
     if wg.CheckSecond(i) {
@@ -246,7 +233,7 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
   wg.WaitSecond()
 
-  for j := 1; j < n; j++ {
+  for j := 1; j < param.N; j++ {
     i := j
 
     comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
@@ -279,34 +266,34 @@ func NewMasterComm(ctx context.Context, host ExtHost, n int, base protocol.ID, i
 
 type BasicMasterComm struct {
   Mutex sync.Mutex
-  SlaveIds []int
-  Addrs *[]peer.ID
+  Param Param
   Ctx context.Context
-  Comm BasicSlaveComm
+  Comm SlaveComm
+  Standard standardFunctionsCloser
 }
 
 func (c *BasicMasterComm)Close() error {
-  return c.SlaveComm().Close()
+  return c.Standard.Close()
 }
 
 func (c *BasicMasterComm)SetErrorHandler(handler func(error)) {
-  c.SlaveComm().SetErrorHandler(handler)
+  c.Standard.SetErrorHandler(handler)
 }
 
 func (c *BasicMasterComm)SetCloseHandler(handler func()) {
-  c.SlaveComm().SetCloseHandler(handler)
+  c.Standard.SetCloseHandler(handler)
 }
 
 func (c *BasicMasterComm)Raise(err error) {
-  c.SlaveComm().Raise(err)
+  c.Standard.Raise(err)
 }
 
 func (c *BasicMasterComm)Check() bool {
-  return c.SlaveComm().Check()
+  return c.Standard.Check()
 }
 
 func (c *BasicMasterComm)SlaveComm() SlaveComm {
-  return &c.Comm
+  return c.Comm
 }
 
 func (c *BasicMasterComm)Reset(i int, slaveId int) {
@@ -322,31 +309,31 @@ func (c *BasicMasterComm)Reset(i int, slaveId int) {
     }
   }()
 
-  if slaveId != c.SlaveIds[i] && slaveId != -1 {
+  if slaveId != c.Param.SlaveIds[i] && slaveId != -1 {
     return
   }
 
   c.SlaveComm().Remote(i).CloseRemote()
 
-  c.SlaveIds[i]++
+  c.Param.SlaveIds[i]++
 
-  go c.Raise(SetNonPanic(NewHeadedError(errors.New(fmt.Sprintf("reseting %d for the %dth time", i, c.SlaveIds[i])), MasterCommHeader)))
+  go c.Raise(SetNonPanic(NewHeadedError(errors.New(fmt.Sprintf("reseting %d for the %dth time", i, c.Param.SlaveIds[i])), MasterCommHeader)))
 
   for c.Check() {
-    addr, err := c.SlaveComm().Host().NewPeer(c.Comm.Base)
+    addr, err := c.SlaveComm().Host().NewPeer(c.SlaveComm().Protocol())
     if err != nil {
       panic(err) //will be handlled by the recover
     }
 
-    (*c.Addrs)[i] = addr
+    c.Param.Addrs[i] = addr
 
     err = c.SlaveComm().Connect(i, addr, &Param {
       Init: false,
       Idx: i,
-      N: c.Comm.N,
-      Id: c.Comm.Id,
-      SlaveIds: c.SlaveIds,
-      Addrs: c.Addrs,
+      N: c.Param.N,
+      Id: c.Param.Id,
+      SlaveIds: c.Param.SlaveIds,
+      Addrs: c.Param.Addrs,
     })
     if err == nil {
       c.SlaveComm().Remote(i).WaitHandshake()

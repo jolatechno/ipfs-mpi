@@ -10,6 +10,7 @@ import (
   "strings"
   "time"
 
+  "github.com/libp2p/go-libp2p-core/peer"
   "github.com/libp2p/go-libp2p-core/protocol"
   "github.com/libp2p/go-libp2p-core/network"
 
@@ -61,7 +62,12 @@ type Config struct {
   BootstrapPeers addrList
 }
 
-func NewMpi(ctx context.Context, config Config) (Mpi, error) {
+func NewMpi(ctx context.Context, config Config,
+  newSlaveComm func(context.Context, ExtHost, io.ReadWriteCloser, protocol.ID, Param, Interface) (SlaveComm, error),
+  newMasterSlaveComm func(context.Context, ExtHost, protocol.ID, Param, Interface) (SlaveComm, error),
+  newMasterComm func(context.Context, SlaveComm, Param) (SlaveComm, error),
+  newInterface func(context.Context, string, int, int, ...string) (Interface, error)) (Mpi, error) {
+
   host, err := NewHost(ctx, config.BootstrapPeers...)
   if err != nil {
     return nil, err
@@ -81,6 +87,11 @@ func NewMpi(ctx context.Context, config Config) (Mpi, error) {
     Ipfs_store: config.Ipfs_store,
     MpiHost: host,
     MpiStore: store,
+
+    NewSlaveComm: newSlaveComm,
+    NewMasterSlaveComm: newMasterSlaveComm,
+    NewMasterComm: newMasterComm,
+    NewInterface: newInterface,
   }
 
   close := func() error {
@@ -101,7 +112,7 @@ func NewMpi(ctx context.Context, config Config) (Mpi, error) {
       if ok {
         closer.Close()
       }
-      
+
       return true
     })
 
@@ -183,6 +194,11 @@ type BasicMpi struct {
   MpiStore Store
   Id safeInt
   Standard standardFunctionsCloser
+
+  NewSlaveComm func(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, base protocol.ID, param Param, inter Interface) (SlaveComm, error)
+  NewMasterSlaveComm func(ctx context.Context, host ExtHost, base protocol.ID, param Param, inter Interface) (SlaveComm, error)
+  NewMasterComm func(ctx context.Context, slaveComm SlaveComm, param Param) (SlaveComm, error)
+  NewInterface func(ctx context.Context, file string, n int, i int, args ...string) (Interface, error)
 }
 
 func (m *BasicMpi)SetCloseHandler(handler func()) {
@@ -268,7 +284,12 @@ func (m *BasicMpi)Add(f string) error {
       return
     }
 
-    comm, err := NewSlaveComm(m.Ctx, m.Host(), stream.(io.ReadWriteCloser), proto, param, m.Path + InstalledHeader + f, param.N, param.Idx)
+    inter, err := m.NewInterface(m.Ctx, m.Path + InstalledHeader + f, param.N, param.Idx)
+    if err != nil {
+      return
+    }
+
+    comm, err := m.NewSlaveComm(m.Ctx, m.Host(), stream.(io.ReadWriteCloser), proto, param, inter)
     if err != nil {
       return
     }
@@ -291,7 +312,7 @@ func (m *BasicMpi)Add(f string) error {
   return nil
 }
 
-func (m *BasicMpi)Start(file string, n int, args ...string) error {
+func (m *BasicMpi)Start(file string, n int, args ...string) (err error) {
   defer func() {
     if err := recover(); err != nil {
       m.Raise(err.(error))
@@ -307,7 +328,36 @@ func (m *BasicMpi)Start(file string, n int, args ...string) error {
   proto := protocol.ID(fmt.Sprintf("/%s/%s", file, m.Pid))
   stringId := fmt.Sprintf("%d.%s", id, m.Host().ID())
 
-  comm, err := NewMasterComm(m.Ctx, m.Host(), n, proto, stringId, m.Path + InstalledHeader + file, args...)
+  addrs := make([]peer.ID, n)
+  for i := 0; i < n; i++ {
+    if i == 0 {
+      addrs[i] = m.Host().ID()
+    } else {
+      addrs[i], err = m.Host().NewPeer(proto)
+      if err != nil {
+        return err
+      }
+    }
+  }
+
+  inter, err := m.NewInterface(m.Ctx, m.Path + InstalledHeader + file, n, 0, args...)
+  if err != nil {
+    return err
+  }
+
+  param := Param {
+    Addrs: addrs,
+    Id: stringId,
+    SlaveIds: make([]int, n),
+    N: n,
+  }
+
+  slaveComm, err := m.NewMasterSlaveComm(m.Ctx, m.Host(), proto, param, inter)
+  if err != nil {
+    return err
+  }
+
+  comm, err := m.NewMasterComm(m.Ctx, slaveComm, param)
 
   if err != nil {
     return err

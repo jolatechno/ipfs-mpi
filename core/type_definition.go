@@ -90,6 +90,7 @@ type MasterComm interface {
 type SlaveComm interface {
   standardFunctionsCloser
 
+  Protocol() protocol.ID
   RequestReset(int)
   Start()
   Host() ExtHost

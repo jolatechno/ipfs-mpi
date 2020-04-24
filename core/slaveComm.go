@@ -64,7 +64,7 @@ func ParamFromString(msg string) (_ Param, err error) {
   }
 
   addrs := strings.Split(splitted[5], ";")
-  list := make([]peer.ID, param.N)
+  param.Addrs = make([]peer.ID, param.N)
 
   if len(addrs) != param.N {
     return param, errors.New("list length and comm size don't match")
@@ -72,14 +72,12 @@ func ParamFromString(msg string) (_ Param, err error) {
 
   for i, addr := range addrs {
     if addr != "" {
-      list[i], err = peer.IDB58Decode(addr)
+      param.Addrs[i], err = peer.IDB58Decode(addr)
       if err != nil {
         return param, err
       }
     }
   }
-
-  param.Addrs = &list
 
   return param, nil
 }
@@ -90,7 +88,7 @@ type Param struct {
   N int
   Id string
   SlaveIds []int
-  Addrs *[]peer.ID
+  Addrs []peer.ID
 
 }
 
@@ -104,7 +102,7 @@ func (p *Param)String() string {
     if i == 0 || i == p.Idx || (p.Init && i <= p.Idx){
       continue
     }
-    addrs[i] = peer.IDB58Encode((*p.Addrs)[i])
+    addrs[i] = peer.IDB58Encode(p.Addrs[i])
   }
 
   initInt := 0
@@ -117,35 +115,27 @@ func (p *Param)String() string {
   return fmt.Sprintf("%d,%d,%d,%s,%s,%s", initInt, p.Idx, p.N, p.Id, joinedSlaveIds, joinedAddress)
 }
 
-func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, base protocol.ID, param Param, file string, n int, i int) (_ SlaveComm, err error) { //fmt.Println("[SlaveComm] New", param) //--------------------------
-  inter, err := NewInterface(ctx, file, n, i)
-  if err != nil {
-    return nil, err
-  }
-
+func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, base protocol.ID, param Param, inter Interface) (_ SlaveComm, err error) { //fmt.Println("[SlaveComm] New", param) //--------------------------
   comm := BasicSlaveComm {
     Ctx: ctx,
     Inter: inter,
-    Id: param.Id,
-    N: param.N,
-    Idx: param.Idx,
+    Param: param,
     CommHost: host,
-    SlaveId: param.SlaveIds[param.Idx],
     Base: base,
     Remotes: make([]Remote, param.N),
   }
 
-  proto := protocol.ID(fmt.Sprintf("%d/%d/%s/%s", comm.Idx, param.SlaveIds[comm.Idx], comm.Id, string(comm.Base)))
+  proto := protocol.ID(fmt.Sprintf("%d/%d/%s/%s", comm.Param.Idx, param.SlaveIds[comm.Param.Idx], comm.Param.Id, string(comm.Base)))
 
   close := func() error { //fmt.Printf("[SlaveComm] Closing the %dth reset of %d\n", comm.SlaveIds[comm.Idx], comm.Idx) //--------------------------
     go comm.Interface().Close()
 
     comm.CommHost.RemoveStreamHandler(proto)
 
-    for j := 0; j < comm.N; j++ {
+    for j := 0; j < comm.Param.N; j++ {
       i := j
 
-      if i == comm.Idx {
+      if i == comm.Param.Idx {
         continue
       }
 
@@ -179,8 +169,8 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
 
   comm.Remote(0).Reset(zeroRw, 0)
 
-  for i := 1; i < comm.N; i++ {
-    if i == comm.Idx {
+  for i := 1; i < comm.Param.N; i++ {
+    if i == comm.Param.Idx {
       continue
     }
 
@@ -190,16 +180,16 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     }
   }
 
-  for j := 1; j < comm.N; j++ {
+  for j := 1; j < comm.Param.N; j++ {
     i := j
 
-    if i == comm.Idx {
+    if i == comm.Param.Idx {
       continue
     }
 
     comm.Remote(i).SetErrorHandler(func(err error) {
       go comm.Raise(SetNonPanic(err))
-      go comm.Raise(SetNonPanic(NewHeadedError(errors.New(fmt.Sprintf("%d hanged-up on %d", i, comm.Idx)), SlaveCommHeader)))
+      go comm.Raise(SetNonPanic(NewHeadedError(errors.New(fmt.Sprintf("%d hanged-up on %d", i, comm.Param.Idx)), SlaveCommHeader)))
 
       comm.Remote(i).Reset(io.ReadWriteCloser(nil), 0)
       comm.RequestReset(i)
@@ -255,22 +245,22 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
 
   j := 1
   if param.Init {
-    j = comm.Idx + 1
+    j = comm.Param.Idx + 1
     wg.Add(param.N - param.Idx - 1)
 
   } else {
     wg.Add(param.N - 2)
   }
 
-  for ;j < comm.N; j++ {
+  for ;j < comm.Param.N; j++ {
     i := j
 
-    if i == comm.Idx {
+    if i == comm.Param.Idx {
       continue
     }
 
     go func(wp *sync.WaitGroup) {
-      err := comm.Connect(i, (*param.Addrs)[i])
+      err := comm.Connect(i, param.Addrs[i])
       if err != nil {
           go comm.Remote(i).Raise(err)
       }
@@ -298,12 +288,10 @@ type BasicSlaveComm struct {
   SlaveIdMutex sync.Mutex
   RemotesMutex sync.Mutex
 
+  Param Param
+
   Ctx context.Context
   Inter Interface
-  Id string
-  SlaveId int
-  N int
-  Idx int
   CommHost ExtHost
   Base protocol.ID
   Remotes []Remote
@@ -322,7 +310,7 @@ func (c *BasicSlaveComm)Start() { //fmt.Printf("[SlaveComm] starting the %dth re
   })
 
   c.Interface().SetCloseHandler(func() {
-    if c.Idx == 0 {
+    if c.Param.Idx == 0 {
       c.Close()
     }
   })
@@ -340,6 +328,10 @@ func (c *BasicSlaveComm)Start() { //fmt.Printf("[SlaveComm] starting the %dth re
   })
 
   c.Interface().Start()
+}
+
+func (c *BasicSlaveComm)Protocol() protocol.ID {
+  return c.Base
 }
 
 func (c *BasicSlaveComm)Interface() Interface {
@@ -367,7 +359,7 @@ func (c *BasicSlaveComm)Check() bool {
 }
 
 func (c *BasicSlaveComm)Remote(idx int) Remote {
-  if c.Idx == idx {
+  if c.Param.Idx == idx {
     c.Raise(errors.New("Requesting self remote"))
     return Remote(nil)
   }
@@ -398,8 +390,8 @@ func (c *BasicSlaveComm)Connect(i int, addr peer.ID, msgs ...interface{}) error 
   slaveId := remote.SlaveId()
 
   pid := c.Base
-  if c.Idx != 0 {
-    pid = protocol.ID(fmt.Sprintf("%d/%d/%d/%d/%s/%s", c.Idx, c.SlaveId, i, slaveId, c.Id, string(c.Base)))
+  if c.Param.Idx != 0 {
+    pid = protocol.ID(fmt.Sprintf("%d/%d/%d/%d/%s/%s", c.Param.Idx, c.Param.SlaveIds[c.Param.Idx], i, slaveId, c.Param.Id, string(c.Base)))
   }
 
   rwi, err := timeout.MakeTimeout(func() (interface{}, error) {
