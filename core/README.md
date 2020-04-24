@@ -4,9 +4,41 @@
 
 ## How does it work?
 
-All of the interfaces use by libp2p-mpi are defined in the [type_definition.go](./type_definition.go) file.
+### Interfaces
+
+All of the interfaces use by the main [mpi](./mpi.go) interface are defined in the [type_definition.go](./type_definition.go) file.
+
+Using [mpi](./mpi.go)`.SetInitFunctions()` you can set the init functions for all other interfaces.
+
+#### ExtHost
+
+`ExtHost` is an extended go-libp2p host interface that implements functions to manage peerstores for each interpreter.
+
+#### Store
+
+The `Store` interface is an ipfs interface to store interpreters.
+
+#### Remote
+
+The `Remote` interface implements the connection between two peers and peer reseting.
+
+#### Interface
+
+The `Interface` interface implements the interactions between a `SlaveComm` interface and a local interpreter.
+
+#### SlaveComm
+
+The `SlaveComm` interface handles the interactions between the `Remotes` and a local `Interface`.
+
+#### MasterComm
+
+The `MasterComm` interface is a wrap-around of the `SlaveComm` interface.
+
+#### standardFunctionsCloser
 
 A `standardFunctionsCloser` interface is defined in the [standardInterface.go](./standardInterface.go) file, and is used in all other classes to handle the functions in the `standardFunctionsCloser` interface.
+
+## Peer reset
 
 The peer reset algorithm of libp2p-mpi is also defined in the [type_definition.go](./type_definition.go) file in the `ResetReader` function:
 
