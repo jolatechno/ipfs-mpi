@@ -62,18 +62,7 @@ type Config struct {
   BootstrapPeers addrList
 }
 
-func NewMpi(ctx context.Context, config Config) (Mpi, error) {
-
-  host, err := NewHost(ctx, config.BootstrapPeers...)
-  if err != nil {
-    return nil, err
-  }
-
-  store, err := NewStore(config.Url, config.Path, config.Ipfs_store)
-  if err != nil {
-    return nil, err
-  }
-
+func NewMpi(ctx context.Context, config Config, host ExtHost, store Store) (Mpi, error) {
   proto := protocol.ID(config.Ipfs_store + config.Base)
   mpi := BasicMpi {
     Ctx:ctx,

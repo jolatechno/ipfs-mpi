@@ -8,35 +8,35 @@
 
 All of the interfaces use by the main [mpi](./mpi.go) interface are defined in the [type_definition.go](./type_definition.go) file.
 
-Using [mpi](./mpi.go)`.SetInitFunctions()` you can set the init functions for all other interfaces.
+Using `mpi.SetInitFunctions()` you can set the init functions for all other interfaces.
 
 #### ExtHost
 
-`ExtHost` is an extended go-libp2p host interface that implements functions to manage peerstores for each interpreter.
+[ExtHost](./host.go) is an extended go-libp2p host interface that implements functions to manage peerstores for each interpreter.
 
 #### Store
 
-The `Store` interface is an ipfs interface to store interpreters.
+The [Store](./ipfs.go) interface is an ipfs interface to store interpreters.
 
 #### Remote
 
-The `Remote` interface implements the connection between two peers and peer reseting.
+The [Remote](./remote.go) interface implements the connection between two peers and peer reseting.
 
 #### Interface
 
-The `Interface` interface implements the interactions between a `SlaveComm` interface and a local interpreter.
+The [interface](./interface.go) interface implements the interactions between a `SlaveComm` interface and a local interpreter.
 
 #### SlaveComm
 
-The `SlaveComm` interface handles the interactions between the `Remotes` and a local `Interface`.
+The [SlaveComm](./slaveComm.go) interface handles the interactions between the `Remotes` and a local `Interface`.
 
 #### MasterComm
 
-The `MasterComm` interface is a wrap-around of the `SlaveComm` interface.
+The [MasterComm](./masterComm.go) interface is a wrap-around of the `SlaveComm` interface.
 
 #### standardFunctionsCloser
 
-A `standardFunctionsCloser` interface is defined in the [standardInterface.go](./standardInterface.go) file, and is used in all other classes to handle the functions in the `standardFunctionsCloser` interface.
+The [standardInterface](./standardInterface.go) interface is used in all other classes to handle the functions in the `standardFunctionsCloser` interface.
 
 ## Peer reset
 

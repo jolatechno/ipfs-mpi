@@ -29,40 +29,54 @@ func main(){
     panic(err)
   }
 
-  store, err := core.NewMpi(ctx, config,
-    core.NewSlaveComm,
-    core.NewMasterSlaveComm,
-    core.NewMasterComm,
-    core.NewInterface)
+  host, err := NewHost(ctx, config.BootstrapPeers...)
+  if err != nil {
+    return nil, err
+  }
+
+  store, err := NewStore(config.Url, config.Path, config.Ipfs_store)
+  if err != nil {
+    return nil, err
+  }
+
+  mpi, err := core.NewMpi(ctx, config,
+    )
   if err != nil {
     panic(err)
   }
 
-  store.SetErrorHandler(func(err error) {
+  mpi.SetInitFunctions(
+    core.NewSlaveComm,
+    core.NewMasterSlaveComm,
+    core.NewMasterComm,
+    core.NewInterface,
+  )
+
+  mpi.SetErrorHandler(func(err error) {
     if !quiet {
       log.Println(err.Error())
     }
   })
 
-  fmt.Println("Our adress is ", store.Host().ID())
+  fmt.Println("Our adress is ", mpi.Host().ID())
 
-  for _, addr := range store.Host().Addrs() {
+  for _, addr := range mpi.Host().Addrs() {
     fmt.Println("swarm listening on ", addr)
   }
 
   term, err := terminal.NewWithStdInOut()
 	if err != nil {
-    store.Close()
+    mpi.Close()
     return
 	}
 	defer term.ReleaseFromStdInOut() // defer this
 
   //scanner := bufio.NewScanner(os.Stdin)
-  for store.Check()/* && scanner.Scan()*/ {
+  for mpi.Check()/* && scanner.Scan()*/ {
     //cmd := scanner.Text()
     cmd, err:= term.ReadLine()
     if err != nil {
-      store.Close()
+      mpi.Close()
       return
     }
 
@@ -73,17 +87,17 @@ func main(){
 
     switch splitted[0] {
     default:
-      store.Raise(core.CommandNotUnderstood)
+      mpi.Raise(core.CommandNotUnderstood)
 
     case "list":
-      list := store.Store().List()
+      list := mpi.Store().List()
       for _, f := range list {
         fmt.Println(" ", f)
       }
 
     case "start":
       if len(splitted) < 3 {
-        store.Raise(errors.New("No size given"))
+        mpi.Raise(errors.New("No size given"))
         continue
       }
 
@@ -92,39 +106,39 @@ func main(){
         err = errors.New("Size not understood")
       }
       if err != nil {
-        store.Raise(err)
+        mpi.Raise(err)
         continue
       }
 
       go func() {
-        err = store.Start(splitted[1], n, splitted[3:]...)
+        err = mpi.Start(splitted[1], n, splitted[3:]...)
         if err != nil {
-          store.Raise(err)
+          mpi.Raise(err)
         }
       }()
 
     case "add":
       if len(splitted) < 2 {
-        store.Raise(errors.New("No file given"))
+        mpi.Raise(errors.New("No file given"))
         continue
       }
 
       for _, f := range splitted[1:] {
-        go store.Add(f)
+        go mpi.Add(f)
       }
 
     case "del":
       if len(splitted) < 2 {
-        store.Raise(errors.New("No file given"))
+        mpi.Raise(errors.New("No file given"))
         continue
       }
 
       for _, f := range splitted[1:] {
-        go store.Del(f)
+        go mpi.Del(f)
       }
 
     case "exit":
-      store.Close()
+      mpi.Close()
       return
     }
   }
