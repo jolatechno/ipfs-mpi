@@ -3,6 +3,7 @@ package core
 import (
   "io"
   "time"
+  "context"
 
   "github.com/libp2p/go-libp2p-core/peerstore"
   "github.com/libp2p/go-libp2p-core/peer"
@@ -48,6 +49,14 @@ func ResetReader(received int, sent []string, sendToRemote func(string), pushToC
 
 type Mpi interface {
   standardFunctionsCloser
+
+  SetInitFunctions(
+    newSlaveComm func(context.Context, ExtHost, io.ReadWriteCloser, protocol.ID, Param, Interface, []Remote) (SlaveComm, error),
+    newMasterSlaveComm func(context.Context, ExtHost, protocol.ID, Param, Interface, []Remote) (SlaveComm, error),
+    newMasterComm func(context.Context, SlaveComm, Param) (MasterComm, error),
+    newInterface func(context.Context, string, int, int, ...string) (Interface, error),
+    newRemote func(int) (Remote, error),
+  )
 
   Add(string) error
   Del(string) error

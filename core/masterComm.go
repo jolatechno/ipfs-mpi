@@ -122,25 +122,16 @@ func (wg *safeWaitgroupTwice)WaitSecond() {
   wg.WG2.Wait()
 }
 
-func NewMasterSlaveComm(ctx context.Context, host ExtHost, base protocol.ID, param Param, inter Interface) (_ SlaveComm, err error) {
-  comm := BasicSlaveComm {
+func NewMasterSlaveComm(ctx context.Context, host ExtHost, base protocol.ID, param Param, inter Interface, Remotes []Remote) (_ SlaveComm, err error) {
+  return &BasicSlaveComm {
       Ctx: ctx,
       Inter: inter,
       Param: param,
       CommHost: host,
       Base: base,
-      Remotes: make([]Remote, param.N),
+      Remotes: Remotes,
       Standard: NewStandardInterface(MasterCommHeader),
-    }
-
-    for i := 1; i < param.N; i++ {
-      comm.Remotes[i], err = NewRemote(0)
-      if err != nil {
-        return nil, err
-      }
-    }
-
-    return &comm, nil
+    }, nil
 }
 
 func NewMasterComm(ctx context.Context, slaveComm SlaveComm, param Param) (_ MasterComm, err error) {
@@ -151,8 +142,6 @@ func NewMasterComm(ctx context.Context, slaveComm SlaveComm, param Param) (_ Mas
   }
 
   slaveComm.SetCloseHandler(func() {
-    fmt.Println("[MasterComm] Closing from slaveComm") //--------------------------
-
     comm.Close()
   })
 
@@ -169,7 +158,7 @@ func NewMasterComm(ctx context.Context, slaveComm SlaveComm, param Param) (_ Mas
       go func() {
         defer recover()
 
-        go comm.SlaveComm().Remote(i).CloseRemote()
+        comm.SlaveComm().Remote(i).CloseRemote()
         comm.SlaveComm().Remote(i).Close()
       }()
 

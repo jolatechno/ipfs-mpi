@@ -62,11 +62,7 @@ type Config struct {
   BootstrapPeers addrList
 }
 
-func NewMpi(ctx context.Context, config Config,
-  newSlaveComm func(context.Context, ExtHost, io.ReadWriteCloser, protocol.ID, Param, Interface) (SlaveComm, error),
-  newMasterSlaveComm func(context.Context, ExtHost, protocol.ID, Param, Interface) (SlaveComm, error),
-  newMasterComm func(context.Context, SlaveComm, Param) (MasterComm, error),
-  newInterface func(context.Context, string, int, int, ...string) (Interface, error)) (Mpi, error) {
+func NewMpi(ctx context.Context, config Config) (Mpi, error) {
 
   host, err := NewHost(ctx, config.BootstrapPeers...)
   if err != nil {
@@ -87,11 +83,6 @@ func NewMpi(ctx context.Context, config Config,
     Ipfs_store: config.Ipfs_store,
     MpiHost: host,
     MpiStore: store,
-
-    NewSlaveComm: newSlaveComm,
-    NewMasterSlaveComm: newMasterSlaveComm,
-    NewMasterComm: newMasterComm,
-    NewInterface: newInterface,
   }
 
   close := func() error {
@@ -195,10 +186,25 @@ type BasicMpi struct {
   Id safeInt
   Standard standardFunctionsCloser
 
-  NewSlaveComm func(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, base protocol.ID, param Param, inter Interface) (SlaveComm, error)
-  NewMasterSlaveComm func(ctx context.Context, host ExtHost, base protocol.ID, param Param, inter Interface) (SlaveComm, error)
-  NewMasterComm func(ctx context.Context, slaveComm SlaveComm, param Param) (MasterComm, error)
+  NewSlaveComm func(context.Context, ExtHost, io.ReadWriteCloser, protocol.ID, Param, Interface, []Remote) (SlaveComm, error)
+  NewMasterSlaveComm func(context.Context, ExtHost, protocol.ID, Param, Interface, []Remote) (SlaveComm, error)
+  NewMasterComm func(context.Context, SlaveComm, Param) (MasterComm, error)
   NewInterface func(ctx context.Context, file string, n int, i int, args ...string) (Interface, error)
+  NewRemote func(int) (Remote, error)
+}
+
+func (m *BasicMpi) SetInitFunctions(
+  newSlaveComm func(context.Context, ExtHost, io.ReadWriteCloser, protocol.ID, Param, Interface, []Remote) (SlaveComm, error),
+  newMasterSlaveComm func(context.Context, ExtHost, protocol.ID, Param, Interface, []Remote) (SlaveComm, error),
+  newMasterComm func(context.Context, SlaveComm, Param) (MasterComm, error),
+  newInterface func(context.Context, string, int, int, ...string) (Interface, error),
+  newRemote func(int) (Remote, error)) {
+
+  m.NewSlaveComm = newSlaveComm
+  m.NewMasterSlaveComm = newMasterSlaveComm
+  m.NewMasterComm = newMasterComm
+  m.NewInterface = newInterface
+  m.NewRemote = newRemote
 }
 
 func (m *BasicMpi)SetCloseHandler(handler func()) {
@@ -289,7 +295,19 @@ func (m *BasicMpi)Add(f string) error {
       return
     }
 
-    comm, err := m.NewSlaveComm(m.Ctx, m.Host(), stream.(io.ReadWriteCloser), proto, param, inter)
+    remotes := make([]Remote, param.N)
+    for i := 0; i < param.N; i++ {
+      if i == param.Idx {
+        continue
+      }
+
+      remotes[i], err = m.NewRemote(0)
+      if err != nil {
+        return
+      }
+    }
+
+    comm, err := m.NewSlaveComm(m.Ctx, m.Host(), stream.(io.ReadWriteCloser), proto, param, inter, remotes)
     if err != nil {
       return
     }
@@ -352,7 +370,15 @@ func (m *BasicMpi)Start(file string, n int, args ...string) (err error) {
     N: n,
   }
 
-  slaveComm, err := m.NewMasterSlaveComm(m.Ctx, m.Host(), proto, param, inter)
+  remotes := make([]Remote, n)
+  for i := 1; i < n; i++ {
+    remotes[i], err = m.NewRemote(0)
+    if err != nil {
+      return err
+    }
+  }
+
+  slaveComm, err := m.NewMasterSlaveComm(m.Ctx, m.Host(), proto, param, inter, remotes)
   if err != nil {
     return err
   }

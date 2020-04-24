@@ -115,14 +115,14 @@ func (p *Param)String() string {
   return fmt.Sprintf("%d,%d,%d,%s,%s,%s", initInt, p.Idx, p.N, p.Id, joinedSlaveIds, joinedAddress)
 }
 
-func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, base protocol.ID, param Param, inter Interface) (_ SlaveComm, err error) { //fmt.Println("[SlaveComm] New", param) //--------------------------
+func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, base protocol.ID, param Param, inter Interface, remotes []Remote) (_ SlaveComm, err error) { //fmt.Println("[SlaveComm] New", param) //--------------------------
   comm := BasicSlaveComm {
     Ctx: ctx,
     Inter: inter,
     Param: param,
     CommHost: host,
     Base: base,
-    Remotes: make([]Remote, param.N),
+    Remotes: remotes,
   }
 
   proto := protocol.ID(fmt.Sprintf("%d/%d/%s/%s", comm.Param.Idx, param.SlaveIds[comm.Param.Idx], comm.Param.Id, string(comm.Base)))

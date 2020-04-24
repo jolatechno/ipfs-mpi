@@ -263,6 +263,10 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, slaveId int, msgs ...inter
     }
   }()
 
+  if r.Rw != io.ReadWriteCloser(nil) {
+    r.Rw.Close()
+  }
+
   r.Rw = stream
   if stream == io.ReadWriteCloser(nil) {
     return
