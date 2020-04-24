@@ -130,6 +130,7 @@ func NewMasterSlaveComm(ctx context.Context, host ExtHost, base protocol.ID, par
       CommHost: host,
       Base: base,
       Remotes: make([]Remote, param.N),
+      Standard: NewStandardInterface(MasterCommHeader),
     }
 
     for i := 1; i < param.N; i++ {
@@ -148,6 +149,12 @@ func NewMasterComm(ctx context.Context, slaveComm SlaveComm, param Param) (_ Mas
     Param: param,
     Comm: slaveComm,
   }
+
+  slaveComm.SetCloseHandler(func() {
+    fmt.Println("[MasterComm] Closing from slaveComm") //--------------------------
+
+    comm.Close()
+  })
 
   close := func() error { //fmt.Println("[MasterComm] Closing") //--------------------------
     go comm.SlaveComm().Interface().Close()
