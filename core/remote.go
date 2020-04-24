@@ -292,7 +292,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, slaveId int, msgs ...inter
         return
       }
 
-      if msg != PingHeader && msg != HandShakeHeader /*&& msg != PingRespHeader*/ && msg != CloseHeader { //--------------------------
+      if msg != PingHeader && msg != HandShakeHeader && msg != PingRespHeader && msg != CloseHeader { //--------------------------
         fmt.Printf("[Remote] Sent %q\n", msg) //--------------------------
       } //--------------------------
 
@@ -347,12 +347,10 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, slaveId int, msgs ...inter
     scanner := bufio.NewScanner(stream)
 
     for r.check(stream, slaveId) && scanner.Scan() {
-      stream.(network.Stream).SetReadDeadline(time.Now().Add(r.PingTimeout))
-
       splitted := strings.Split(scanner.Text(), ",")
 
       str := strings.Join(splitted, ",") //--------------------------
-      if str != PingHeader && str != HandShakeHeader /*&& str != PingRespHeader*/ && str != CloseHeader { //--------------------------
+      if str != PingHeader && str != HandShakeHeader && str != PingRespHeader && str != CloseHeader { //--------------------------
         fmt.Printf("[Remote] Received %q\n", str) //--------------------------
       } //--------------------------
 

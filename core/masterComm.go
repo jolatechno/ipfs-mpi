@@ -156,7 +156,7 @@ func NewMasterComm(ctx context.Context, slaveComm SlaveComm, param Param) (_ Mas
       go func() {
         defer recover()
 
-        //comm.SlaveComm().Remote(i).CloseRemote()
+        comm.SlaveComm().Remote(i).CloseRemote()
         comm.SlaveComm().Remote(i).Close()
       }()
 
