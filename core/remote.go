@@ -125,8 +125,11 @@ func NewRemote(slaveId int) (Remote, error) {
   }
 
   close := func() error {
-    if stream := remote.Stream(); stream != io.ReadWriteCloser(nil) {
-      stream.Close()
+    remote.StreamMutex.Lock()
+    defer remote.StreamMutex.Unlock()
+
+    if remote.Rw != io.ReadWriteCloser(nil) {
+      remote.Rw.Close()
       remote.Rw = io.ReadWriteCloser(nil)
     }
 
