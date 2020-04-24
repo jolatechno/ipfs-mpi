@@ -11,20 +11,23 @@ import (
   "time"
 
   "github.com/libp2p/go-libp2p-core/network"
+
+  "github.com/jolatechno/go-timeout"
 )
 
 var (
   RemoteHeader = "Remote"
 
   //ResetHandShakeHeader = "ResetHandShake"
+  PingRespHeader = "PingResp"
   HandShakeHeader = "HandShake"
   MessageHeader = "Msg"
   CloseHeader = "Close"
   PingHeader = "Ping"
   ResetHeader = "Reset"
 
-  StandardTimeout = 2 * time.Second //Will be increase later
-  StandardPingInterval = 500 * time.Millisecond //Will be increase later
+  StandardTimeout = 1 * time.Second //Will be increase later
+  StandardPingInterval = 200 * time.Millisecond //Will be increase later
 
   NilStreamError = errors.New("nil stream")
   ErrorInterval = 4 * time.Second
@@ -321,7 +324,16 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, slaveId int, msgs ...inter
 
     for r.check(stream, slaveId) {
       time.Sleep(r.PingInterval)
+
       go sendChan.Send(PingHeader)
+      err := timeout.MakeSimpleTimeout(func() error {
+        <- pingChan.Chan
+        return nil
+      }, r.PingTimeout)
+
+      if err != nil {
+        r.raiseCheck(err, stream, slaveId)
+      }
     }
   }()
 
@@ -349,7 +361,10 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, slaveId int, msgs ...inter
         r.Raise(HeaderNotUnderstood)
 
       case PingHeader:
-        continue
+        go sendChan.Send(PingRespHeader)
+
+      case PingRespHeader:
+        go pingChan.Send(true)
 
       case ResetHeader:
         if len(splitted) < 2 {
