@@ -65,7 +65,7 @@ type Config struct {
 func NewMpi(ctx context.Context, config Config,
   newSlaveComm func(context.Context, ExtHost, io.ReadWriteCloser, protocol.ID, Param, Interface) (SlaveComm, error),
   newMasterSlaveComm func(context.Context, ExtHost, protocol.ID, Param, Interface) (SlaveComm, error),
-  newMasterComm func(context.Context, SlaveComm, Param) (SlaveComm, error),
+  newMasterComm func(context.Context, SlaveComm, Param) (MasterComm, error),
   newInterface func(context.Context, string, int, int, ...string) (Interface, error)) (Mpi, error) {
 
   host, err := NewHost(ctx, config.BootstrapPeers...)
@@ -197,7 +197,7 @@ type BasicMpi struct {
 
   NewSlaveComm func(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, base protocol.ID, param Param, inter Interface) (SlaveComm, error)
   NewMasterSlaveComm func(ctx context.Context, host ExtHost, base protocol.ID, param Param, inter Interface) (SlaveComm, error)
-  NewMasterComm func(ctx context.Context, slaveComm SlaveComm, param Param) (SlaveComm, error)
+  NewMasterComm func(ctx context.Context, slaveComm SlaveComm, param Param) (MasterComm, error)
   NewInterface func(ctx context.Context, file string, n int, i int, args ...string) (Interface, error)
 }
 

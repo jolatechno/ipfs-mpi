@@ -29,7 +29,11 @@ func main(){
     panic(err)
   }
 
-  store, err := core.NewMpi(ctx, config)
+  store, err := core.NewMpi(ctx, config,
+    core.NewSlaveComm,
+    core.NewMasterSlaveComm,
+    core.NewMasterComm,
+    core.NewInterface)
   if err != nil {
     panic(err)
   }
