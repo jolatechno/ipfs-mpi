@@ -156,6 +156,10 @@ func NewMasterComm(ctx context.Context, slaveComm SlaveComm, param Param) (_ Mas
     comm.Close()
   })
 
+  slaveComm.SetErrorHandler(func(err error) {
+    comm.Raise(err)
+  })
+
   close := func() error { //fmt.Println("[MasterComm] Closing") //--------------------------
     go comm.SlaveComm().Interface().Close()
 
