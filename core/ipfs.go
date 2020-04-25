@@ -9,8 +9,6 @@ import (
   "os/exec"
   "bytes"
 
-  "fmt"
-
   shell "github.com/ipfs/go-ipfs-api"
   new_shell "github.com/jolatechno/go-ipfs-directory_size_ls"
 )
@@ -98,8 +96,6 @@ func NewStore(url string, path string, ipfs_store string) (Store, error) {
 
   store.Shell = shell.NewShell(url)
 
-  fmt.Println("[ipfs] start 0") //--------------------------
-
   if _, err := os.Stat(path + InstalledHeader); os.IsNotExist(err) {
     new_err := os.MkdirAll(path + InstalledHeader, ModePerm)
     if new_err != nil{
@@ -118,8 +114,6 @@ func NewStore(url string, path string, ipfs_store string) (Store, error) {
     return nil, err
   }
 
-  fmt.Println("[ipfs] start 1") //--------------------------
-
   list_installed, err := ioutil.ReadDir(path + InstalledHeader)
   if err != nil {
       return nil, err
@@ -130,14 +124,10 @@ func NewStore(url string, path string, ipfs_store string) (Store, error) {
       return nil, err
   }
 
-  fmt.Println("[ipfs] start 2") //--------------------------
-
   List, err := new_shell.List(store.Shell, ipfs_store)
   if err != nil {
     return nil, err
   }
-
-  fmt.Println("[ipfs] start 3") //--------------------------
 
   for _, file := range list_failed {
     f := file.Name()
@@ -152,8 +142,6 @@ func NewStore(url string, path string, ipfs_store string) (Store, error) {
     }
 
   }
-
-  fmt.Println("[ipfs] start 4") //--------------------------
 
   for _, file := range list_installed {
     f := file.Name()
@@ -176,8 +164,6 @@ func NewStore(url string, path string, ipfs_store string) (Store, error) {
     }
 
   }
-
-  fmt.Println("[ipfs] start 5") //--------------------------
 
   for _, obj := range List {
     if !has(store.Store, obj.Name) && !has(store.Failed, obj.Name) {

@@ -51,7 +51,7 @@ func main(){
   fmt.Println("Connected to store ", config.Ipfs_store)
 
   for _, file := range store.List() {
-    fmt.Println("found ", file)
+    fmt.Printf(" found %q\n", file)
   }
 
   fmt.Println("\nStarting libp2p-mpi daemon...")
@@ -61,7 +61,7 @@ func main(){
     panic(err)
   }
 
-  fmt.Println("Daemon started")
+  fmt.Println("Daemon started\n")
 
   mpi.SetInitFunctions(
     core.NewSlaveComm,
