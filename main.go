@@ -20,8 +20,6 @@ const (
 )
 
 func main(){
-  fmt.Println("Starting libp2p-mpi daemon...")
-
   ctx := context.Background()
 
   config, quiet, err := ParseFlag()
@@ -29,27 +27,34 @@ func main(){
     panic(err)
   }
 
+  fmt.Println("\nStarting host...")
+
   host, err := core.NewHost(ctx, config.BootstrapPeers...)
   if err != nil {
     panic(err)
   }
 
+  fmt.Println("Host started")
   fmt.Println("Our adress is ", host.ID())
 
   for _, addr := range host.Addrs() {
     fmt.Println("swarm listening on ", addr)
   }
 
+  fmt.Println("\nStarting store...")
+
   store, err := core.NewStore(config.Url, config.Path, config.Ipfs_store)
   if err != nil {
     panic(err)
   }
 
+  fmt.Println("Connected to store ", config.Ipfs_store)
+
   for _, file := range store.List() {
     fmt.Println("found ", file)
   }
 
-  fmt.Println("Connected to store ", config.Ipfs_store)
+  fmt.Println("\nStarting libp2p-mpi daemon...")
 
   mpi, err := core.NewMpi(ctx, config, host, store)
   if err != nil {
