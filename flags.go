@@ -27,8 +27,8 @@ func ParseFlag() (core.Config, bool, map[string]bool, error) {
   debugRemote := flag.Bool("debug-remote", false, "enable debug-mode on remote")
   debugSlaveComm := flag.Bool("debug-slave", false, "enable debug-mode on SlaveComm")
   debugMasterComm := flag.Bool("debug-master", false, "enable debug-mode on MasterComm")
-  debugStore := flag.Bool("debug-store", false, "enable debug-mode on ipfs-store")
-  debugHost := flag.Bool("debug-host", false, "enable debug-mode on host")
+  debugStore := flag.Bool("debug-store", false, "enable debug-mode on ipfs-store (not used for now)")
+  debugHost := flag.Bool("debug-host", false, "enable debug-mode on host (not used for now)")
 
 	flag.Parse()
 

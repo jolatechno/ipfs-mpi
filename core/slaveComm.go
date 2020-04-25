@@ -297,7 +297,7 @@ func (c *BasicSlaveComm)Start() {
   if checkContextDebug(c.Ctx, SlaveCommHeader) && c.Param.Idx != 0  { //--------------------------
     info(SlaveCommHeader, fmt.Sprintf("Starting the %dth reset of %d", c.Param.SlaveIds[c.Param.Idx], c.Param.Idx)) //--------------------------
   } else if checkContextDebug(c.Ctx, MasterCommHeader) && c.Param.Idx == 0 { //--------------------------
-    info(MasterCommHeader, fmt.Sprintf("Starting masterComm", c.Param.SlaveIds[c.Param.Idx], c.Param.Idx)) //--------------------------
+    info(MasterCommHeader, "Starting masterComm") //--------------------------
   } //--------------------------
 
   defer func() {
@@ -380,9 +380,9 @@ func (c *BasicSlaveComm)Close() error {
 
 func (c *BasicSlaveComm)Connect(i int, addr peer.ID, msgs ...interface{}) error {
   if checkContextDebug(c.Ctx, SlaveCommHeader) && c.Param.Idx != 0  { //--------------------------
-    info(SlaveCommHeader, fmt.Sprintf("%dth connecting to the %d reset of %d", c.Param.Idx, c.Param.SlaveIds[i], i)) //--------------------------
+    info(SlaveCommHeader, fmt.Sprintf("%dth connecting to the %dth reset of %d", c.Param.Idx, c.Param.SlaveIds[i], i)) //--------------------------
   } else if checkContextDebug(c.Ctx, MasterCommHeader) && c.Param.Idx == 0 { //--------------------------
-    info(MasterCommHeader, fmt.Sprintf("MasterComm connecting to the %d reset of %d", c.Param.SlaveIds[i], i)) //--------------------------
+    info(MasterCommHeader, fmt.Sprintf("MasterComm connecting to the %dth reset of %d", c.Param.SlaveIds[i], i)) //--------------------------
   } //--------------------------
 
   c.RemotesMutex.Lock()
