@@ -9,7 +9,7 @@ import (
 
 )
 
-func ParseFlag() (core.Config, bool, error) {
+func ParseFlag() (core.Config, bool, map[string]bool, error) {
   config := core.Config{}
 
   config.Base = "libp2p-mpi/1.0.0" //set to the libp2p-mpi version
@@ -22,6 +22,13 @@ func ParseFlag() (core.Config, bool, error) {
   flag.Var(&config.BootstrapPeers, "peer", "Adds a peer multiaddress to the bootstrap list")
 
   quiet := flag.Bool("q", false, "start on quiet mode")
+  debugAll := flag.Bool("debug-all", false, "enable debug-mode on all interfaces")
+
+  debugRemote := flag.Bool("debug-remote", false, "enable debug-mode on remote")
+  debugSlaveComm := flag.Bool("debug-slave", false, "enable debug-mode on SlaveComm")
+  debugMasterComm := flag.Bool("debug-master", false, "enable debug-mode on MasterComm")
+  debugStore := flag.Bool("debug-store", false, "enable debug-mode on ipfs-store")
+  debugHost := flag.Bool("debug-host", false, "enable debug-mode on host")
 
 	flag.Parse()
 
@@ -29,7 +36,20 @@ func ParseFlag() (core.Config, bool, error) {
     config.BootstrapPeers = dht.DefaultBootstrapPeers
   }
 
+  debugs := make(map[string] bool)
+  if *debugAll {
+    debugs[core.RemoteHeader] = true
+    debugs[core.SlaveCommHeader] = true
+    debugs[core.MasterCommHeader] = true
+    debugs[core.IpfsHeader] = true
+    debugs[core.HostHeader] = true
+  } else {
+    debugs[core.RemoteHeader] = *debugRemote
+    debugs[core.SlaveCommHeader] = *debugSlaveComm
+    debugs[core.MasterCommHeader] = *debugMasterComm
+    debugs[core.IpfsHeader] = *debugStore
+    debugs[core.HostHeader] = *debugHost
+  }
 
-
-  return config, *quiet, nil
+  return config, *quiet, debugs, nil
 }

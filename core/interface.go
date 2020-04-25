@@ -1,7 +1,6 @@
 package core
 
 import (
-  "log"
   "fmt"
   "os/exec"
   "bufio"
@@ -31,21 +30,22 @@ var (
   InterfaceSendHeader = "Send"
   InterfaceResetHeader = "Reset"
   InterfaceRequestHeader = "Req"
-
-  logFormat = "\033[32m%s %d/%d:\033[0m %s\n"
-  masterLogFormat = "\033[32m%s:\033[0m %s\n"
 )
 
-func NewLogger(file string, n int, i int) (func(string), error) {
-  if i == 0 {
+func NewNewLogger(quiet bool) func(string, int, int) (func(string), error) {
+  return func(file string, n int, i int) (func(string), error){
+    if i == 0 {
+      return func(str string) {
+        info(file, str)
+      }, nil
+    }
+
     return func(str string) {
-      log.Printf(masterLogFormat, file, str)
+      if !quiet {
+        info(fmt.Sprintf("%s %d/%d", file, i, n), str)
+      }
     }, nil
   }
-
-  return func(str string) {
-    log.Printf(logFormat, file, i, n, str)
-  }, nil
 }
 
 func NewInterface(ctx context.Context, file string, n int, i int, args ...string) (Interface, error) {

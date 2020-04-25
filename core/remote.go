@@ -9,6 +9,7 @@ import (
   "strings"
   "sync"
   "time"
+  "context"
 
   "github.com/jolatechno/go-timeout"
 )
@@ -112,7 +113,7 @@ func (c *safeChannelString)Close() {
   }
 }
 
-func NewRemote(slaveId int) (Remote, error) {
+func NewRemote(ctx context.Context, slaveId int) (Remote, error) {
   remote :=  &BasicRemote {
     ResetHandler: &nilRemoteResetHandler,
     PingInterval: StandardPingInterval,
@@ -150,6 +151,7 @@ type BasicRemote struct {
   HandshakeChan *safeChannelBool
   SendChan *safeChannelString
 
+  Ctx context.Context
   Id int
   ResetHandler *func(int, int)
   PingInterval time.Duration

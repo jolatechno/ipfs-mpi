@@ -156,11 +156,6 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     }
   }()
 
-  comm.Remotes[0], err = NewRemote(0)
-  if err != nil {
-    return nil, err
-  }
-
   comm.Remote(0).SetErrorHandler(func(err error) {
     comm.Raise(err)
     comm.Close()
@@ -171,17 +166,6 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
   })
 
   comm.Remote(0).Reset(zeroRw, 0)
-
-  for i := 1; i < comm.Param.N; i++ {
-    if i == comm.Param.Idx {
-      continue
-    }
-
-    comm.Remotes[i], err = NewRemote(param.SlaveIds[i])
-    if err != nil {
-      return nil, err
-    }
-  }
 
   for j := 1; j < comm.Param.N; j++ {
     i := j

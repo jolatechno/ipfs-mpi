@@ -55,7 +55,7 @@ type Mpi interface {
     newMasterSlaveComm func(context.Context, ExtHost, protocol.ID, Param, Interface, []Remote) (SlaveComm, error),
     newMasterComm func(context.Context, SlaveComm, Param) (MasterComm, error),
     newInterface func(context.Context, string, int, int, ...string) (Interface, error),
-    newRemote func(int) (Remote, error),
+    newRemote func(context.Context, int) (Remote, error),
     newLogger func(string, int, int) (func(string), error),
   )
 

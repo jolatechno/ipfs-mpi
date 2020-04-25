@@ -179,7 +179,7 @@ type BasicMpi struct {
   NewMasterSlaveComm func(context.Context, ExtHost, protocol.ID, Param, Interface, []Remote) (SlaveComm, error)
   NewMasterComm func(context.Context, SlaveComm, Param) (MasterComm, error)
   NewInterface func(ctx context.Context, file string, n int, i int, args ...string) (Interface, error)
-  NewRemote func(int) (Remote, error)
+  NewRemote func(context.Context, int) (Remote, error)
   NewLogger func(string, int, int) (func(string), error)
 }
 
@@ -188,7 +188,7 @@ func (m *BasicMpi) SetInitFunctions(
   newMasterSlaveComm func(context.Context, ExtHost, protocol.ID, Param, Interface, []Remote) (SlaveComm, error),
   newMasterComm func(context.Context, SlaveComm, Param) (MasterComm, error),
   newInterface func(context.Context, string, int, int, ...string) (Interface, error),
-  newRemote func(int) (Remote, error),
+  newRemote func(context.Context, int) (Remote, error),
   newLogger func(string, int, int) (func(string), error)) {
 
   m.NewSlaveComm = newSlaveComm
@@ -300,7 +300,7 @@ func (m *BasicMpi)Add(file string) error {
         continue
       }
 
-      remotes[i], err = m.NewRemote(0)
+      remotes[i], err = m.NewRemote(m.Ctx, 0)
       if err != nil {
         return
       }
@@ -378,7 +378,7 @@ func (m *BasicMpi)Start(file string, n int, args ...string) (err error) {
 
   remotes := make([]Remote, n)
   for i := 1; i < n; i++ {
-    remotes[i], err = m.NewRemote(0)
+    remotes[i], err = m.NewRemote(m.Ctx, 0)
     if err != nil {
       return err
     }
