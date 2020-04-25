@@ -11,19 +11,13 @@ var (
   nilEndHandler = func() {}
   nilErrorHandler = func(err error) {}
 
-  BaseColor = "\033[34m"
-  InfoFormat = "\033[32mINFO\033[0m %s%s:\033[0m %s\n"
+  InfoFormat = "\033[32mINFO\033[0m \033[34m%s:\033[0m %s\n"
   ErrorFormat = "\033[31mERROR\033[0m \033[34m%s:\033[0m %s"
   AlertFormat = "\033[33mWARNING\033[0m \033[34m%s:\033[0m %s"
 )
 
-func info(header string, msg string, colors ...string) {
-  color := BaseColor
-  if len(colors) == 1 {
-    color = colors[0]
-  }
-
-  log.Printf(InfoFormat, color, header, msg)
+func info(header string, msg string) {
+  log.Printf(InfoFormat, header, msg)
 }
 
 func checkContextDebug(ctx context.Context, header string) bool {

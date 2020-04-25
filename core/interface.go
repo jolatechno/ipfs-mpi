@@ -1,6 +1,7 @@
 package core
 
 import (
+  "log"
   "fmt"
   "os/exec"
   "bufio"
@@ -31,21 +32,21 @@ var (
   InterfaceResetHeader = "Reset"
   InterfaceRequestHeader = "Req"
 
-  LogColor = "\033[36m"
-  LogFormat = "%s %d/%d"
+  LogFormat = "\033[35mLOG\033[0m \033[34m%s:\033[0m %s\n"
+  LogSubFormat = "%s %d/%d"
 )
 
 func NewNewLogger(quiet bool) func(string, int, int) (func(string), error) {
   return func(file string, n int, i int) (func(string), error){
     if i == 0 {
       return func(str string) {
-        info(file, str, LogColor)
+        log.Printf(LogFormat, file, str)
       }, nil
     }
 
     return func(str string) {
       if !quiet {
-        info(fmt.Sprintf(LogFormat, file, i, n), str, LogColor)
+        log.Printf(LogFormat, fmt.Sprintf(LogSubFormat, file, i, n), str)
       }
     }, nil
   }

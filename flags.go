@@ -21,7 +21,7 @@ func ParseFlag() (core.Config, bool, map[string]bool, error) {
 	flag.Uint64Var(&config.Maxsize, "maxsize", 10000000, "Set the max use space, default to 10MB")
   flag.Var(&config.BootstrapPeers, "peer", "Adds a peer multiaddress to the bootstrap list")
 
-  quiet := flag.Bool("q", false, "start on quiet mode")
+  quiet := flag.Bool("q", false, "start on quiet mode (overwrite all debug-mode)")
   debugAll := flag.Bool("debug-all", false, "enable debug-mode on all interfaces")
 
   debugRemote := flag.Bool("debug-remote", false, "enable debug-mode on remote")
@@ -37,7 +37,8 @@ func ParseFlag() (core.Config, bool, map[string]bool, error) {
   }
 
   debugs := make(map[string] bool)
-  if *debugAll {
+  if *quiet {
+  } else if *debugAll {
     debugs[core.RemoteHeader] = true
     debugs[core.SlaveCommHeader] = true
     debugs[core.MasterCommHeader] = true
