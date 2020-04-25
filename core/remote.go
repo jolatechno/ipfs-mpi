@@ -197,16 +197,7 @@ func (r *BasicRemote)RequestReset(i int, slaveId int) {
 }
 
 func (r *BasicRemote)CloseRemote() { // has to be blocking
-  stream := r.Stream()
-  slaveId := r.SlaveId()
-
-  if stream == io.ReadWriteCloser(nil) {
-    return
-  }
-
-  if _, err := fmt.Fprintln(stream, CloseHeader); err != nil {
-    r.raiseCheck(err, stream, slaveId)
-  }
+  r.SendChan.Send(CloseHeader)
 }
 
 func (r *BasicRemote)Send(msg string) {
@@ -217,8 +208,8 @@ func (r *BasicRemote)Send(msg string) {
   go r.SendChan.Send(MessageHeader + "," + msg)
 }
 
-func (r *BasicRemote)SendHandshake() {
-  go r.SendChan.Send(HandShakeHeader)
+func (r *BasicRemote)SendHandshake() { // has to be blocking
+  r.SendChan.Send(HandShakeHeader)
 }
 
 func (r *BasicRemote)Get() string {

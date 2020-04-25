@@ -9,8 +9,8 @@ var (
   nilEndHandler = func() {}
   nilErrorHandler = func(err error) {}
 
-  ErrorFormat = "\033[1m[%s]\033[0m \033[31m%s\033[0m"
-  AlertFormat = "\033[1m[%s]\033[0m \033[33m%s\033[0m"
+  ErrorFormat = "\033[31mERROR\033[0m \033[34m%s:\033[0m %s"
+  AlertFormat = "\033[33mWARNING\033[0m \033[34m%s:\033[0m %s"
 )
 
 func NewHeadedError(err error, header string) error {
@@ -126,7 +126,7 @@ func (b *BasicFunctionsCloser)Close() error {
         return err
       }
     }
-    
+
     (*b.EndHandler)()
 
     b.Ended = true
