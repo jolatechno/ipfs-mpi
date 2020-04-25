@@ -34,15 +34,29 @@ func main(){
     panic(err)
   }
 
+  fmt.Println("Our adress is ", host.ID())
+
+  for _, addr := range host.Addrs() {
+    fmt.Println("swarm listening on ", addr)
+  }
+
   store, err := core.NewStore(config.Url, config.Path, config.Ipfs_store)
   if err != nil {
     panic(err)
   }
 
+  for _, file := range store.List() {
+    fmt.Println("found ", file)
+  }
+
+  fmt.Println("Connected to store ", config.Ipfs_store)
+
   mpi, err := core.NewMpi(ctx, config, host, store)
   if err != nil {
     panic(err)
   }
+
+  fmt.Println("Daemon started")
 
   mpi.SetInitFunctions(
     core.NewSlaveComm,
@@ -57,12 +71,6 @@ func main(){
       log.Println(err.Error())
     }
   })
-
-  fmt.Println("Our adress is ", mpi.Host().ID())
-
-  for _, addr := range mpi.Host().Addrs() {
-    fmt.Println("swarm listening on ", addr)
-  }
 
   term, err := terminal.NewWithStdInOut()
 	if err != nil {
