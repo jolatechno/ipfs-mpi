@@ -4,6 +4,7 @@ import (
   "sync"
   "fmt"
   "log"
+  "context"
 )
 
 var (
@@ -17,6 +18,15 @@ var (
 
 func info(header string, msg string) {
   log.Printf(InfoFormat, header, msg)
+}
+
+func checkContextDebug(ctx context.Context, header string) bool {
+  t, ok := ctx.Value(header).(bool)
+  if !ok {
+    return false
+  }
+
+  return t
 }
 
 func NewHeadedError(err error, header string) error {

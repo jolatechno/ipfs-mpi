@@ -31,10 +31,6 @@ func main(){
     ctx = context.WithValue(ctx, key, val)
   }
 
-  for key, _ := range debugs {
-    fmt.Println(key, ctx.Value(key))
-  }
-
   fmt.Println("\nStarting host...")
 
   host, err := core.NewHost(ctx, config.BootstrapPeers...)
@@ -43,10 +39,12 @@ func main(){
   }
 
   fmt.Println("Host started")
-  fmt.Println("Our adress is ", host.ID())
 
-  for _, addr := range host.Addrs() {
-    fmt.Println("swarm listening on ", addr)
+  if !quiet {
+    fmt.Println("Our adress is ", host.ID())
+    for _, addr := range host.Addrs() {
+      fmt.Println("swarm listening on ", addr)
+    }
   }
 
   fmt.Println("\nStarting store...")
@@ -56,12 +54,14 @@ func main(){
     panic(err)
   }
 
-  fmt.Println("Connected to store ", config.Ipfs_store)
-
-  for _, file := range store.List() {
-    fmt.Printf(" found %q\n", file)
+  if !quiet {
+    fmt.Println("Connected to store ", config.Ipfs_store)
+    for _, file := range store.List() {
+      fmt.Printf(" found %q\n", file)
+    }
   }
 
+  fmt.Println("Store started")
   fmt.Println("\nStarting libp2p-mpi daemon...")
 
   mpi, err := core.NewMpi(ctx, config, host, store)
@@ -77,7 +77,7 @@ func main(){
     core.NewMasterComm,
     core.NewInterface,
     core.NewRemote,
-    core.NewLogger,
+    core.NewNewLogger(quiet),
   )
 
   mpi.SetErrorHandler(func(err error) {

@@ -115,6 +115,7 @@ func (c *safeChannelString)Close() {
 
 func NewRemote(ctx context.Context, slaveId int) (Remote, error) {
   remote :=  &BasicRemote {
+    Ctx: ctx,
     ResetHandler: &nilRemoteResetHandler,
     PingInterval: StandardPingInterval,
     PingTimeout: StandardTimeout,
@@ -290,8 +291,10 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, slaveId int, msgs ...inter
         return
       }
 
-      if msg != PingHeader && msg != HandShakeHeader && msg != PingRespHeader { //--------------------------
-        fmt.Printf("[Remote] Sent %q\n", msg) //--------------------------
+      if checkContextDebug(r.Ctx, RemoteHeader) { //--------------------------
+        if msg != PingHeader && msg != HandShakeHeader && msg != PingRespHeader { //--------------------------
+          info(RemoteHeader, fmt.Sprintf("Sent %q", msg)) //--------------------------
+        } //--------------------------
       } //--------------------------
 
       if _, err := fmt.Fprintln(stream, msg); err != nil {
@@ -347,9 +350,11 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, slaveId int, msgs ...inter
     for r.check(stream, slaveId) && scanner.Scan() {
       splitted := strings.Split(scanner.Text(), ",")
 
-      str := strings.Join(splitted, ",") //--------------------------
-      if str != PingHeader && str != HandShakeHeader && str != PingRespHeader { //--------------------------
-        fmt.Printf("[Remote] Received %q\n", str) //--------------------------
+      if checkContextDebug(r.Ctx, RemoteHeader) { //--------------------------
+        str := strings.Join(splitted, ",") //--------------------------
+        if str != PingHeader && str != HandShakeHeader && str != PingRespHeader { //--------------------------
+          info(RemoteHeader, fmt.Sprintf("Received %q", str)) //--------------------------
+        } //--------------------------
       } //--------------------------
 
       switch splitted[0] {
