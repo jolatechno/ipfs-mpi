@@ -27,12 +27,12 @@ added QmTaujxGjagaps15tSBWrFU3aHHucBGtMuxr1mgiQjzrMf example_interpreters/echo/r
 
 ...
 
-added QmZAupFwx1qJ7ieY3rpeer6V1dasXsxNLQ9kFK3CvLh6sb example_interpreters/round_echo
-added QmTQx9KrsfgkCucWAPxcsdfvfVbd2n5v5Z1fkxJj1h8bbH example_interpreters
- 12.44 KiB / 12.44 KiB [=========================================================================] 100.00%
+added QmWjkXnR9Qc1UwFcgb3HDx8mrfzFjb3ixZMqQedDxkMqET example_interpreters/round_echo
+added QmbK4D76sLDvRn2qKVbtqn95qBW7CvS1nXa6F2ynyn5xaF example_interpreters
+ 17.18 KiB / 17.18 KiB [==================================================================================================================================================================================] 100.00%
  ```
 
-Where the line corresponding to the whole directory is `added QmTQx9KrsfgkCucWAPxcsdfvfVbd2n5v5Z1fkxJj1h8bbH example_interpreters`, so the ipfs-store that you should use will be `QmTQx9KrsfgkCucWAPxcsdfvfVbd2n5v5Z1fkxJj1h8bbH/`
+Where the line corresponding to the whole directory is `added QmbK4D76sLDvRn2qKVbtqn95qBW7CvS1nXa6F2ynyn5xaF example_interpreters`, so the ipfs-store that you should use will be `QmbK4D76sLDvRn2qKVbtqn95qBW7CvS1nXa6F2ynyn5xaF/`
 
 ## How to build ?
 

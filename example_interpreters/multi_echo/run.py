@@ -27,5 +27,5 @@ if __name__ == "__main__":
 
         time.sleep(2)
 
-        utils.Log(f"{ i } responding \"{ msg } { msg }\"")
+        utils.Log(f"responding \"{ msg } { msg }\"")
         utils.Send(0, f"{msg} {msg}")
