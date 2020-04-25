@@ -325,7 +325,9 @@ func (c *BasicMasterComm)Reset(i int, slaveId int) {
 
   c.Param.SlaveIds[i]++
 
-  go c.Raise(SetNonPanic(NewHeadedError(errors.New(fmt.Sprintf("reseting %d for the %dth time", i, c.Param.SlaveIds[i])), MasterCommHeader)))
+  if checkContextDebug(c.Ctx, MasterCommHeader) && c.Param.Idx == 0 { //--------------------------
+    info(MasterCommHeader, fmt.Sprintf("reseting %d for the %dth time", i, c.Param.SlaveIds[i])) //--------------------------
+  } //--------------------------
 
   for c.Check() {
     addr, err := c.SlaveComm().Host().NewPeer(c.SlaveComm().Protocol())

@@ -30,27 +30,35 @@ var (
   InterfaceSendHeader = "Send"
   InterfaceResetHeader = "Reset"
   InterfaceRequestHeader = "Req"
+
+  LogColor = "\033[36m"
+  LogFormat = "%s %d/%d"
 )
 
 func NewNewLogger(quiet bool) func(string, int, int) (func(string), error) {
   return func(file string, n int, i int) (func(string), error){
     if i == 0 {
       return func(str string) {
-        info(file, str)
+        info(file, str, LogColor)
       }, nil
     }
 
     return func(str string) {
       if !quiet {
-        info(fmt.Sprintf("%s %d/%d", file, i, n), str)
+        info(fmt.Sprintf(LogFormat, file, i, n), str, LogColor)
       }
     }, nil
   }
 }
 
 func NewInterface(ctx context.Context, file string, n int, i int, args ...string) (Interface, error) {
+  if checkContextDebug(ctx, InterfaceHeader) { //--------------------------
+    info(InterfaceHeader, fmt.Sprintf("Starting an interface for file %q, %d/%d with params %s", file, i, n, args)) //--------------------------
+  } //--------------------------
+
   cmdArgs := append([]string{file + "/run.py", fmt.Sprint(n), fmt.Sprint(i)}, args...)
   inter := StdInterface {
+    Ctx: ctx,
     Idx: i,
     Cmd: exec.CommandContext(ctx, "python3", cmdArgs...),
     MessageHandler: &nilMessageHandler,
@@ -64,6 +72,7 @@ func NewInterface(ctx context.Context, file string, n int, i int, args ...string
 }
 
 type StdInterface struct {
+  Ctx context.Context
   Stdin io.Writer
   MessageHandler *func(int, string)
   RequestHandler *func(int)
@@ -129,6 +138,10 @@ func (s *StdInterface)Start() {
       if !s.Check() { //can happen after a long wait
         break
       }
+
+      if checkContextDebug(s.Ctx, InterfaceHeader) { //--------------------------
+        info(InterfaceHeader, fmt.Sprintf("Received %q", strings.Join(splitted, ","))) //--------------------------
+      } //--------------------------
 
       switch splitted[0] {
       default:

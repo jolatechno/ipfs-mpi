@@ -282,6 +282,10 @@ func (m *BasicMpi)Add(file string) error {
       return
     }
 
+    if checkContextDebug(m.Ctx, MpiHeader) { //--------------------------
+      info(MpiHeader, fmt.Sprint("Requested a new slaveComm with param ", param)) //--------------------------
+    } //--------------------------
+
     inter, err := m.NewInterface(m.Ctx, m.Path + InstalledHeader + file, param.N, param.Idx)
     if err != nil {
       return

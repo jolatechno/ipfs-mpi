@@ -118,7 +118,7 @@ func (p *Param)String() string {
 func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, base protocol.ID, param Param, inter Interface, remotes []Remote) (_ SlaveComm, err error) { //fmt.Println("[SlaveComm] New", param) //--------------------------
   if checkContextDebug(ctx, SlaveCommHeader) { //--------------------------
     info(SlaveCommHeader, fmt.Sprint("New slaveComm with param ", param)) //--------------------------
-  }
+  } //--------------------------
 
   comm := BasicSlaveComm {
     Ctx: ctx,
@@ -134,7 +134,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
   close := func() error {
     if checkContextDebug(ctx, SlaveCommHeader) { //--------------------------
       info(SlaveCommHeader, fmt.Sprintf("Closing the %dth reset of %d", comm.Param.SlaveIds[comm.Param.Idx], comm.Param.Idx)) //--------------------------
-    }
+    } //--------------------------
 
     go comm.Interface().Close()
 
@@ -379,6 +379,12 @@ func (c *BasicSlaveComm)Close() error {
 }
 
 func (c *BasicSlaveComm)Connect(i int, addr peer.ID, msgs ...interface{}) error {
+  if checkContextDebug(c.Ctx, SlaveCommHeader) && c.Param.Idx != 0  { //--------------------------
+    info(SlaveCommHeader, fmt.Sprintf("%dth connecting to the %d reset of %d", c.Param.Idx, c.Param.SlaveIds[i], i)) //--------------------------
+  } else if checkContextDebug(c.Ctx, MasterCommHeader) && c.Param.Idx == 0 { //--------------------------
+    info(MasterCommHeader, fmt.Sprintf("MasterComm connecting to the %d reset of %d", c.Param.SlaveIds[i], i)) //--------------------------
+  } //--------------------------
+
   c.RemotesMutex.Lock()
   defer func() {
     c.RemotesMutex.Unlock()
