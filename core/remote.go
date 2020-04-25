@@ -24,7 +24,7 @@ var (
   PingHeader = "Ping"
   ResetHeader = "Reset"
 
-  StandardTimeout = 1 * time.Second //Will be increase later
+  StandardTimeout = 2 * time.Second //Will be increase later
   StandardPingInterval = 200 * time.Millisecond //Will be increase later
 
   NilStreamError = errors.New("nil stream")
@@ -196,8 +196,17 @@ func (r *BasicRemote)RequestReset(i int, slaveId int) {
   go r.SendChan.Send(fmt.Sprintf("%s,%d,%d", ResetHeader, i, slaveId))
 }
 
-func (r *BasicRemote)CloseRemote() {
-  go r.SendChan.Send(CloseHeader)
+func (r *BasicRemote)CloseRemote() { // has to be blocking
+  stream := r.Stream()
+  slaveId := r.SlaveId()
+
+  if stream == io.ReadWriteCloser(nil) {
+    return
+  }
+
+  if _, err := fmt.Fprintln(stream, CloseHeader); err != nil {
+    r.raiseCheck(err, stream, slaveId)
+  }
 }
 
 func (r *BasicRemote)Send(msg string) {
@@ -275,8 +284,6 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, slaveId int, msgs ...inter
   if stream == io.ReadWriteCloser(nil) {
     return
   }
-
-  fmt.Println("[Remote] Reset") //--------------------------
 
   r.SendChan.Close()
 

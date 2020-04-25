@@ -9,6 +9,8 @@ import (
   "io"
 
   "github.com/libp2p/go-libp2p-core/protocol"
+
+  "github.com/jolatechno/go-timeout"
 )
 
 var (
@@ -152,10 +154,16 @@ func NewMasterComm(ctx context.Context, slaveComm SlaveComm, param Param) (_ Mas
     for j := 1; j < param.N; j++ {
       i := j
 
+      comm.SlaveComm().Remote(i).SetErrorHandler(nilErrorHandler)
+      comm.SlaveComm().Remote(i).SetCloseHandler(nilEndHandler)
+
       go func() {
         defer recover()
 
-        comm.SlaveComm().Remote(i).CloseRemote()
+        timeout.MakeSimpleTimeout(func() error {
+          comm.SlaveComm().Remote(i).CloseRemote()
+          return nil
+        }, StandardTimeout)
         comm.SlaveComm().Remote(i).Close()
       }()
 
