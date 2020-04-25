@@ -56,6 +56,7 @@ type Mpi interface {
     newMasterComm func(context.Context, SlaveComm, Param) (MasterComm, error),
     newInterface func(context.Context, string, int, int, ...string) (Interface, error),
     newRemote func(int) (Remote, error),
+    newLogger func(string, int, int) (func(string), error),
   )
 
   Add(string) error
@@ -129,6 +130,7 @@ type Interface interface {
   standardFunctionsCloser
 
   Start()
+  SetLogger(func(string))
   SetResetHandler(func(int))
   SetMessageHandler(func(int, string))
   SetRequestHandler(func(int))

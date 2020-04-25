@@ -24,6 +24,7 @@ var (
 
   nilMessageHandler = func(int, string) {}
   nilRequestHandler = func(int) {}
+  nilLogger = func(string) {}
   nilResetHandler = func(int) {}
 
   InterfaceLogHeader = "Log"
@@ -31,9 +32,21 @@ var (
   InterfaceResetHeader = "Reset"
   InterfaceRequestHeader = "Req"
 
-  logFormat = "\033[34m%s\033[0m\n"
-  masterLogFormat = "\033[32m%s\033[0m\n"
+  logFormat = "\033[32m%s %d/%d\033[0m\n: %s\n"
+  masterLogFormat = "\033[32m%s\033[0m\n: %s\n"
 )
+
+func NewLogger(file string, n int, i int) (func(string), error) {
+  if i == 0 {
+    return func(str string) {
+      log.Printf(masterLogFormat, file, str)
+    }, nil
+  }
+
+  return func(str string) {
+    log.Printf(logFormat, file, i, n, str)
+  }, nil
+}
 
 func NewInterface(ctx context.Context, file string, n int, i int, args ...string) (Interface, error) {
   cmdArgs := append([]string{file + "/run.py", fmt.Sprint(n), fmt.Sprint(i)}, args...)
@@ -43,6 +56,7 @@ func NewInterface(ctx context.Context, file string, n int, i int, args ...string
     MessageHandler: &nilMessageHandler,
     RequestHandler: &nilRequestHandler,
     ResetHandler: &nilResetHandler,
+    Logger: &nilLogger,
     Standard: NewStandardInterface(InterfaceHeader),
   }
 
@@ -54,6 +68,7 @@ type StdInterface struct {
   MessageHandler *func(int, string)
   RequestHandler *func(int)
   ResetHandler *func(int)
+  Logger *func(string)
   Idx int
   Cmd *exec.Cmd
   Standard standardFunctionsCloser
@@ -151,11 +166,7 @@ func (s *StdInterface)Start() {
           continue
         }
 
-        if s.Idx == 0 {
-          log.Printf(masterLogFormat, strings.Join(splitted[1:], ","))
-        } else {
-          log.Printf(logFormat, strings.Join(splitted[1:], ","))
-        }
+        (*s.Logger)(strings.Join(splitted[1:], ","))
 
       case InterfaceSendHeader:
         if len(splitted) < 3 {
@@ -199,6 +210,10 @@ func (s *StdInterface)Check() bool {
 
 func (s *StdInterface)SetMessageHandler(handler func(int, string)) {
   s.MessageHandler = &handler
+}
+
+func (s *StdInterface)SetLogger(handler func(string)) {
+  s.Logger = &handler
 }
 
 func (s *StdInterface)SetRequestHandler(handler func(int)) {

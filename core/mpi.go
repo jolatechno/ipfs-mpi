@@ -180,6 +180,7 @@ type BasicMpi struct {
   NewMasterComm func(context.Context, SlaveComm, Param) (MasterComm, error)
   NewInterface func(ctx context.Context, file string, n int, i int, args ...string) (Interface, error)
   NewRemote func(int) (Remote, error)
+  NewLogger func(string, int, int) (func(string), error)
 }
 
 func (m *BasicMpi) SetInitFunctions(
@@ -187,13 +188,15 @@ func (m *BasicMpi) SetInitFunctions(
   newMasterSlaveComm func(context.Context, ExtHost, protocol.ID, Param, Interface, []Remote) (SlaveComm, error),
   newMasterComm func(context.Context, SlaveComm, Param) (MasterComm, error),
   newInterface func(context.Context, string, int, int, ...string) (Interface, error),
-  newRemote func(int) (Remote, error)) {
+  newRemote func(int) (Remote, error),
+  newLogger func(string, int, int) (func(string), error)) {
 
   m.NewSlaveComm = newSlaveComm
   m.NewMasterSlaveComm = newMasterSlaveComm
   m.NewMasterComm = newMasterComm
   m.NewInterface = newInterface
   m.NewRemote = newRemote
+  m.NewLogger = newLogger
 }
 
 func (m *BasicMpi)SetCloseHandler(handler func()) {
@@ -244,22 +247,22 @@ func (m *BasicMpi)Close() error {
   return m.Standard.Close()
 }
 
-func (m *BasicMpi)Add(f string) error {
+func (m *BasicMpi)Add(file string) error {
   defer func() {
     if err := recover(); err != nil {
       m.Raise(err.(error))
     }
   }()
 
-  if !m.Store().Has(f) {
-    err := m.Store().Dowload(f)
+  if !m.Store().Has(file) {
+    err := m.Store().Dowload(file)
     if err != nil {
       return err
     }
   }
 
-  proto := protocol.ID(fmt.Sprintf("/%s/%s", f, m.Pid))
-  m.Host().Listen(proto, fmt.Sprintf("/%s/%s", f, m.Ipfs_store))
+  proto := protocol.ID(fmt.Sprintf("/%s/%s", file, m.Pid))
+  m.Host().Listen(proto, fmt.Sprintf("/%s/%s", file, m.Ipfs_store))
   m.Host().SetStreamHandler(proto, func(stream network.Stream) {
     defer func() {
       if err := recover(); err != nil {
@@ -279,10 +282,17 @@ func (m *BasicMpi)Add(f string) error {
       return
     }
 
-    inter, err := m.NewInterface(m.Ctx, m.Path + InstalledHeader + f, param.N, param.Idx)
+    inter, err := m.NewInterface(m.Ctx, m.Path + InstalledHeader + file, param.N, param.Idx)
     if err != nil {
       return
     }
+
+    logger, err := m.NewLogger(file, param.N, param.Idx)
+    if err != nil {
+      return
+    }
+
+    inter.SetLogger(logger)
 
     remotes := make([]Remote, param.N)
     for i := 0; i < param.N; i++ {
@@ -351,6 +361,13 @@ func (m *BasicMpi)Start(file string, n int, args ...string) (err error) {
   if err != nil {
     return err
   }
+
+  logger, err := m.NewLogger(file, n, 0)
+  if err != nil {
+    return
+  }
+
+  inter.SetLogger(logger)
 
   param := Param {
     Addrs: addrs,
