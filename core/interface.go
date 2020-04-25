@@ -32,8 +32,8 @@ var (
   InterfaceResetHeader = "Reset"
   InterfaceRequestHeader = "Req"
 
-  logFormat = "\033[32m%s %d/%d\033[0m\n: %s\n"
-  masterLogFormat = "\033[32m%s\033[0m\n: %s\n"
+  logFormat = "\033[32m%s %d/%d\033[0m: %s\n"
+  masterLogFormat = "\033[32m%s\033[0m: %s\n"
 )
 
 func NewLogger(file string, n int, i int) (func(string), error) {

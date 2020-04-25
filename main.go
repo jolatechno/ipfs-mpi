@@ -69,6 +69,7 @@ func main(){
     core.NewMasterComm,
     core.NewInterface,
     core.NewRemote,
+    core.NewLogger,
   )
 
   mpi.SetErrorHandler(func(err error) {
