@@ -277,14 +277,14 @@ func (m *BasicMpi)Add(file string) error {
       return
     }
 
+    if checkContextDebug(m.Ctx, MpiHeader) { //--------------------------
+      info(MpiHeader, fmt.Sprintf("Requested a new slaveComm, first message : %q", str)) //--------------------------
+    } //--------------------------
+
     param, err := ParamFromString(str[:len(str) - 1])
     if err != nil {
       return
     }
-
-    if checkContextDebug(m.Ctx, MpiHeader) { //--------------------------
-      info(MpiHeader, fmt.Sprint("Requested a new slaveComm with param ", param)) //--------------------------
-    } //--------------------------
 
     inter, err := m.NewInterface(m.Ctx, m.Path + InstalledHeader + file, param.N, param.Idx)
     if err != nil {
