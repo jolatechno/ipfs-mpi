@@ -266,8 +266,10 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
 
   wg.Wait()
 
-  go comm.Remote(0).SendHandshake()
-  comm.Remote(0).WaitHandshake()
+  if param.Init {
+    go comm.Remote(0).SendHandshake()
+    comm.Remote(0).WaitHandshake()
+  }
 
   comm.Interface().SetResetHandler(func(i int) {
     comm.RequestReset(i)
