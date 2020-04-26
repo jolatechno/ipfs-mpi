@@ -196,7 +196,11 @@ func (r *BasicRemote)RequestReset(i int, slaveId int) {
     return
   }
 
-  go r.SendChan.Send(fmt.Sprintf("%s,%d,%d", ResetHeader, i, slaveId))
+  go func() {
+    r.StreamMutex.Lock()
+    defer r.StreamMutex.Unlock()
+    r.SendChan.Send(fmt.Sprintf("%s,%d,%d", ResetHeader, i, slaveId))
+  }()
 }
 
 func (r *BasicRemote)CloseRemote() { // has to be blocking
@@ -208,10 +212,16 @@ func (r *BasicRemote)Send(msg string) {
   defer r.WriteMutex.Unlock()
   *r.Sent = append(*r.Sent, msg)
 
-  go r.SendChan.Send(MessageHeader + "," + msg)
+  go func() {
+    r.StreamMutex.Lock()
+    defer r.StreamMutex.Unlock()
+    r.SendChan.Send(MessageHeader + "," + msg)
+  }()
 }
 
 func (r *BasicRemote)SendHandshake() { // has to be blocking
+  r.StreamMutex.Lock()
+  defer r.StreamMutex.Unlock()
   r.SendChan.Send(HandShakeHeader)
 }
 
@@ -304,7 +314,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, slaveId int, msgs ...inter
   }()
 
   for _, msg := range msgs {
-    go sendChan.Send(fmt.Sprint(msg))
+    sendChan.Send(fmt.Sprint(msg))
   }
 
   received := ResetReader(r.Received, *r.Sent, func(msg string) {
