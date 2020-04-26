@@ -301,7 +301,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, slaveId int, msgs ...inter
       }
 
       if checkContextDebug(r.Ctx, RemoteHeader) { //--------------------------
-        if msg != PingHeader && msg != HandShakeHeader && msg != PingRespHeader { //--------------------------
+        if msg != PingHeader && msg != PingRespHeader { //--------------------------
           info(RemoteHeader, fmt.Sprintf("Sent %q", msg)) //--------------------------
         } //--------------------------
       } //--------------------------
@@ -363,7 +363,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, slaveId int, msgs ...inter
 
       if checkContextDebug(r.Ctx, RemoteHeader) { //--------------------------
         str := strings.Join(splitted, ",") //--------------------------
-        if str != PingHeader && str != HandShakeHeader && str != PingRespHeader { //--------------------------
+        if str != PingHeader && str != PingRespHeader { //--------------------------
           info(RemoteHeader, fmt.Sprintf("Received %q", str)) //--------------------------
         } //--------------------------
       } //--------------------------
