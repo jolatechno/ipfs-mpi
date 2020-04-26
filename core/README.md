@@ -43,7 +43,7 @@ The [standardInterface](./standardInterface.go) interface is used in all other c
 The peer reset algorithm of libp2p-mpi is also defined in the [type_definition.go](./type_definition.go) file in the `ResetReader` function:
 
 ```go
-func ResetReader(received int, sent []string, sendToRemote func(string), pushToComm func(string)) (readFromRemote func(string)) {
+func ResetReader(received int, sent []interface{}, sendToRemote func(interface{}), pushToComm func(string)) (readFromRemote func(string)) {
   offset := received
 
   for _, msg := range sent {
@@ -68,3 +68,5 @@ This function takes as argument:
  - and the function that pushes messages back to the comm (`readFromRemote`).
 
 It returns a function that handles new messages from the remote (`readFromRemote`).
+
+Initializing messages that have to be send at remote reset are append before the list of sent messages (`sent`) and passed to the `ResetReader` function.

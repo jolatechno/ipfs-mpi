@@ -28,7 +28,7 @@ type standardFunctions interface {
 
 //-------
 
-func ResetReader(received int, sent []string, sendToRemote func(string), pushToComm func(string)) (readFromRemote func(string)) {
+func ResetReader(received int, sent []interface{}, sendToRemote func(interface{}), pushToComm func(string)) (readFromRemote func(string)) {
   offset := received
 
   for _, msg := range sent {

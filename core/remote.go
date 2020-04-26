@@ -122,7 +122,7 @@ func NewRemote(ctx context.Context, slaveId int) (Remote, error) {
     ReadChan: NewChannelString(),
     HandshakeChan: NewChannelBool(),
     SendChan: NewChannelString(),
-    Sent: &[]string{},
+    Sent: []interface{}{},
     Id: slaveId,
     Received: 0,
   }
@@ -157,7 +157,7 @@ type BasicRemote struct {
   ResetHandler *func(int, int)
   PingInterval time.Duration
   PingTimeout time.Duration
-  Sent *[]string
+  Sent []interface{}
   Rw io.ReadWriteCloser
   Received int
   HandshakeMessage int
@@ -208,14 +208,16 @@ func (r *BasicRemote)CloseRemote() { // has to be blocking
 }
 
 func (r *BasicRemote)Send(msg string) {
+  str := MessageHeader + "," + msg
+
   r.WriteMutex.Lock()
   defer r.WriteMutex.Unlock()
-  *r.Sent = append(*r.Sent, msg)
+  r.Sent = append(r.Sent, str)
 
   go func() {
     r.StreamMutex.Lock()
     defer r.StreamMutex.Unlock()
-    r.SendChan.Send(MessageHeader + "," + msg)
+    r.SendChan.Send(str)
   }()
 }
 
@@ -294,11 +296,14 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, slaveId int, msgs ...inter
   sendChan := NewChannelString()
   r.SendChan = sendChan
 
-  for _, msg := range msgs {
+  received := ResetReader(r.Received, append(msgs, r.Sent...), func(msg interface{}) {
     if _, err := fmt.Fprintln(stream, msg); err != nil {
       r.raiseCheck(err, stream, slaveId)
     }
-  }
+  }, func(msg string) {
+    r.Received++
+    r.ReadChan.Send(msg)
+  })
 
   go func() {
     for r.check(stream, slaveId) {
@@ -318,13 +323,6 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, slaveId int, msgs ...inter
       }
     }
   }()
-
-  received := ResetReader(r.Received, *r.Sent, func(msg string) {
-    go sendChan.Send(MessageHeader + "," + msg)
-  }, func(msg string) {
-    r.Received++
-    r.ReadChan.Send(msg)
-  })
 
   pingChan := NewChannelBool()
 
