@@ -346,8 +346,8 @@ func (c *BasicMasterComm)Reset(i int, slaveId int) {
       Addrs: c.Param.Addrs,
     })
     if err == nil {
+      go c.SlaveComm().Remote(i).SendHandshake()
       c.SlaveComm().Remote(i).WaitHandshake()
-      c.SlaveComm().Remote(i).SendHandshake()
 
       break
     }
