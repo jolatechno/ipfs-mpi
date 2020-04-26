@@ -13,12 +13,14 @@ import (
   "github.com/libp2p/go-libp2p-core/peer"
   "github.com/libp2p/go-libp2p-core/protocol"
   "github.com/libp2p/go-libp2p-core/network"
+  "github.com/ipfs/go-log"
 
   maddr "github.com/multiformats/go-multiaddr"
 )
 
 var (
   MpiHeader = "Mpi"
+  MpiLogger = log.Logger(MpiHeader)
 
   ThrottleDuration = 50 * time.Millisecond
 )
@@ -278,7 +280,7 @@ func (m *BasicMpi)Add(file string) error {
     }
 
     if checkContextDebug(m.Ctx, MpiHeader) { //--------------------------
-      info(MpiHeader, fmt.Sprintf("Requested a new slaveComm, first message : %q", str)) //--------------------------
+      MpiLogger.Debugf("Requested a new slaveComm, first message : %q", str) //--------------------------
     } //--------------------------
 
     param, err := ParamFromString(str[:len(str) - 1])

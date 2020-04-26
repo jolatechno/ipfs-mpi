@@ -1,7 +1,6 @@
 package core
 
 import (
-  "log"
   "fmt"
   "os/exec"
   "bufio"
@@ -11,10 +10,13 @@ import (
   "errors"
   "io"
   "bytes"
+
+  "github.com/ipfs/go-log"
 )
 
 var (
   InterfaceHeader = "Interface"
+  InterfaceLogger = log.Logger(InterfaceHeader)
 
   HeaderNotUnderstood = errors.New("Header not understood")
   CommandNotUnderstood = errors.New("Command not understood")
@@ -32,29 +34,31 @@ var (
   InterfaceResetHeader = "Reset"
   InterfaceRequestHeader = "Req"
 
-  LogFormat = "\033[35mLOG\033[0m \033[34m%s:\033[0m %s\n"
   LogSubFormat = "%s %d/%d"
 )
 
 func NewNewLogger(quiet bool) func(string, int, int) (func(string), error) {
   return func(file string, n int, i int) (func(string), error){
+    if i != 0 && quiet {
+      return func(string) {}, nil
+    }
+
+    var logger log.StandardLogger
     if i == 0 {
-      return func(str string) {
-        log.Printf(LogFormat, file, str)
-      }, nil
+      logger = log.Logger(file)
+    } else {
+      logger = log.Logger(fmt.Sprintf(LogSubFormat, file, i, n))
     }
 
     return func(str string) {
-      if !quiet {
-        log.Printf(LogFormat, fmt.Sprintf(LogSubFormat, file, i, n), str)
-      }
+      logger.Info(str)
     }, nil
   }
 }
 
 func NewInterface(ctx context.Context, file string, n int, i int, args ...string) (Interface, error) {
   if checkContextDebug(ctx, InterfaceHeader) { //--------------------------
-    info(InterfaceHeader, fmt.Sprintf("Starting an interface for file %q, %d/%d with params %s", file, i, n, args)) //--------------------------
+    InterfaceLogger.Debugf("Starting an interface for file %q, %d/%d with params %s", file, i, n, args) //--------------------------
   } //--------------------------
 
   cmdArgs := append([]string{file + "/run.py", fmt.Sprint(n), fmt.Sprint(i)}, args...)
@@ -141,7 +145,7 @@ func (s *StdInterface)Start() {
       }
 
       if checkContextDebug(s.Ctx, InterfaceHeader) { //--------------------------
-        info(InterfaceHeader, fmt.Sprintf("Received %q", strings.Join(splitted, ","))) //--------------------------
+        InterfaceLogger.Debugf("Received %q", strings.Join(splitted, ",")) //--------------------------
       } //--------------------------
 
       switch splitted[0] {

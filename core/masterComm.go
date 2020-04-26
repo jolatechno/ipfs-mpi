@@ -9,12 +9,14 @@ import (
   "io"
 
   "github.com/libp2p/go-libp2p-core/protocol"
+  "github.com/ipfs/go-log"
 
   "github.com/jolatechno/go-timeout"
 )
 
 var (
   MasterCommHeader = "MasterComm"
+  MasterLogger = log.Logger(MasterCommHeader)
 
   ResetCooldown = 2 * time.Second
 )
@@ -326,7 +328,7 @@ func (c *BasicMasterComm)Reset(i int, slaveId int) {
   c.Param.SlaveIds[i]++
 
   if checkContextDebug(c.Ctx, MasterCommHeader) && c.Param.Idx == 0 { //--------------------------
-    info(MasterCommHeader, fmt.Sprintf("reseting %d for the %dth time", i, c.Param.SlaveIds[i])) //--------------------------
+    MasterLogger.Debugf("reseting %d for the %dth time", i, c.Param.SlaveIds[i]) //--------------------------
   } //--------------------------
 
   for c.Check() {

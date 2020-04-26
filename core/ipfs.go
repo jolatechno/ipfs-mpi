@@ -9,12 +9,15 @@ import (
   "os/exec"
   "bytes"
 
+  "github.com/ipfs/go-log"
+
   shell "github.com/ipfs/go-ipfs-api"
   new_shell "github.com/jolatechno/go-ipfs-directory_size_ls"
 )
 
-const (
+var (
   IpfsHeader = "IpfsStore"
+  IpfsLogger = log.Logger(IpfsHeader)
 
   ModePerm os.FileMode = 0777
 

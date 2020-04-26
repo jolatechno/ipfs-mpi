@@ -22,6 +22,7 @@ import (
   "github.com/libp2p/go-libp2p-peerstore/pstoremem"
   "github.com/libp2p/go-libp2p-discovery"
   "github.com/libp2p/go-libp2p-core/helpers"
+  "github.com/ipfs/go-log"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
   mdns_discovery "github.com/libp2p/go-libp2p/p2p/discovery"
 
@@ -30,6 +31,7 @@ import (
 
 var (
   HostHeader = "Host"
+  HostLogger = log.Logger(HostHeader)
 
   LookUpInterval = 45 * time.Second
 )

@@ -20,8 +20,8 @@ if __name__ == "__main__":
 
         time.sleep(2)
 
-        utils.Log(f"sending \"{ resp } { msg }\"")
-        utils.Send(1, f"{ resp } { msg }")
+        utils.Log(f"sending \"echo { resp }\"")
+        utils.Send(1, f"echo { resp }")
         secondresp = utils.Read(1, 5)
         utils.Log(f"responded \"{ secondresp }\"")
 

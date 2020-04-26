@@ -3,22 +3,18 @@ package core
 import (
   "sync"
   "fmt"
-  "log"
   "context"
+
+  "github.com/ipfs/go-log"
 )
 
 var (
   nilEndHandler = func() {}
   nilErrorHandler = func(err error) {}
 
-  InfoFormat = "\033[32mINFO\033[0m \033[34m%s:\033[0m %s\n"
   ErrorFormat = "\033[31mERROR\033[0m \033[34m%s:\033[0m %s"
   AlertFormat = "\033[33mWARNING\033[0m \033[34m%s:\033[0m %s"
 )
-
-func info(header string, msg string) {
-  log.Printf(InfoFormat, header, msg)
-}
 
 func checkContextDebug(ctx context.Context, header string) bool {
   t, ok := ctx.Value(header).(bool)
@@ -27,6 +23,22 @@ func checkContextDebug(ctx context.Context, header string) bool {
   }
 
   return t
+}
+
+func PrintError(err error) {
+  errH, ok := err.(*HeadedError)
+  if !ok {
+    fmt.Println(err.Error)
+    return
+  }
+
+  logger := log.Logger(errH.Header)
+  if errH.Panic {
+    logger.Error(errH.Err.Error())
+    return
+  }
+
+  logger.Warn(errH.Err.Error())
 }
 
 func NewHeadedError(err error, header string) error {

@@ -11,11 +11,14 @@ import (
   "time"
   "context"
 
+  "github.com/ipfs/go-log"
+
   "github.com/jolatechno/go-timeout"
 )
 
 var (
   RemoteHeader = "Remote"
+  RemoteLogger = log.Logger(RemoteHeader)
 
   //ResetHandShakeHeader = "ResetHandShake"
   PingRespHeader = "PingResp"
@@ -314,7 +317,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, slaveId int, msgs ...inter
 
       if checkContextDebug(r.Ctx, RemoteHeader) { //--------------------------
         if msg != PingHeader && msg != PingRespHeader { //--------------------------
-          info(RemoteHeader, fmt.Sprintf("Sent %q", msg)) //--------------------------
+          RemoteLogger.Debugf("Sent %q", msg) //--------------------------
         } //--------------------------
       } //--------------------------
 
@@ -363,7 +366,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, slaveId int, msgs ...inter
       if checkContextDebug(r.Ctx, RemoteHeader) { //--------------------------
         str := strings.Join(splitted, ",") //--------------------------
         if str != PingHeader && str != PingRespHeader { //--------------------------
-          info(RemoteHeader, fmt.Sprintf("Received %q", str)) //--------------------------
+          RemoteLogger.Debugf("Received %q", str) //--------------------------
         } //--------------------------
       } //--------------------------
 
