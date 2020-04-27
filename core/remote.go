@@ -142,7 +142,7 @@ func NewRemote(ctx context.Context, slaveId int) (Remote, error) {
     return nil
   }
 
-  remote.Standard = NewStandardInterface(RemoteHeader, close)
+  remote.Standard = NewStandardInterface(close)
 
   return remote, nil
 }

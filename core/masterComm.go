@@ -2,7 +2,6 @@ package core
 
 import (
   "time"
-  "fmt"
   "context"
   "sync"
   "errors"
@@ -133,7 +132,7 @@ func NewMasterSlaveComm(ctx context.Context, host ExtHost, base protocol.ID, par
       CommHost: host,
       Base: base,
       Remotes: Remotes,
-      Standard: NewStandardInterface(MasterCommHeader),
+      Standard: NewStandardInterface(),
     }, nil
 }
 
@@ -152,7 +151,9 @@ func NewMasterComm(ctx context.Context, slaveComm SlaveComm, param Param) (_ Mas
     comm.Raise(err)
   })
 
-  close := func() error { //fmt.Println("[MasterComm] Closing") //--------------------------
+  close := func() error {
+    MasterLogger.Debug("[MasterComm] Closing") //--------------------------
+
     for j := 1; j < param.N; j++ {
       i := j
 
@@ -177,7 +178,7 @@ func NewMasterComm(ctx context.Context, slaveComm SlaveComm, param Param) (_ Mas
     return nil
   }
 
-  comm.Standard = NewStandardInterface(MasterCommHeader, close)
+  comm.Standard = NewStandardInterface(close)
 
   defer func() {
     if err := recover(); err != nil {
@@ -199,7 +200,7 @@ func NewMasterComm(ctx context.Context, slaveComm SlaveComm, param Param) (_ Mas
     })
 
     comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
-      go comm.Raise(SetNonPanic(err))
+      RemoteLogger.Warn(err) //--------------------------
       wg.DoneAll(i)
     })
 
@@ -247,8 +248,8 @@ func NewMasterComm(ctx context.Context, slaveComm SlaveComm, param Param) (_ Mas
     i := j
 
     comm.SlaveComm().Remote(i).SetErrorHandler(func(err error) {
-      go comm.Raise(SetNonPanic(err))
-      go comm.Raise(SetNonPanic(NewHeadedError(errors.New(fmt.Sprintf("%d hanged-up", i)), MasterCommHeader)))
+      RemoteLogger.Warn(err) //--------------------------
+      MasterLogger.Warnf("%d hanged-up", i) //--------------------------
 
       if comm.SlaveComm().Remote(i).Stream() != io.ReadWriteCloser(nil) {
         remote := comm.SlaveComm().Remote(i)

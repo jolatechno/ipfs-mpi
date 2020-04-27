@@ -88,7 +88,7 @@ func NewStore(url string, path string, ipfs_store string) (Store, error) {
     Store: []string{},
     Failed: []string{},
     IpfsStore:ipfs_store,
-    Standard: NewStandardInterface(IpfsHeader),
+    Standard: NewStandardInterface(),
   }
 
   defer func() {
@@ -262,7 +262,7 @@ func (s *IpfsShell)Del(f string, failed bool) error {
   } else {
     List, err := new_shell.List(s.Shell, s.IpfsStore)
     if err != nil {
-      return  NewHeadedError(err, IpfsHeader)
+      return  err
     }
 
     for _, obj := range List {
@@ -291,7 +291,7 @@ func (s *IpfsShell)Dowload(f string) error {
   err := s.Shell.Get(s.IpfsStore + f, s.Path + InstalledHeader + f)
   if err != nil {
     s.Del(f, true)
-    return NewHeadedError(err, IpfsHeader)
+    return err
   }
 
   cmd := exec.Command("python3", s.Path + InstalledHeader + f + "/init.py")
@@ -307,12 +307,12 @@ func (s *IpfsShell)Dowload(f string) error {
       strError = strError[:len(strError) - 1]
     }
     s.Del(f, true)
-    return NewHeadedError(errors.New(strError), IpfsHeader)
+    return errors.New(strError)
   }
 
   if err != nil {
     s.Del(f, true)
-    return NewHeadedError(err, IpfsHeader)
+    return err
   }
 
   s.Add(f)

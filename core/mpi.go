@@ -101,7 +101,7 @@ func NewMpi(ctx context.Context, config Config, host ExtHost, store Store) (Mpi,
     return nil
   }
 
-  mpi.Standard = NewStandardInterface(MpiHeader, close)
+  mpi.Standard = NewStandardInterface(close)
 
   defer func() {
     if err := recover(); err != nil {
@@ -129,22 +129,19 @@ func NewMpi(ctx context.Context, config Config, host ExtHost, store Store) (Mpi,
 
       f, err := store.Get(left)
       if err != nil {
-        store.Raise(SetNonPanic(err))
+        IpfsLogger.Warn(err) //--------------------------
         return
       }
 
       err = mpi.Add(f)
       if err != nil {
-        store.Raise(SetNonPanic(err))
+        IpfsLogger.Warn(err) //--------------------------
       }
     }
   }()
 
   store.SetErrorHandler(func(err error) {
-    mpi.Raise(err)
-    if IsPanic(err) {
-      go mpi.Close()
-    }
+    go mpi.Close()
   })
 
   store.SetCloseHandler(func() {
@@ -152,10 +149,7 @@ func NewMpi(ctx context.Context, config Config, host ExtHost, store Store) (Mpi,
   })
 
   host.SetErrorHandler(func(err error) {
-    mpi.Raise(err)
-    if IsPanic(err) {
-      go mpi.Close()
-    }
+    go mpi.Close()
   })
 
   host.SetCloseHandler(func() {
@@ -319,11 +313,7 @@ func (m *BasicMpi)Add(file string) error {
     m.ToClose.Store(stringId, comm)
 
     comm.SetErrorHandler(func(err error) {
-      if IsPanic(err) {
-        comm.Close()
-      }
-
-      m.Raise(err)
+      go comm.Close()
     })
 
     comm.SetCloseHandler(func() {
@@ -402,11 +392,7 @@ func (m *BasicMpi)Start(file string, n int, args ...string) (err error) {
   m.ToClose.Store(stringId, comm)
 
   comm.SetErrorHandler(func(err error) {
-    if IsPanic(err) {
-      comm.Close()
-    }
-
-    m.Raise(err)
+    go comm.Close()
   })
 
   comm.SetCloseHandler(func() {

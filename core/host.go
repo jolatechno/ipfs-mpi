@@ -159,7 +159,7 @@ func NewHost(ctx context.Context, bootstrapPeers ...maddr.Multiaddr) (ExtHost, e
     StreamHandlers: streamHandlers,
     Routing: routingDiscovery,
     PeerStores: make(map[protocol.ID] peerstore.Peerstore),
-    Standard: NewStandardInterface(HostHeader, h.Close),
+    Standard: NewStandardInterface(h.Close),
   }, nil
 }
 

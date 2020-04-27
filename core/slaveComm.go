@@ -154,7 +154,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     return nil
   }
 
-  comm.Standard = NewStandardInterface(SlaveCommHeader, close)
+  comm.Standard = NewStandardInterface(close)
 
   defer func() {
     if err := recover(); err != nil {
@@ -163,7 +163,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
   }()
 
   comm.Remote(0).SetErrorHandler(func(err error) {
-    comm.Raise(err)
+    RemoteLogger.Error(err)
     comm.Close()
   })
 
@@ -181,8 +181,8 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
     }
 
     comm.Remote(i).SetErrorHandler(func(err error) {
-      go comm.Raise(SetNonPanic(err))
-      go comm.Raise(SetNonPanic(NewHeadedError(errors.New(fmt.Sprintf("%d hanged-up on %d", i, comm.Param.Idx)), SlaveCommHeader)))
+      RemoteLogger.Warn(err) //--------------------------
+      SlaveLogger.Warnf("%d hanged-up on %d", i, comm.Param.Idx) //--------------------------
 
       comm.Remote(i).Reset(io.ReadWriteCloser(nil), 0)
       comm.RequestReset(i)

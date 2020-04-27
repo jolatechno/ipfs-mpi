@@ -69,7 +69,7 @@ func NewInterface(ctx context.Context, file string, n int, i int, args ...string
     RequestHandler: &nilRequestHandler,
     ResetHandler: &nilResetHandler,
     Logger: &nilLogger,
-    Standard: NewStandardInterface(InterfaceHeader),
+    Standard: NewStandardInterface(),
   }
 
   return &inter, nil
