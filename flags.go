@@ -10,7 +10,7 @@ import (
 
 )
 
-func ParseFlag() (core.Config, bool, map[string]bool, error) {
+func ParseFlag() (core.Config, bool, error) {
   config := core.Config{}
 
   config.Base = "libp2p-mpi/1.0.0" //set to the libp2p-mpi version
@@ -49,21 +49,21 @@ func ParseFlag() (core.Config, bool, map[string]bool, error) {
       panic(err)
     }
   }
-
-  debugs := make(map[string] bool)
+  
   if !*quiet {
+    for _, header := range []string{core.RemoteHeader, core.SlaveCommHeader, core.MasterCommHeader, core.IpfsHeader, core.HostHeader, core.MpiHeader, core.InterfaceHeader} {
+      err := log.SetLogLevel(header, "warn")
+      if err != nil {
+        panic(err)
+      }
+    }
 
     if *debugAll {
-      log.SetAllLoggers(log.LevelWarn)
       log.SetAllLoggers(log.LevelDebug)
 
     } else {
       if *debugRemote {
         err := log.SetLogLevel(core.RemoteHeader, "debug")
-        if err != nil {
-          panic(err)
-        }
-        err = log.SetLogLevel(core.RemoteHeader, "warn")
         if err != nil {
           panic(err)
         }
@@ -74,18 +74,10 @@ func ParseFlag() (core.Config, bool, map[string]bool, error) {
         if err != nil {
           panic(err)
         }
-        err = log.SetLogLevel(core.SlaveCommHeader, "warn")
-        if err != nil {
-          panic(err)
-        }
       }
 
       if *debugMasterComm {
         err := log.SetLogLevel(core.MasterCommHeader, "debug")
-        if err != nil {
-          panic(err)
-        }
-        err = log.SetLogLevel(core.IpfsHeader, "warn")
         if err != nil {
           panic(err)
         }
@@ -96,18 +88,10 @@ func ParseFlag() (core.Config, bool, map[string]bool, error) {
         if err != nil {
           panic(err)
         }
-        err = log.SetLogLevel(core.IpfsHeader, "warn")
-        if err != nil {
-          panic(err)
-        }
       }
 
       if *debugHost {
         err := log.SetLogLevel(core.HostHeader, "debug")
-        if err != nil {
-          panic(err)
-        }
-        err = log.SetLogLevel(core.HostHeader, "warn")
         if err != nil {
           panic(err)
         }
@@ -118,18 +102,10 @@ func ParseFlag() (core.Config, bool, map[string]bool, error) {
         if err != nil {
           panic(err)
         }
-        err = log.SetLogLevel(core.MpiHeader, "warn")
-        if err != nil {
-          panic(err)
-        }
       }
 
       if *debugInterface {
         err := log.SetLogLevel(core.InterfaceHeader, "debug")
-        if err != nil {
-          panic(err)
-        }
-        err = log.SetLogLevel(core.InterfaceHeader, "warn")
         if err != nil {
           panic(err)
         }
@@ -160,5 +136,5 @@ func ParseFlag() (core.Config, bool, map[string]bool, error) {
     }
   }
 
-  return config, *quiet, debugs, nil
+  return config, *quiet, nil
 }

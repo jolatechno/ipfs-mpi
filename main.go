@@ -22,13 +22,9 @@ const (
 func main(){
   ctx := context.Background()
 
-  config, quiet, debugs, err := ParseFlag()
+  config, quiet, err := ParseFlag()
   if err != nil {
     panic(err)
-  }
-
-  for key, val := range debugs {
-    ctx = context.WithValue(ctx, key, val)
   }
 
   fmt.Println("\nStarting host...")
