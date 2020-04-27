@@ -307,9 +307,6 @@ func (c *BasicSlaveComm)Start() {
   }()
 
   c.Interface().SetErrorHandler(func(err error) {
-
-    fmt.Println(err) //--------------------------
-
     InterfaceLogger.Error(err) //--------------------------
     c.Raise(err)
   })

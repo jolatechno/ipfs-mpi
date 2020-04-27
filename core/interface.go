@@ -115,6 +115,9 @@ func (s *StdInterface)Start() {
     err := s.Cmd.Run()
 
     strError := errorBuffer.String()
+
+    fmt.Println(err, strError) //--------------------------
+
     if strError != "" {
       if strError[len(strError) - 1] == '\n' {
         strError = strError[:len(strError) - 1]
