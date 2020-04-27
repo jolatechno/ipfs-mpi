@@ -198,10 +198,15 @@ func (r *BasicRemote)check(stream io.ReadWriteCloser, slaveId int) bool {
 }
 
 func (r *BasicRemote)raiseCheck(err error, stream io.ReadWriteCloser, slaveId int) bool {
+  if err == nil {
+    return true
+  }
+
   if r.check(stream, slaveId) {
     r.Raise(err)
   }
-  return err == nil
+  
+  return false
 }
 
 func (r *BasicRemote)SetResetHandler(handler func(int, int)) {
