@@ -299,7 +299,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, slaveId int, msgs ...inter
   sendChan := NewChannelString()
   r.SendChan = sendChan
 
-  RemoteLogger.Debugf("Sending %q on reset", append(msgs, r.Sent...)) //--------------------------
+  RemoteLogger.Debugf("Sending %q on reset  ", append(msgs, r.Sent...)) //--------------------------
 
   received := ResetReader(r.Received, append(msgs, r.Sent...), func(msg interface{}) {
     if _, err := fmt.Fprintln(stream, msg); err != nil {

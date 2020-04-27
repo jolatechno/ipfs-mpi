@@ -5,7 +5,7 @@ go 1.13
 require (
 	github.com/carmark/pseudo-terminal-go v0.0.0-20151106093136-5a48ae24c6f5
 	github.com/ipfs/go-log v1.0.4
-	github.com/jolatechno/ipfs-mpi/core v0.0.0-20200427111250-4b20d9297a2e
+	github.com/jolatechno/ipfs-mpi/core v0.0.0-20200427120639-4669eeb60e93
 	github.com/libp2p/go-libp2p-core v0.3.0
 	github.com/libp2p/go-libp2p-kad-dht v0.5.0
 	github.com/multiformats/go-multiaddr v0.2.1
