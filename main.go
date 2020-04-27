@@ -3,13 +3,11 @@ package main
 import (
   "errors"
   "context"
-  //"bufio"
   "strings"
   "strconv"
-  //"os"
   "fmt"
-  "log"
 
+  "github.com/ipfs/go-log"
   "github.com/jolatechno/ipfs-mpi/core"
 
   "github.com/carmark/pseudo-terminal-go/terminal"
@@ -20,6 +18,8 @@ const (
 )
 
 func main(){
+  log.SetupLogging()
+
   ctx := context.Background()
 
   config, quiet, err := ParseFlag()
@@ -77,9 +77,7 @@ func main(){
   )
 
   mpi.SetErrorHandler(func(err error) {
-    if !quiet {
-      log.Println(err.Error())
-    }
+    panic(err)
   })
 
   term, err := terminal.NewWithStdInOut()
