@@ -116,19 +116,13 @@ func (s *StdInterface)Start() {
 
     err := s.Cmd.Run()
 
-    strError := errorBuffer.String()
-
-    fmt.Println(err, strError) //--------------------------
-
-    if strError != "" {
-      if strError[len(strError) - 1] == '\n' {
-        strError = strError[:len(strError) - 1]
-      }
-      s.Raise(errors.New(strError))
-    }
-
     if err != nil {
-      s.Raise(err)
+      strError := errorBuffer.String()
+      extErr := errors.New(fmt.Sprint(err, strError))
+
+      fmt.Println(extErr) //--------------------------
+
+      s.Raise(extErr)
     }
 
     s.Close()
@@ -213,6 +207,9 @@ func (s *StdInterface)Close() error {
 }
 
 func (s *StdInterface)SetErrorHandler(handler func(error)) {
+
+  fmt.Println("interface errorHandler") //--------------------------
+
   s.Standard.SetErrorHandler(handler)
 }
 
@@ -221,9 +218,6 @@ func (s *StdInterface)SetCloseHandler(handler func()) {
 }
 
 func (s *StdInterface)Raise(err error) {
-
-  fmt.Println("interface raised") //--------------------------
-
   s.Standard.Raise(err)
 }
 
