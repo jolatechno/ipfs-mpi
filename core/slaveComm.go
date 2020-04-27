@@ -163,7 +163,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
   }()
 
   comm.Remote(0).SetErrorHandler(func(err error) {
-    RemoteLogger.Error(err)
+    RemoteLogger.Error(err) //--------------------------
     comm.Close()
   })
 
@@ -307,6 +307,9 @@ func (c *BasicSlaveComm)Start() {
   }()
 
   c.Interface().SetErrorHandler(func(err error) {
+
+    fmt.Println(err) //--------------------------
+
     InterfaceLogger.Error(err) //--------------------------
     c.Raise(err)
   })

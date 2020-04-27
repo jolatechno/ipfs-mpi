@@ -28,7 +28,7 @@ func ParseFlag() (core.Config, bool, error) {
   debugRemote := flag.Bool("debug-remote", false, "enable debug-mode on remote")
   debugSlaveComm := flag.Bool("debug-slave", false, "enable debug-mode on SlaveComm")
   debugMasterComm := flag.Bool("debug-master", false, "enable debug-mode on MasterComm")
-  debugStore := flag.Bool("debug-store", false, "enable debug-mode on ipfs-store (not used for now)")
+  debugStore := flag.Bool("debug-store", false, "enable debug-mode on ipfs-store")
   debugHost := flag.Bool("debug-host", false, "enable debug-mode on host (not used for now)")
   debugMpi := flag.Bool("debug-mpi", false, "enable debug-mode on mpi")
   debugInterface := flag.Bool("debug-interface", false, "enable debug-mode on interface")
@@ -49,7 +49,7 @@ func ParseFlag() (core.Config, bool, error) {
       panic(err)
     }
   }
-  
+
   if !*quiet {
     for _, header := range []string{core.RemoteHeader, core.SlaveCommHeader, core.MasterCommHeader, core.IpfsHeader, core.HostHeader, core.MpiHeader, core.InterfaceHeader} {
       err := log.SetLogLevel(header, "warn")
