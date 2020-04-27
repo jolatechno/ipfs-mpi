@@ -43,12 +43,13 @@ func NewNewLogger(quiet bool) func(string, int, int) (func(string), error) {
       return func(string) {}, nil
     }
 
-    var logger log.StandardLogger
-    if i == 0 {
-      logger = log.Logger(file)
-    } else {
-      logger = log.Logger(fmt.Sprintf(LogSubFormat, file, i, n))
+    name := file
+    if i != 0 {
+      name = fmt.Sprintf(LogSubFormat, file, i, n)
     }
+
+    logger := log.Logger(name)
+    log.SetLogLevel(name, "info")
 
     return func(str string) {
       logger.Info(str)
@@ -57,9 +58,7 @@ func NewNewLogger(quiet bool) func(string, int, int) (func(string), error) {
 }
 
 func NewInterface(ctx context.Context, file string, n int, i int, args ...string) (Interface, error) {
-  if checkContextDebug(ctx, InterfaceHeader) { //--------------------------
-    InterfaceLogger.Debugf("Starting an interface for file %q, %d/%d with params %s", file, i, n, args) //--------------------------
-  } //--------------------------
+  InterfaceLogger.Debugf("Starting an interface for file %q, %d/%d with params %s", file, i, n, args) //--------------------------
 
   cmdArgs := append([]string{file + "/run.py", fmt.Sprint(n), fmt.Sprint(i)}, args...)
   inter := StdInterface {
@@ -144,9 +143,7 @@ func (s *StdInterface)Start() {
         break
       }
 
-      if checkContextDebug(s.Ctx, InterfaceHeader) { //--------------------------
-        InterfaceLogger.Debugf("Received %q", strings.Join(splitted, ",")) //--------------------------
-      } //--------------------------
+      InterfaceLogger.Debugf("Received %q", strings.Join(splitted, ",")) //--------------------------
 
       switch splitted[0] {
       default:

@@ -279,9 +279,7 @@ func (m *BasicMpi)Add(file string) error {
       return
     }
 
-    if checkContextDebug(m.Ctx, MpiHeader) { //--------------------------
-      MpiLogger.Debugf("Requested a new slaveComm, first message : %q", str) //--------------------------
-    } //--------------------------
+    MpiLogger.Debugf("Requested a new slaveComm, first message : %q", str) //--------------------------
 
     param, err := ParamFromString(str[:len(str) - 1])
     if err != nil {

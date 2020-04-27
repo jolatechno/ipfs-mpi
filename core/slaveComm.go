@@ -118,9 +118,7 @@ func (p *Param)String() string {
 }
 
 func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, base protocol.ID, param Param, inter Interface, remotes []Remote) (_ SlaveComm, err error) { //fmt.Println("[SlaveComm] New", param) //--------------------------
-  if checkContextDebug(ctx, SlaveCommHeader) { //--------------------------
-    SlaveLogger.Debug("New slaveComm with param ", param) //--------------------------
-  } //--------------------------
+  SlaveLogger.Debug("New slaveComm with param ", param) //--------------------------
 
   comm := BasicSlaveComm {
     Ctx: ctx,
@@ -134,9 +132,7 @@ func NewSlaveComm(ctx context.Context, host ExtHost, zeroRw io.ReadWriteCloser, 
   proto := protocol.ID(fmt.Sprintf("%d/%d/%s/%s", comm.Param.Idx, param.SlaveIds[comm.Param.Idx], comm.Param.Id, string(comm.Base)))
 
   close := func() error {
-    if checkContextDebug(ctx, SlaveCommHeader) { //--------------------------
-      SlaveLogger.Debugf("Closing the %dth reset of %d", comm.Param.SlaveIds[comm.Param.Idx], comm.Param.Idx) //--------------------------
-    } //--------------------------
+    SlaveLogger.Debugf("Closing the %dth reset of %d", comm.Param.SlaveIds[comm.Param.Idx], comm.Param.Idx) //--------------------------
 
     go comm.Interface().Close()
 
@@ -298,9 +294,9 @@ type BasicSlaveComm struct {
 }
 
 func (c *BasicSlaveComm)Start() {
-  if checkContextDebug(c.Ctx, SlaveCommHeader) && c.Param.Idx != 0  { //--------------------------
+  if c.Param.Idx != 0  { //--------------------------
     SlaveLogger.Debugf("Starting the %dth reset of %d", c.Param.SlaveIds[c.Param.Idx], c.Param.Idx) //--------------------------
-  } else if checkContextDebug(c.Ctx, MasterCommHeader) && c.Param.Idx == 0 { //--------------------------
+  } else { //--------------------------
     MasterLogger.Debug("Starting") //--------------------------
   } //--------------------------
 
@@ -383,9 +379,9 @@ func (c *BasicSlaveComm)Close() error {
 }
 
 func (c *BasicSlaveComm)Connect(i int, addr peer.ID, msgs ...interface{}) error {
-  if checkContextDebug(c.Ctx, SlaveCommHeader) && c.Param.Idx != 0  { //--------------------------
+  if c.Param.Idx != 0  { //--------------------------
     SlaveLogger.Debugf("%dth connecting to the %dth reset of %d", c.Param.Idx, c.Param.SlaveIds[i], i) //--------------------------
-  } else if checkContextDebug(c.Ctx, MasterCommHeader) && c.Param.Idx == 0 { //--------------------------
+  } else { //--------------------------
     MasterLogger.Debugf("Connecting to the %dth reset of %d", c.Param.SlaveIds[i], i) //--------------------------
   } //--------------------------
 

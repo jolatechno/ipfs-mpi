@@ -5,6 +5,7 @@ import (
 
   "github.com/jolatechno/ipfs-mpi/core"
 
+  "github.com/ipfs/go-log"
   dht "github.com/libp2p/go-libp2p-kad-dht"
 
 )
@@ -31,6 +32,8 @@ func ParseFlag() (core.Config, bool, map[string]bool, error) {
   debugHost := flag.Bool("debug-host", false, "enable debug-mode on host (not used for now)")
   debugMpi := flag.Bool("debug-mpi", false, "enable debug-mode on mpi")
   debugInterface := flag.Bool("debug-interface", false, "enable debug-mode on interface")
+  debugDht := flag.Bool("debug-dht", false, "enable debug-mode on dht")
+  debugMdns := flag.Bool("debug-mdns", false, "enable debug-mode on mdns")
 
 	flag.Parse()
 
@@ -38,24 +41,123 @@ func ParseFlag() (core.Config, bool, map[string]bool, error) {
     config.BootstrapPeers = dht.DefaultBootstrapPeers
   }
 
+  log.SetAllLoggers(log.LevelError)
+
+  for _, header := range []string{core.RemoteHeader, core.SlaveCommHeader, core.MasterCommHeader, core.IpfsHeader, core.HostHeader, core.MpiHeader, core.InterfaceHeader} {
+    err := log.SetLogLevel(header, "info")
+    if err != nil {
+      panic(err)
+    }
+  }
+
   debugs := make(map[string] bool)
-  if *quiet {
-  } else if *debugAll {
-    debugs[core.RemoteHeader] = true
-    debugs[core.SlaveCommHeader] = true
-    debugs[core.MasterCommHeader] = true
-    debugs[core.IpfsHeader] = true
-    debugs[core.HostHeader] = true
-    debugs[core.MpiHeader] = true
-    debugs[core.InterfaceHeader] = true
-  } else {
-    debugs[core.RemoteHeader] = *debugRemote
-    debugs[core.SlaveCommHeader] = *debugSlaveComm
-    debugs[core.MasterCommHeader] = *debugMasterComm
-    debugs[core.IpfsHeader] = *debugStore
-    debugs[core.HostHeader] = *debugHost
-    debugs[core.MpiHeader] = *debugMpi
-    debugs[core.InterfaceHeader] = *debugInterface
+  if !*quiet {
+
+    if *debugAll {
+      log.SetAllLoggers(log.LevelWarn)
+      log.SetAllLoggers(log.LevelDebug)
+
+    } else {
+      if *debugRemote {
+        err := log.SetLogLevel(core.RemoteHeader, "debug")
+        if err != nil {
+          panic(err)
+        }
+        err = log.SetLogLevel(core.RemoteHeader, "warn")
+        if err != nil {
+          panic(err)
+        }
+      }
+
+      if *debugSlaveComm {
+        err := log.SetLogLevel(core.SlaveCommHeader, "debug")
+        if err != nil {
+          panic(err)
+        }
+        err = log.SetLogLevel(core.SlaveCommHeader, "warn")
+        if err != nil {
+          panic(err)
+        }
+      }
+
+      if *debugMasterComm {
+        err := log.SetLogLevel(core.MasterCommHeader, "debug")
+        if err != nil {
+          panic(err)
+        }
+        err = log.SetLogLevel(core.IpfsHeader, "warn")
+        if err != nil {
+          panic(err)
+        }
+      }
+
+      if *debugStore {
+        err := log.SetLogLevel(core.IpfsHeader, "debug")
+        if err != nil {
+          panic(err)
+        }
+        err = log.SetLogLevel(core.IpfsHeader, "warn")
+        if err != nil {
+          panic(err)
+        }
+      }
+
+      if *debugHost {
+        err := log.SetLogLevel(core.HostHeader, "debug")
+        if err != nil {
+          panic(err)
+        }
+        err = log.SetLogLevel(core.HostHeader, "warn")
+        if err != nil {
+          panic(err)
+        }
+      }
+
+      if *debugMpi {
+        err := log.SetLogLevel(core.MpiHeader, "debug")
+        if err != nil {
+          panic(err)
+        }
+        err = log.SetLogLevel(core.MpiHeader, "warn")
+        if err != nil {
+          panic(err)
+        }
+      }
+
+      if *debugInterface {
+        err := log.SetLogLevel(core.InterfaceHeader, "debug")
+        if err != nil {
+          panic(err)
+        }
+        err = log.SetLogLevel(core.InterfaceHeader, "warn")
+        if err != nil {
+          panic(err)
+        }
+      }
+
+      if *debugDht {
+        err := log.SetLogLevel("dht", "debug")
+        if err != nil {
+          panic(err)
+        }
+        err = log.SetLogLevel("dht", "warn")
+        if err != nil {
+          panic(err)
+        }
+      }
+
+      if *debugMdns {
+        err := log.SetLogLevel("mdns", "debug")
+        if err != nil {
+          panic(err)
+        }
+        err = log.SetLogLevel("mdns", "warn")
+        if err != nil {
+          panic(err)
+        }
+      }
+
+    }
   }
 
   return config, *quiet, debugs, nil

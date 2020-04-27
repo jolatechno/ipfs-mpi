@@ -327,9 +327,7 @@ func (c *BasicMasterComm)Reset(i int, slaveId int) {
 
   c.Param.SlaveIds[i]++
 
-  if checkContextDebug(c.Ctx, MasterCommHeader) && c.Param.Idx == 0 { //--------------------------
-    MasterLogger.Debugf("reseting %d for the %dth time", i, c.Param.SlaveIds[i]) //--------------------------
-  } //--------------------------
+  MasterLogger.Debugf("reseting %d for the %dth time", i, c.Param.SlaveIds[i]) //--------------------------
 
   for c.Check() {
     addr, err := c.SlaveComm().Host().NewPeer(c.SlaveComm().Protocol())
