@@ -8,7 +8,7 @@ import (
   "fmt"
 
   "github.com/ipfs/go-log"
-  "github.com/jolatechno/ipfs-mpi/core"
+  "github.com/jolatechno/libp2p-mpi-core"
 
   "github.com/carmark/pseudo-terminal-go/terminal"
 )

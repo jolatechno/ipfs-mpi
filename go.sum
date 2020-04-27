@@ -131,6 +131,7 @@ github.com/jolatechno/go-timeout v0.0.0-20200418073152-4b2fffd6ee58 h1:1JUa9A8Ik
 github.com/jolatechno/go-timeout v0.0.0-20200418073152-4b2fffd6ee58/go.mod h1:paJwIP2pqExVj8gEqc5Kz6kEhgkoUad8eRNAYi2EH7I=
 github.com/jolatechno/go-timeout v0.0.0-20200421091832-05f54f6ce401 h1:jHwRnYZtD/uKOX3Up7+ngov3K980TBaHXE8PxvMBr+E=
 github.com/jolatechno/go-timeout v0.0.0-20200421091832-05f54f6ce401/go.mod h1:paJwIP2pqExVj8gEqc5Kz6kEhgkoUad8eRNAYi2EH7I=
+github.com/jolatechno/ipfs-mpi v0.0.0-20200427152845-dce34b24d799 h1:33iID3L/SHuuQ1/rLrv7QW4Fn02nWK5YoJokPLWzA0M=
 github.com/jolatechno/ipfs-mpi/core v0.0.0-20200402125506-8091fb1a3606 h1:z4qrJn6khEkaInOLB8xUjqDItDGJa1v4eFBmDNqOaWE=
 github.com/jolatechno/ipfs-mpi/core v0.0.0-20200402125506-8091fb1a3606/go.mod h1:awbRXEkOTFNgcUqT0BhgBBlGqtlagHOPoxgr+2HMWjU=
 github.com/jolatechno/ipfs-mpi/core v0.0.0-20200402135516-306c7f168c36 h1:9hzDopwWO3vdBn6DmeTbJDp+AkAVTdAEnnvy5xS9M0A=
@@ -960,6 +961,10 @@ github.com/jolatechno/ipfs-mpi/core v0.0.0-20200427124410-85afae8ecfce h1:fAyJ0f
 github.com/jolatechno/ipfs-mpi/core v0.0.0-20200427124410-85afae8ecfce/go.mod h1:7qUBsmJ2/owGSDA4VxhC277kGKeEDdwPH5WMSLvyy/0=
 github.com/jolatechno/ipfs-mpi/core v0.0.0-20200427125924-a55a882a1ee7 h1:CUIwv4Uzoo/6cLz4UUzY/VS4DFQKwyW+v1WoqMBSbo8=
 github.com/jolatechno/ipfs-mpi/core v0.0.0-20200427125924-a55a882a1ee7/go.mod h1:7qUBsmJ2/owGSDA4VxhC277kGKeEDdwPH5WMSLvyy/0=
+github.com/jolatechno/ipfs-mpi/core v0.0.0-20200427152845-dce34b24d799 h1:qAMBlStomLmUUXuoFJ6y4N4+mTuvnz4yb33visE1k68=
+github.com/jolatechno/ipfs-mpi/core v0.0.0-20200427152845-dce34b24d799/go.mod h1:7qUBsmJ2/owGSDA4VxhC277kGKeEDdwPH5WMSLvyy/0=
+github.com/jolatechno/libp2p-mpi-core v0.0.0-20200427153254-6cfaf6222d8f h1:uKMCBupZ0ZXBW5WHnje5NuB7l8xxHpKtesWhxcfA7tc=
+github.com/jolatechno/libp2p-mpi-core v0.0.0-20200427153254-6cfaf6222d8f/go.mod h1:beU3Zog60gqtouxWvTZ0PkEFG/Io0QpOp9UC25WIMH8=
 github.com/jrick/logrotate v1.0.0/go.mod h1:LNinyqDIJnpAur+b8yyulnQw/wDuN1+BYKlTRt3OuAQ=
 github.com/kami-zh/go-capturer v0.0.0-20171211120116-e492ea43421d/go.mod h1:P2viExyCEfeWGU259JnaQ34Inuec4R38JCyBx2edgD0=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=
