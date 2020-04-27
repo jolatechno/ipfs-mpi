@@ -1,6 +1,7 @@
-*
+**
 !/**/
-!*.*
+!**.*
+!**.git
 !**/LICENSE
 
 **/interpreters/**
