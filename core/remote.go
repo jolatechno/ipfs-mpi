@@ -38,16 +38,27 @@ var (
 )
 
 func send(writer io.Writer, msg ...interface{}) error {
-
   if msg[0] != PingHeader && msg[0] != PingRespHeader { //--------------------------
-    RemoteLogger.Debugf("Sent %q", msg) //--------------------------
+    RemoteLogger.Debugf("Sent %q", fmt.Sprint(msg...)) //--------------------------
   } //--------------------------
+
+  if writer == io.Writer(nil) {
+    return nil
+  }
 
   _, err := fmt.Fprintln(writer, msg...)
   return err
 }
 
 func sendf(writer io.Writer, formatString string, msg ...interface{}) error {
+  if msg[0] != PingHeader && msg[0] != PingRespHeader { //--------------------------
+    RemoteLogger.Debugf("Sent %q", fmt.Sprintf(formatString, msg...)) //--------------------------
+  } //--------------------------
+
+  if writer == io.Writer(nil) {
+    return nil
+  }
+
   _, err := fmt.Fprintf(writer, formatString + "\n", msg...)
   return err
 }
