@@ -116,13 +116,16 @@ func (s *StdInterface)Start() {
 
     err := s.Cmd.Run()
 
+    strError := errorBuffer.String()
+    if strError[len(strError) - 1] == '\n' {
+      strError = strError[:len(strError) - 1]
+    }
+
     if err != nil {
-      strError := errorBuffer.String()
       extErr := errors.New(fmt.Sprint(err, strError))
-
-      fmt.Println(extErr) //--------------------------
-
       s.Raise(extErr)
+    } else if strError != "" {
+      s.Raise(errors.New(strError))
     }
 
     s.Close()

@@ -325,10 +325,6 @@ func (c *BasicSlaveComm)Start() {
     c.Interface().Push(c.Remote(i).Get())
   })
 
-  c.Interface().SetErrorHandler(func(err error) {
-    c.Raise(err)
-  })
-
   c.Interface().Start()
 }
 
