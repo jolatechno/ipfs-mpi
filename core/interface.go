@@ -58,7 +58,7 @@ func NewNewLogger(quiet bool) func(string, int, int) (func(string), error) {
 }
 
 func NewInterface(ctx context.Context, file string, n int, i int, args ...string) (Interface, error) {
-  InterfaceLogger.Debugf("Starting an interface for file %q, %d/%d with params %s", file, i, n, args) //--------------------------
+  InterfaceLogger.Debugf("New interface for file %q, %d/%d with params %s", file, i, n, args) //--------------------------
 
   cmdArgs := append([]string{file + "/run.py", fmt.Sprint(n), fmt.Sprint(i)}, args...)
   inter := StdInterface {
@@ -88,6 +88,8 @@ type StdInterface struct {
 }
 
 func (s *StdInterface)Start() {
+  InterfaceLogger.Debugf("Starting %d", s.Idx) //--------------------------
+
   defer func() {
     if err := recover(); err != nil {
       s.Raise(err.(error))
@@ -219,6 +221,9 @@ func (s *StdInterface)SetCloseHandler(handler func()) {
 }
 
 func (s *StdInterface)Raise(err error) {
+
+  fmt.Println("interface raised") //--------------------------
+
   s.Standard.Raise(err)
 }
 
