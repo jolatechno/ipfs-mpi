@@ -37,32 +37,6 @@ var (
   nilRemoteResetHandler = func(int, int) {}
 )
 
-func send(writer io.Writer, msg ...interface{}) error {
-  if msg[0] != PingHeader && msg[0] != PingRespHeader { //--------------------------
-    RemoteLogger.Debugf("Sent %q", fmt.Sprint(msg...)) //--------------------------
-  } //--------------------------
-
-  if writer == io.Writer(nil) {
-    return nil
-  }
-
-  _, err := fmt.Fprintln(writer, msg...)
-  return err
-}
-
-func sendf(writer io.Writer, formatString string, msg ...interface{}) error {
-  if msg[0] != PingHeader && msg[0] != PingRespHeader { //--------------------------
-    RemoteLogger.Debugf("Sent %q", fmt.Sprintf(formatString, msg...)) //--------------------------
-  } //--------------------------
-
-  if writer == io.Writer(nil) {
-    return nil
-  }
-
-  _, err := fmt.Fprintf(writer, formatString + "\n", msg...)
-  return err
-}
-
 func NewChannelBool() *safeChannelBool {
   return &safeChannelBool {
     Chan: make(chan bool),
@@ -191,6 +165,32 @@ type BasicRemote struct {
   Standard standardFunctionsCloser
 }
 
+func (r *BasicRemote)send(stream io.ReadWriteCloser, slaveId int, msg ...interface{}) {
+  if msg[0] != PingHeader && msg[0] != PingRespHeader { //--------------------------
+    RemoteLogger.Debugf("Sent %q", fmt.Sprint(msg...)) //--------------------------
+  } //--------------------------
+
+  if stream == io.ReadWriteCloser(nil) {
+    return
+  }
+
+  _, err := fmt.Fprintln(stream, msg...)
+  go r.raiseCheck(err, stream, slaveId)
+}
+
+func (r *BasicRemote)sendf(stream io.ReadWriteCloser, slaveId int, formatString string, msg ...interface{}) {
+  if msg[0] != PingHeader && msg[0] != PingRespHeader { //--------------------------
+    RemoteLogger.Debugf("Sent %q", fmt.Sprintf(formatString, msg...)) //--------------------------
+  } //--------------------------
+
+  if stream == io.ReadWriteCloser(nil) {
+    return
+  }
+
+  _, err := fmt.Fprintf(stream, formatString + "\n", msg...)
+  go r.raiseCheck(err, stream, slaveId)
+}
+
 func (r *BasicRemote)check(stream io.ReadWriteCloser, slaveId int) bool {
   r.Mutex.Lock()
   defer r.Mutex.Unlock()
@@ -205,7 +205,7 @@ func (r *BasicRemote)raiseCheck(err error, stream io.ReadWriteCloser, slaveId in
   if r.check(stream, slaveId) {
     r.Raise(err)
   }
-  
+
   return false
 }
 
@@ -223,24 +223,14 @@ func (r *BasicRemote)SetPingTimeout(timeoutDuration time.Duration) {
 
 func (r *BasicRemote)RequestReset(i int, slaveId int) {
   stream := r.Stream()
-  if stream == io.ReadWriteCloser(nil) {
-    return
-  }
-
-  go func() {
-    r.Mutex.Lock()
-    defer r.Mutex.Unlock()
-    r.raiseCheck(send(stream, "%s,%d,%d", ResetHeader, i, slaveId), stream, slaveId)
-  }()
+  go r.sendf(stream, slaveId, "%s,%d,%d", ResetHeader, i, slaveId)
 }
 
 func (r *BasicRemote)CloseRemote() {
   stream := r.Stream()
   slaveId := r.SlaveId()
 
-  if stream != io.ReadWriteCloser(nil) {
-    r.raiseCheck(send(stream, CloseHeader), stream, slaveId)
-  }
+  r.send(stream, slaveId, CloseHeader)
 }
 
 func (r *BasicRemote)Send(msg string) {
@@ -250,19 +240,14 @@ func (r *BasicRemote)Send(msg string) {
   defer r.Mutex.Unlock()
   r.Sent = append(r.Sent, str)
 
-  slaveId := r.Id
-  if stream := r.Rw; stream != io.ReadWriteCloser(nil) {
-    r.raiseCheck(send(stream, str), stream, slaveId)
-  }
+  r.send(r.Rw, r.Id, str)
 }
 
 func (r *BasicRemote)SendHandshake() {
   stream := r.Stream()
   slaveId := r.SlaveId()
 
-  if stream != io.ReadWriteCloser(nil) {
-    r.raiseCheck(send(stream, HandShakeHeader), stream, slaveId)
-  }
+  r.send(stream, slaveId, HandShakeHeader)
 }
 
 func (r *BasicRemote)Get() string {
@@ -330,8 +315,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, slaveId int, msgs ...inter
   RemoteLogger.Debugf("Sending %q on reset  ", append(msgs, r.Sent...)) //--------------------------
 
   received := ResetReader(r.Received, append(msgs, r.Sent...), func(msg interface{}) {
-    err := send(stream, msg)
-    go r.raiseCheck(err, stream, slaveId)
+    r.send(stream, slaveId, msg)
   }, func(msg string) {
     r.Received++
     r.ReadChan.Send(msg)
@@ -349,7 +333,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, slaveId int, msgs ...inter
     for r.check(stream, slaveId) {
       time.Sleep(r.PingInterval)
 
-      go r.raiseCheck(send(stream, PingHeader), stream, slaveId)
+      go r.send(stream, slaveId, PingHeader)
 
       err := timeout.MakeSimpleTimeout(func() error {
         <- pingChan.Chan
@@ -384,7 +368,7 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, slaveId int, msgs ...inter
         r.Raise(HeaderNotUnderstood)
 
       case PingHeader:
-        go r.raiseCheck(send(stream, PingRespHeader), stream, slaveId)
+        go r.send(stream, slaveId, PingRespHeader)
 
       case PingRespHeader:
         go pingChan.Send(true)
