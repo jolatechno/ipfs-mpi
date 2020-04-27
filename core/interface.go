@@ -214,9 +214,6 @@ func (s *StdInterface)Close() error {
 }
 
 func (s *StdInterface)SetErrorHandler(handler func(error)) {
-
-  fmt.Println("interface errorHandler") //--------------------------
-
   s.Standard.SetErrorHandler(handler)
 }
 
