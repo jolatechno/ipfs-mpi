@@ -2,6 +2,7 @@ package main
 
 import (
   "flag"
+  "fmt"
 
   "github.com/jolatechno/ipfs-mpi/core"
 
@@ -10,8 +11,20 @@ import (
 
 )
 
+type debugList []string
+
+func (i *debugList)String() string {
+	return fmt.Sprint(*i)
+}
+
+func (i *debugList)Set(value string) error {
+	*i = append(*i, value)
+	return nil
+}
+
 func ParseFlag() (core.Config, bool, error) {
-  config := core.Config{}
+  var config core.Config
+  var debugs debugList
 
   config.Base = "libp2p-mpi/1.0.0" //set to the libp2p-mpi version
 
@@ -24,16 +37,11 @@ func ParseFlag() (core.Config, bool, error) {
 
   quiet := flag.Bool("q", false, "start on quiet mode (overwrite all debug-mode)")
   debugAll := flag.Bool("debug-all", false, "enable debug-mode on all interfaces")
-
-  debugRemote := flag.Bool("debug-remote", false, "enable debug-mode on remote")
-  debugSlaveComm := flag.Bool("debug-slave", false, "enable debug-mode on SlaveComm")
-  debugMasterComm := flag.Bool("debug-master", false, "enable debug-mode on MasterComm")
-  debugStore := flag.Bool("debug-store", false, "enable debug-mode on ipfs-store")
-  debugHost := flag.Bool("debug-host", false, "enable debug-mode on host (not used for now)")
-  debugMpi := flag.Bool("debug-mpi", false, "enable debug-mode on mpi")
-  debugInterface := flag.Bool("debug-interface", false, "enable debug-mode on interface")
-  debugDht := flag.Bool("debug-dht", false, "enable debug-mode on dht")
-  debugMdns := flag.Bool("debug-mdns", false, "enable debug-mode on mdns")
+  flag.Var(&debugs, "debug", `a list of interface name for which to enable debug-mode,
+can describe libp2p-mpi interfaces such as:
+  Remote, SlaveComm, MasterComm, Interface, IpfsStore, Mpi, Host...
+or go-libp2p or go-ipfs interfaces such as:
+  dht, mdns, basichost, peerqueue, swarm2...`)
 
 	flag.Parse()
 
@@ -62,75 +70,15 @@ func ParseFlag() (core.Config, bool, error) {
       log.SetAllLoggers(log.LevelDebug)
 
     } else {
-      if *debugRemote {
-        err := log.SetLogLevel(core.RemoteHeader, "debug")
+      for _, str := range debugs {
+        err := log.SetLogLevel(str, "debug")
         if err != nil {
           panic(err)
         }
-      }
-
-      if *debugSlaveComm {
-        err := log.SetLogLevel(core.SlaveCommHeader, "debug")
+        /*err = log.SetLogLevel(str, "warn")
         if err != nil {
           panic(err)
-        }
-      }
-
-      if *debugMasterComm {
-        err := log.SetLogLevel(core.MasterCommHeader, "debug")
-        if err != nil {
-          panic(err)
-        }
-      }
-
-      if *debugStore {
-        err := log.SetLogLevel(core.IpfsHeader, "debug")
-        if err != nil {
-          panic(err)
-        }
-      }
-
-      if *debugHost {
-        err := log.SetLogLevel(core.HostHeader, "debug")
-        if err != nil {
-          panic(err)
-        }
-      }
-
-      if *debugMpi {
-        err := log.SetLogLevel(core.MpiHeader, "debug")
-        if err != nil {
-          panic(err)
-        }
-      }
-
-      if *debugInterface {
-        err := log.SetLogLevel(core.InterfaceHeader, "debug")
-        if err != nil {
-          panic(err)
-        }
-      }
-
-      if *debugDht {
-        err := log.SetLogLevel("dht", "debug")
-        if err != nil {
-          panic(err)
-        }
-        err = log.SetLogLevel("dht", "warn")
-        if err != nil {
-          panic(err)
-        }
-      }
-
-      if *debugMdns {
-        err := log.SetLogLevel("mdns", "debug")
-        if err != nil {
-          panic(err)
-        }
-        err = log.SetLogLevel("mdns", "warn")
-        if err != nil {
-          panic(err)
-        }
+        }*/
       }
 
     }
