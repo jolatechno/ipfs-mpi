@@ -89,12 +89,11 @@ func main(){
 	}
 	defer term.ReleaseFromStdInOut() // defer this
 
-  //scanner := bufio.NewScanner(os.Stdin)
-  for mpi.Check()/* && scanner.Scan()*/ {
-    //cmd := scanner.Text()
+  for mpi.Check() {
     cmd, err:= term.ReadLine()
     if err != nil {
       mpi.Close()
+      panic(err)
       return
     }
 
@@ -160,8 +159,4 @@ func main(){
       return
     }
   }
-
-  /*if err := scanner.Err(); err != nil {
-    panic(err)
-  }*/
 }
