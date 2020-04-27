@@ -188,8 +188,6 @@ type BasicRemote struct {
   Sent []interface{}
   Rw io.ReadWriteCloser
   Received int
-  HandshakeMessage int
-  ReceivedHandshakeMessage int
   Standard standardFunctionsCloser
 }
 
@@ -327,7 +325,8 @@ func (r *BasicRemote)Reset(stream io.ReadWriteCloser, slaveId int, msgs ...inter
   RemoteLogger.Debugf("Sending %q on reset  ", append(msgs, r.Sent...)) //--------------------------
 
   received := ResetReader(r.Received, append(msgs, r.Sent...), func(msg interface{}) {
-    r.raiseCheck(send(stream, msg), stream, slaveId)
+    err := send(stream, msg)
+    go r.raiseCheck(err, stream, slaveId)
   }, func(msg string) {
     r.Received++
     r.ReadChan.Send(msg)
