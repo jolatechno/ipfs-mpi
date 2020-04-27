@@ -111,14 +111,18 @@ func (s *StdInterface)Start() {
 	}
 
   go func() {
+    defer recover()
+
     var errorBuffer bytes.Buffer
     s.Cmd.Stderr = &errorBuffer
 
     err := s.Cmd.Run()
 
     strError := errorBuffer.String()
-    if strError[len(strError) - 1:] == "\n" {
-      strError = strError[:len(strError) - 1]
+    if len(strError) > 0 {
+      if strError[len(strError) - 1:] == "\n" {
+        strError = strError[:len(strError) - 1]
+      }
     }
 
     if err != nil {
