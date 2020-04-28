@@ -17,6 +17,12 @@ const (
   prompt = "libp2p-mpi>"
 )
 
+var (
+  MainHeader = "libp2p-mpi"
+  MainLogger = log.Logger(MainHeader)
+)
+
+
 func main(){
   log.SetupLogging()
 
@@ -24,7 +30,7 @@ func main(){
 
   config, quiet, err := ParseFlag()
   if err != nil {
-    panic(err)
+    core.MpiLogger.Panic(err)
   }
 
   fmt.Println("\nStarting host...")
@@ -91,7 +97,7 @@ func main(){
     cmd, err:= term.ReadLine()
     if err != nil {
       mpi.Close()
-      panic(err)
+      MainLogger.Panic(err)
       return
     }
 
@@ -102,7 +108,7 @@ func main(){
 
     switch splitted[0] {
     default:
-      mpi.Raise(core.CommandNotUnderstood)
+      MainLogger.Error(core.CommandNotUnderstood)
 
     case "list":
       list := mpi.Store().List()
@@ -112,7 +118,7 @@ func main(){
 
     case "start":
       if len(splitted) < 3 {
-        mpi.Raise(errors.New("No size given"))
+        MainLogger.Error("No size given")
         continue
       }
 
@@ -121,20 +127,20 @@ func main(){
         err = errors.New("Size not understood")
       }
       if err != nil {
-        mpi.Raise(err)
+        MainLogger.Error(err)
         continue
       }
 
       go func() {
         err = mpi.Start(splitted[1], n, splitted[3:]...)
         if err != nil {
-          mpi.Raise(err)
+          MainLogger.Error(err)
         }
       }()
 
     case "add":
       if len(splitted) < 2 {
-        mpi.Raise(errors.New("No file given"))
+        MainLogger.Error("No file given")
         continue
       }
 
@@ -144,7 +150,7 @@ func main(){
 
     case "del":
       if len(splitted) < 2 {
-        mpi.Raise(errors.New("No file given"))
+        MainLogger.Error("No file given")
         continue
       }
 

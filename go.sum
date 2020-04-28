@@ -965,6 +965,12 @@ github.com/jolatechno/ipfs-mpi/core v0.0.0-20200427152845-dce34b24d799 h1:qAMBlS
 github.com/jolatechno/ipfs-mpi/core v0.0.0-20200427152845-dce34b24d799/go.mod h1:7qUBsmJ2/owGSDA4VxhC277kGKeEDdwPH5WMSLvyy/0=
 github.com/jolatechno/libp2p-mpi-core v0.0.0-20200427153254-6cfaf6222d8f h1:uKMCBupZ0ZXBW5WHnje5NuB7l8xxHpKtesWhxcfA7tc=
 github.com/jolatechno/libp2p-mpi-core v0.0.0-20200427153254-6cfaf6222d8f/go.mod h1:beU3Zog60gqtouxWvTZ0PkEFG/Io0QpOp9UC25WIMH8=
+github.com/jolatechno/libp2p-mpi-core v0.0.0-20200427163941-b688c82c6551 h1:kHV7OnyU2/C8SNYvVIptdbp7GnjF+yHzfc/TnTn+Q10=
+github.com/jolatechno/libp2p-mpi-core v0.0.0-20200427163941-b688c82c6551/go.mod h1:beU3Zog60gqtouxWvTZ0PkEFG/Io0QpOp9UC25WIMH8=
+github.com/jolatechno/libp2p-mpi-core v0.0.0-20200427170107-d9e6247cdffa h1:xd2fU3ED8cJXrcw6WkGW8esit4Td4tCyq9lJA7e1AkE=
+github.com/jolatechno/libp2p-mpi-core v0.0.0-20200427170107-d9e6247cdffa/go.mod h1:beU3Zog60gqtouxWvTZ0PkEFG/Io0QpOp9UC25WIMH8=
+github.com/jolatechno/libp2p-mpi-core v0.0.0-20200427170303-a35ec5c7588f h1:9CgKg5K/3Oo+0ITFT64P2goe9Kp25TSXB1WVyzT2pt8=
+github.com/jolatechno/libp2p-mpi-core v0.0.0-20200427170303-a35ec5c7588f/go.mod h1:beU3Zog60gqtouxWvTZ0PkEFG/Io0QpOp9UC25WIMH8=
 github.com/jrick/logrotate v1.0.0/go.mod h1:LNinyqDIJnpAur+b8yyulnQw/wDuN1+BYKlTRt3OuAQ=
 github.com/kami-zh/go-capturer v0.0.0-20171211120116-e492ea43421d/go.mod h1:P2viExyCEfeWGU259JnaQ34Inuec4R38JCyBx2edgD0=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=

@@ -45,6 +45,8 @@ or go-libp2p or go-ipfs interfaces such as:
 
 	flag.Parse()
 
+  fmt.Println(debugs)
+
   if len(config.BootstrapPeers) == 0 {
     config.BootstrapPeers = dht.DefaultBootstrapPeers
   }
