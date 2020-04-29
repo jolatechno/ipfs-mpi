@@ -4,7 +4,7 @@ import (
   "flag"
   "fmt"
 
-  "github.com/jolatechno/libp2p-mpi-core"
+  "github.com/jolatechno/libp2p-mpi-core/v2"
 
   "github.com/ipfs/go-log"
   dht "github.com/libp2p/go-libp2p-kad-dht"

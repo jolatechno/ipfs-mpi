@@ -971,6 +971,9 @@ github.com/jolatechno/libp2p-mpi-core v0.0.0-20200427170107-d9e6247cdffa h1:xd2f
 github.com/jolatechno/libp2p-mpi-core v0.0.0-20200427170107-d9e6247cdffa/go.mod h1:beU3Zog60gqtouxWvTZ0PkEFG/Io0QpOp9UC25WIMH8=
 github.com/jolatechno/libp2p-mpi-core v0.0.0-20200427170303-a35ec5c7588f h1:9CgKg5K/3Oo+0ITFT64P2goe9Kp25TSXB1WVyzT2pt8=
 github.com/jolatechno/libp2p-mpi-core v0.0.0-20200427170303-a35ec5c7588f/go.mod h1:beU3Zog60gqtouxWvTZ0PkEFG/Io0QpOp9UC25WIMH8=
+github.com/jolatechno/libp2p-mpi-core v2.0.1+incompatible h1:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=
+github.com/jolatechno/libp2p-mpi-core/v2 v2.0.1 h1:GJR+9zvY9AjHhh+vLFq7ED8ec9JepsUk3Ox6R0AxOog=
+github.com/jolatechno/libp2p-mpi-core/v2 v2.0.1/go.mod h1:5iA0RJZugLxNcXkvyKvQB9prWUYMbzbbR1NRExmuR0k=
 github.com/jrick/logrotate v1.0.0/go.mod h1:LNinyqDIJnpAur+b8yyulnQw/wDuN1+BYKlTRt3OuAQ=
 github.com/kami-zh/go-capturer v0.0.0-20171211120116-e492ea43421d/go.mod h1:P2viExyCEfeWGU259JnaQ34Inuec4R38JCyBx2edgD0=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=
