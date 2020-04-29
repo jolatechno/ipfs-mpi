@@ -123,6 +123,8 @@ github.com/jessevdk/go-flags v0.0.0-20141203071132-1679536dcc89/go.mod h1:4FA24M
 github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
 github.com/jolatechno/go-ipfs-directory_size_ls v0.0.0-20200422092545-131678ddf19f h1:61vjPQxYUBC9aMd/6LQF56P9nBy1Hszb72wpdyQyc1Q=
 github.com/jolatechno/go-ipfs-directory_size_ls v0.0.0-20200422092545-131678ddf19f/go.mod h1:QJbSPrxfjsF9rhnNjjHVZxSVr1pbWOvDB+8Urql5ryc=
+github.com/jolatechno/go-ipfs-directory_size_ls v1.0.0 h1:Yx54WBPiTp06es6xDmibCK4FXWBEmuA1d3AiIso/ksc=
+github.com/jolatechno/go-ipfs-directory_size_ls v1.0.0/go.mod h1:QJbSPrxfjsF9rhnNjjHVZxSVr1pbWOvDB+8Urql5ryc=
 github.com/jolatechno/go-timeout v0.0.0-20200402071232-e1164f166d08 h1:sShtSX3Wm2zVSiSmtpIu0WpT6Vs8/t4dydDAiPGfASw=
 github.com/jolatechno/go-timeout v0.0.0-20200402071232-e1164f166d08/go.mod h1:paJwIP2pqExVj8gEqc5Kz6kEhgkoUad8eRNAYi2EH7I=
 github.com/jolatechno/go-timeout v0.0.0-20200411125652-7b3152960795 h1:9WgdmfWr/NtUyLen14R2SuHYFoJAnUcgniyHhNFkyiI=
@@ -131,6 +133,8 @@ github.com/jolatechno/go-timeout v0.0.0-20200418073152-4b2fffd6ee58 h1:1JUa9A8Ik
 github.com/jolatechno/go-timeout v0.0.0-20200418073152-4b2fffd6ee58/go.mod h1:paJwIP2pqExVj8gEqc5Kz6kEhgkoUad8eRNAYi2EH7I=
 github.com/jolatechno/go-timeout v0.0.0-20200421091832-05f54f6ce401 h1:jHwRnYZtD/uKOX3Up7+ngov3K980TBaHXE8PxvMBr+E=
 github.com/jolatechno/go-timeout v0.0.0-20200421091832-05f54f6ce401/go.mod h1:paJwIP2pqExVj8gEqc5Kz6kEhgkoUad8eRNAYi2EH7I=
+github.com/jolatechno/go-timeout v1.0.0 h1:sFEH5KpIei5msa0fh7vuz51PyeMLeP+wymHnWn1piR0=
+github.com/jolatechno/go-timeout v1.0.0/go.mod h1:paJwIP2pqExVj8gEqc5Kz6kEhgkoUad8eRNAYi2EH7I=
 github.com/jolatechno/ipfs-mpi v0.0.0-20200427152845-dce34b24d799 h1:33iID3L/SHuuQ1/rLrv7QW4Fn02nWK5YoJokPLWzA0M=
 github.com/jolatechno/ipfs-mpi/core v0.0.0-20200402125506-8091fb1a3606 h1:z4qrJn6khEkaInOLB8xUjqDItDGJa1v4eFBmDNqOaWE=
 github.com/jolatechno/ipfs-mpi/core v0.0.0-20200402125506-8091fb1a3606/go.mod h1:awbRXEkOTFNgcUqT0BhgBBlGqtlagHOPoxgr+2HMWjU=
@@ -974,6 +978,8 @@ github.com/jolatechno/libp2p-mpi-core v0.0.0-20200427170303-a35ec5c7588f/go.mod 
 github.com/jolatechno/libp2p-mpi-core v2.0.1+incompatible h1:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=
 github.com/jolatechno/libp2p-mpi-core/v2 v2.0.1 h1:GJR+9zvY9AjHhh+vLFq7ED8ec9JepsUk3Ox6R0AxOog=
 github.com/jolatechno/libp2p-mpi-core/v2 v2.0.1/go.mod h1:5iA0RJZugLxNcXkvyKvQB9prWUYMbzbbR1NRExmuR0k=
+github.com/jolatechno/libp2p-mpi-core/v2 v2.0.2 h1:sUt6AI7Zqxbxm4xVGQIY8xFLO7Gu3jC1ZbKD1H5sbdg=
+github.com/jolatechno/libp2p-mpi-core/v2 v2.0.2/go.mod h1:/vdpmu9C5HdCAhhraHzAsPsrlCQfUIlDRRrhrAN5bYc=
 github.com/jrick/logrotate v1.0.0/go.mod h1:LNinyqDIJnpAur+b8yyulnQw/wDuN1+BYKlTRt3OuAQ=
 github.com/kami-zh/go-capturer v0.0.0-20171211120116-e492ea43421d/go.mod h1:P2viExyCEfeWGU259JnaQ34Inuec4R38JCyBx2edgD0=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=
