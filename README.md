@@ -16,7 +16,7 @@ Fault tollerence will be handled by the possibility of multiple node calculating
 
 ## How does it work ?
 
-The basic algorithms behind libp2p-mpi are described in the [core/README.md](./core/README.md) file.
+The basic algorithms behind libp2p-mpi are described in [libp2p-mpi-core/](https://github.com/jolatechno/libp2p-mpi-core/).
 
 ## How to build an interpreter directory ?
 
