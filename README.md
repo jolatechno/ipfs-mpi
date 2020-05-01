@@ -6,6 +6,14 @@
 
 Message Passing Interface computing using libp2p as a back-bone to build computational pool.
 
+## *__Development of version 3 in progress__*
+
+See [libp2p-core/v3](./libp2p-core/v3) for more informations.
+
+This version will use ethereum smart contracts to handle message sharing which will remove the need for peer reseting since messages are held by thr contract on the blockChain.
+
+Fault tollerence will be handled by the possibility of multiple node calculating independently the same results.
+
 ## How does it work ?
 
 The basic algorithms behind libp2p-mpi are described in the [core/README.md](./core/README.md) file.
