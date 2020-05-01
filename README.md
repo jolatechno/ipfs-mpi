@@ -8,7 +8,7 @@ Message Passing Interface computing using libp2p as a back-bone to build computa
 
 ## *__Development of version 3 in progress__*
 
-See [libp2p-core/v3](./libp2p-core/v3) for more informations.
+See [libp2p-core/v3](https://github.com/jolatechno/libp2p-mpi-core/tree/master/v3) for more informations.
 
 This version will use ethereum smart contracts to handle message sharing which will remove the need for peer reseting since messages are held by thr contract on the blockChain.
 
